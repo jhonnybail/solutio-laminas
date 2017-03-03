@@ -1,0 +1,29 @@
+{
+  "name": "solutio/module-zf2",
+  "description": "ZF2 library development by Solutio.Me",
+  "type": "library",
+  "license": "MIT",
+  "keywords": [
+    "doctrine",
+    "orm",
+    "module",
+    "zf",
+    "solutio"
+  ],
+  "authors": [
+    {
+      "name": "Jonathan Bogdanovicz",
+      "email": "jhonnybail@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^5.6 || ^7.0",
+    "php-curl-class/php-curl-class": "^7.2",
+    "doctrine/doctrine-orm-module": "^1.1"
+  }
+  "autoload": {
+    "psr-4": {
+      "Solutio\\": "src/"
+    }
+  }
+}
