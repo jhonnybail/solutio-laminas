@@ -14,22 +14,22 @@ class EntityRepository extends ORM\EntityRepository
 	private	$conditions							= [];
 	private $disabledefaultFilters	= false;
 
-	public function save(\TemTudoAqui\AbstractEntity $entity)
+	public function save(\Solutio\AbstractEntity $entity)
 	{
 		$this->getEntityManager()->persist($entity);
 		$this->getEntityManager()->flush();
 		return $entity;
 	}
 
-	public function getCollection(\TemTudoAqui\AbstractEntity $entity, $params = [], $fields = [], $type = self::RESULT_ARRAY)
+	public function getCollection(\Solutio\AbstractEntity $entity, $params = [], $fields = [], $type = self::RESULT_ARRAY)
 	{
 		
-		$metaData 		= $this->getClassMetadata();
+		$metaData 	= $this->getClassMetadata();
 		$alias			= $metaData->getTableName();
 		$query			= $this->createQueryBuilder($alias);
 		$maps 			= $metaData->getAssociationMappings();
 		$attrs 			= $metaData->getFieldNames();
-		$obj			= $entity->toArray();
+		$obj			  = $entity->toArray();
 		
 		if(count($fields) > 0){
 			$f = '';
@@ -136,42 +136,15 @@ class EntityRepository extends ORM\EntityRepository
 		$rs = [
 			'total' => count(new Paginator($query))
 		];
-		//echo $query->getQuery()->getSQL(); exit;
+		
 		if($type === self::RESULT_OBJECT){
 			$rs = $query->getQuery()->getResult(\Doctrine\ORM\AbstractQuery::HYDRATE_OBJECT);
 		}elseif($type === self::RESULT_ARRAY){
 			$rs['result'] = $query->getQuery()->getResult(\Doctrine\ORM\AbstractQuery::HYDRATE_ARRAY);
-			/*foreach($rs as $k => $v){
-				foreach($maps as $fieldName => $field){
-					$am = $metaData->getAssociationMapping($fieldName);
-					if($am['type'] == 8){
-						$queryA = $this->createQueryBuilder('a');
-						$queryA->innerJoin('a.'.$fieldName, 'b')
-							->addSelect('b');
-						foreach($metaData->getIdentifier() as $order => $identifier){
-							$queryA->andWhere("a.{$identifier} = :value{$order}")
-								->setParameter("value{$order}", $v[$identifier]);
-						}
-						$rsA = $queryA->getQuery()->getResult(\Doctrine\ORM\AbstractQuery::HYDRATE_ARRAY);
-						if(count($rsA) > 0)
-							$rs[$k][$fieldName] = $rsA[0][$fieldName];
-					}
-				}
-			}*/
 		}
 		
 		return $rs;
 			
-	}
-	
-	public function getByUrl($url)
-	{
-		$query			= $this->createQueryBuilder('p');
-		
-		$query->innerJoin('p.url', 'u', ORM\Query\Expr\Join::WITH, 'u.id = p.url');
-		$query->andWhere('u.url = :url')->setParameter('url', $url);
-		
-		return $query->getQuery()->getResult()[0];		
 	}
 	
 	protected function setFilter($conditions, $disableDefaultFilters = false)
