@@ -1,6 +1,6 @@
 <?php
 
-namespace Lupa;
+namespace Solutio;
 
 class Module
 {

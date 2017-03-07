@@ -9,7 +9,7 @@
  */
 namespace Solutio;
 
-use Zend\Stdlib\Hydrator;
+use Zend\Hydrator;
 
 abstract class AbstractEntity {
 	

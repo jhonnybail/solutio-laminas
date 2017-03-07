@@ -10,7 +10,7 @@ class RestController extends AbstractRestfulController
 
 	protected	$service;
 	
-	public function __construct(EntityService $service)
+	public function __construct(\Solutio\Doctrine\EntityService $service)
 	{
 		$this->service = $service;
 	}
@@ -18,7 +18,7 @@ class RestController extends AbstractRestfulController
   // Listar - GET
   public function getList()
   {
-		$data		= $this->service($this->getQuery()->toArray(), $this->getParams(), $this->getFields());
+		$data		= $this->service->find($this->getQuery()->toArray(), $this->getParams(), $this->getFields());
 		return new JsonModel([
 			'data'		=> $data, 
 			'success'	=> true
