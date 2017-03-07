@@ -18,7 +18,7 @@ class RestController extends AbstractRestfulController
   // Listar - GET
   public function getList()
   {
-		$data		= $this->service->find($this->getQuery()->toArray(), $this->getParams(), $this->getFields());
+		$data		= $this->service->find($this->getRequest()->getQuery()->toArray(), $this->getParams(), $this->getFields());
 		return new JsonModel([
 			'data'		=> $data, 
 			'success'	=> true
