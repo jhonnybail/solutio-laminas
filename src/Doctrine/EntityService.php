@@ -2,6 +2,8 @@
 
 namespace Solutio\Doctrine;
 
+use Zend\Hydrator;
+
 class EntityService
 {
     private $entity;
@@ -70,7 +72,7 @@ class EntityService
     
     protected function makeEntityWithParams($values)
     {
-      $meta	= $em->getMetadataFactory()->getMetadataFor($this->entity);
+      $meta	= $this->em->getMetadataFactory()->getMetadataFor($this->entity);
   		$maps 	= $meta->getAssociationMappings();
   		$fields	= (new $this->entity)->toArray();
   		foreach($fields as $k => $v){
