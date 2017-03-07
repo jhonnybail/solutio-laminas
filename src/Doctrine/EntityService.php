@@ -76,7 +76,7 @@ class EntityService
   		$maps 	= $meta->getAssociationMappings();
   		$fields	= (new $this->entity)->toArray();
   		foreach($fields as $k => $v){
-  			if(isset($maps[$k])){
+  			if(isset($maps[$k]) && isset($values[$k])){
   				$am = $meta->getAssociationMapping($k);
   				if($am['type'] == 1 || $am['type'] == 2){
   					$column = key($am['targetToSourceKeyColumns']);
@@ -84,7 +84,7 @@ class EntityService
   						$column => (int)$values[$k]
   					]);
   				}
-  			}else
+  			}elseif(isset($values[$k]))
   				$fields[$k] = $values[$k];
   		}
   		return new $this->entity($fields);
