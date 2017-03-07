@@ -37,7 +37,7 @@ class EntityService
       $repo 	= $this->em->getRepository($this->entity);
 		  $entity	= new $this->entity;
 
-		  $data		= $repo->getCollection($this->makeEntityWithParams($values), $params, $fields, $type);
+		  return $repo->getCollection($this->makeEntityWithParams($values), $params, $fields, $type);
     }
     
     public function insert(array $data)
@@ -66,7 +66,7 @@ class EntityService
       {
         $this->em->remove($entity);
         $this->em->flush();
-        return $id;
+        return $entity;
       }
     }
     
