@@ -95,7 +95,7 @@ class EntityRepository extends ORM\EntityRepository
 				if(($am['type'] == 2 || $am['type'] == 1) && $obj[$fieldName] != null){
 					$id 	= null;
 					$column = key($am['targetToSourceKeyColumns']);
-					if($obj[$fieldName] instanceof \TemTudoAqui\AbstractEntity)
+					if($obj[$fieldName] instanceof \Solutio\AbstractEntity)
 						$obj2	= $obj[$fieldName]->toArray();
 					else
 						$obj2	= $obj[$fieldName];
