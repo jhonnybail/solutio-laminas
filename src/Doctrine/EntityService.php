@@ -29,8 +29,7 @@ class EntityService
     public function getById($id)
     {
       $repo   = $this->em->getRepository($this->entity);
-      $result = $repo->getCollection($this->makeEntityWithParams(['id' => $id]))['result'];
-      return count($result) > 0 ? $result[0] : null;
+      return $repo->find($id);
     }
     
     public function find($values, $params, $fields, $type = EntityRepository::RESULT_ARRAY)

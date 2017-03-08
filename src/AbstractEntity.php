@@ -9,9 +9,10 @@
  */
 namespace Solutio;
 
-use Zend\Hydrator;
+use Zend\Hydrator,
+    Solutio\Utils\Data\StringManipulator;
 
-abstract class AbstractEntity {
+abstract class AbstractEntity implements \JsonSerializable {
 	
   public function __construct(array $options = array())
   {
@@ -21,7 +22,15 @@ abstract class AbstractEntity {
   public function toArray()
   {
     $obj = (new Hydrator\ClassMethods(false))->extract($this);
+    foreach($obj as $k => $v)
+      if((new StringManipulator($k))->search('^__(.*)__$'))
+        unset($obj[$k]);
     return $obj;
+  }
+  
+  public function jsonSerialize()
+  {
+    return $this->toArray();
   }
 	
 }
