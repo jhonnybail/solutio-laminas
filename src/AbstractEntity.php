@@ -20,7 +20,7 @@ abstract class AbstractEntity {
 	
   public function toArray()
   {
-    $obj = (new Hydrator\ClassMethods())->extract($this);
+    $obj = (new Hydrator\ClassMethods(false))->extract($this);
     return $obj;
   }
 	
