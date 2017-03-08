@@ -413,7 +413,7 @@ class ImageFile extends File
   {
 		
 		if($this->extension->toString() == '' && !empty($type))
-			$this->extension = new String($type);
+			$this->extension = new StringManipulator($type);
 		
 		if($this->extension->toString() != '' && is_resource($this->image)){
 			
@@ -515,12 +515,12 @@ class ImageFile extends File
    * Implementa as modificações e obtém os dados do arquivo.
    *
    * @param   string  $type
-   * @return  \Solutio\Utils\Data\String
+   * @return  \Solutio\Utils\Data\StringManipulator
    */
 	public function getData($type = self::IMAGETYPEPNG)
   {
 		$this->generateData($type);
-		return new String((string)$this->data);
+		return new StringManipulator((string)$this->data);
 	}
 
   /**
@@ -548,7 +548,7 @@ class ImageFile extends File
 	}
 
   /**
-   * Retorna um objeto String da função mágica __toString.
+   * Retorna uma string da função mágica __toString.
    *
    * @return string
    */

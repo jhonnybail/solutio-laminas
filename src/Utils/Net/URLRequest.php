@@ -11,7 +11,7 @@ namespace Solutio\Utils\Net;
 
 use Solutio\System,
   	Solutio\Utils\Data\ArrayObject,
-  	Solutio\Utils\Data\String,
+  	Solutio\Utils\Data\StringManipulator,
   	Solutio\InvalidArgumentException;
 
 /**
@@ -160,7 +160,7 @@ class URLRequest
    */
 	public function getHTTPUrl()
   {
-		$url = new String($this->url);
+		$url = new StringManipulator($this->url);
 		return $url->replace(System::GetVariable('directory_root'), System::GetVariable('protocol')."://".System::GetVariable('host'))->toString();
 	}
 	
@@ -178,7 +178,7 @@ class URLRequest
       if(!empty($key) && count($array) > 0){
         if($oB->url->search('\.'.$value))
             return false;
-        if(String::GetInstance($oB->requestHeaders['Content-Type'][1])->search($value))
+        if(StringManipulator::GetInstance($oB->requestHeaders['Content-Type'][1])->search($value))
             return false;
       }
       return true;
@@ -230,11 +230,11 @@ class URLRequest
   /**
    * Retorna a url do arquivo.
    *
-   * @return string
+   * @return \Solutio\Utils\Data\StringManipulator
    */
   public function toString()
   {
-    return (string) $this;
+    return new StringManipulator($this);
   }
 
   /**

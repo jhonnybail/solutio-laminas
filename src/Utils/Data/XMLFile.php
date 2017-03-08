@@ -19,7 +19,7 @@ final class XMLFile extends DOMFile
 
 	public function __construct(URLRequest $urlRequest = null)
   {
-		$this->headString = '<?xml version="1.0"?>';
+		$this->headString = new StringManipulator('<?xml version="1.0"?>');
 		parent::__construct($urlRequest);
 		
 	}
@@ -73,11 +73,11 @@ final class XMLFile extends DOMFile
 	/**
    * Retorna em formato de string.
    *
-   * @return string
+   * @return \Solutio\Utils\Data\StringManipulator
    */
 	public function toString()
   {
-		return (string) $this->getData();
+		return $this->getData();
 	}
 		
 }

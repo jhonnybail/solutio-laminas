@@ -19,7 +19,7 @@ final class HTMLFile extends DOMFile
 	
 	public function __construct(URLRequest $urlRequest = null)
   {
-		$this->headString = '<!DOCTYPE html>';
+		$this->headString = new StringManipulator'<!DOCTYPE html>');
 		parent::__construct($urlRequest);
 	}
 	
@@ -88,7 +88,7 @@ final class HTMLFile extends DOMFile
 			
 			for($i = 0; $i < count($reg[0]); $i++) {
 				
-				$url = new String($reg[2][$i]);
+				$url = new StringManipulator($reg[2][$i]);
 				if($url->search("&")){
 				
 					$urlA 	= $url->match("|&|");
@@ -98,7 +98,7 @@ final class HTMLFile extends DOMFile
 					elseif($urlA2->count() < $urlA->count()){
 						
 						$ex = new ArrayObject(explode("&amp;", (string)$url));
-						$newURL = new String('');
+						$newURL = new StringManipulator('');
 						foreach($ex as $str) $newURL->concat(str_replace("&", "&amp;", $str)."&amp;");
 						$newURL = $newURL->substr(0, $newURL->length()-5);
 						$nova = '<'.$tag.$reg[1][$i].$att.'="'.$newURL.'"'.$reg[3][$i].'>';
@@ -133,7 +133,7 @@ final class HTMLFile extends DOMFile
 	public function getData()
   {
 		$data = parent::getData();
-		return new String(trim((string) $data->replace("<\?xml(.*)\"\?>", "")));
+		return new StringManipulator(trim((string) $data->replace("<\?xml(.*)\"\?>", "")));
 	}
 		
 }

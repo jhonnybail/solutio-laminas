@@ -85,7 +85,7 @@ class DOMFile extends ArrayObject implements IFileObject
 	
 	/**
 	 * Cabeçalho do tipo de Arquivo.
-   * @var \Solutio\Utils\Data\String
+   * @var \Solutio\Utils\Data\StringManipulator
    */
 	protected $headString;
 	
@@ -99,8 +99,8 @@ class DOMFile extends ArrayObject implements IFileObject
 		
 		parent::__construct();
 		
-		$this->extension 	= new String();
-		$this->fileName 	= new String();
+		$this->extension 	= new StringManipulator();
+		$this->fileName 	= new StringManipulator();
 		
 		$this->reflectionClass = new \ReflectionClass(get_class($this));
 		
@@ -181,7 +181,7 @@ class DOMFile extends ArrayObject implements IFileObject
 			try{
 				$this->xml = @new \SimpleXMLElement($this->data);
 			}catch(\Exception $e){
-				if(!empty($this->headString)){
+				if(!empty($this->headString->toString())){
 					try{
 						$this->xml = @new \SimpleXMLElement($this->headString.$this->data);
 					}catch(\Exception $e){
@@ -228,7 +228,7 @@ class DOMFile extends ArrayObject implements IFileObject
 	}
 	
 	/**
-   * Cria um objeto apartir de uma String em DOM válido.
+   * Cria um objeto apartir de uma string em DOM válido.
    *
    * @param  string	$data
    * @return \Solutio\Utils\Data\DOMFile
@@ -797,11 +797,11 @@ class DOMFile extends ArrayObject implements IFileObject
 	/**
    * Retorna um objeto String da função mágica __toString.
    *
-   * @return string
+   * @return \Solutio\Utils\Data\StringManipulator
    */
 	public function toString()
   {
-		return (string) $this;
+		return new StringManipulator((string) $this);
 	}
 	
 	/**

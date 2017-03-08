@@ -12,7 +12,7 @@ namespace Solutio\Utils\Data;
 /**
  * Classe substituta de String.
  */
-class String
+class StringManipulator
 {
 	
 	/**
@@ -69,7 +69,7 @@ class String
    * Concatena duas strings.
    *
    * @param  string $string
-   * @return \Solutio\Utils\Data\String
+   * @return \Solutio\Utils\Data\StringManipulator
    */
 	public function concat($string)
   {
@@ -87,7 +87,7 @@ class String
   {
     $array = new ArrayObject(explode($delimiter, $this->string));
     foreach($array as $k => $v)
-      $array[$k] = new String($v);
+      $array[$k] = new StringManipulator($v);
     return $array;
   }
 
@@ -96,13 +96,13 @@ class String
    *
    * @param  int $start
    * @param  int $end
-   * @return \Solutio\Utils\Data\String
+   * @return \Solutio\Utils\Data\StringManipulator
    */
   public function slice($start, $end)
   {
     $start = (int)(string) $start;
     $end = (int)(string) $end;
-    return new String(substr($this->string, $start, $end-$start+1));
+    return new StringManipulator(substr($this->string, $start, $end-$start+1));
   }
 		
 	/**
@@ -110,13 +110,13 @@ class String
    *
    * @param  int $start
    * @param  int $length
-   * @return \Solutio\Utils\Data\String
+   * @return \Solutio\Utils\Data\StringManipulator
    */
 	public function substr($start, $length)
   {
 		$start = (int)(string) $start;
 		$end = (int)(string) $length;
-		return new String(substr($this->string, $start, $end));
+		return new StringManipulator(substr($this->string, $start, $end));
 	}
 	
 	/**
@@ -125,11 +125,11 @@ class String
    * @param   string      $pattern
    * @param   string      $replace
    * @param   string|null $delimiter	Delimitador para análise da expressão regular
-   * @return  \Solutio\Utils\Data\String
+   * @return  \Solutio\Utils\Data\StringManipulator
    */
 	public function replace($pattern, $replace, $delimiter = "|")
   {
-		return new String(preg_replace($delimiter.((string) $pattern).$delimiter, (string) $replace, $this->string));
+		return new StringManipulator(preg_replace($delimiter.((string) $pattern).$delimiter, (string) $replace, $this->string));
 	}
 	
 	/**
@@ -161,7 +161,7 @@ class String
 	
 	/**
    * Retorna a string com os caracteres em maiúsculo.
-   * @return \Solutio\Utils\Data\String
+   * @return \Solutio\Utils\Data\StringManipulator
    */
 	public function toUpperCase()
     {
@@ -171,7 +171,7 @@ class String
 	
 	/**
    * Retorna a string com os caracteres em minúsculos.
-   * @return  \Solutio\Utils\Data\String
+   * @return  \Solutio\Utils\Data\StringManipulator
    */
 	public function toLowerCase()
     {
@@ -181,7 +181,7 @@ class String
 	
 	/**
    * Retorna a string com os primeiros caracteres das palavras em maiúsculo.
-   * @return \Solutio\Utils\Data\String
+   * @return \Solutio\Utils\Data\StringManipulator
    */
 	public function toUpperCaseFirstChars()
   {
@@ -227,7 +227,7 @@ class String
 	
 	/**
    * Retorna a string guardada.
-   * @return \Solutio\Utils\Data\String
+   * @return string
    */
 	public function toString()
     {
@@ -246,11 +246,11 @@ class String
    * Cria uma instancia estáticamente.
    *
    * @param  string $string
-   * @return \Solutio\Utils\Data\String
+   * @return \Solutio\Utils\Data\StringManipulator
    */
 	public static function GetInstance($string)
   {
-		return new String($string);
+		return new StringManipulator($string);
 	}
 	
 }

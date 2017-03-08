@@ -297,11 +297,11 @@ class ArrayObject extends \ArrayObject
 	/**
    * Retorna em objeto string os indices e seus valores.
    *
-   * @return string
+   * @return \Solutio\Utils\Data\StringManipulator
    */
 	public function toString()
 	{
-		return (string) $this;
+		return new StringManipulator((string) $this);
 	}
 	
 	/**

@@ -68,8 +68,8 @@ class File extends Object implements IFileObject
 		
 		parent::__construct();
 		
-		$this->extension 	= new String();
-		$this->fileName 	= new String();
+		$this->extension 	= new StringManipulator();
+		$this->fileName 	= new StringManipulator();
 		$this->data			= null;
 		
 		if(!empty($urlRequest)){
@@ -189,7 +189,7 @@ class File extends Object implements IFileObject
 		$file->fileName = '';
 		for($i = 0; $i < count($ext)-1; $i++) $file->fileName .= $ext[$i];
 		  
-		$file->fileName = new String(preg_replace('! !', '_', preg_replace('!,!', '', $file->fileName)));
+		$file->fileName = new StringManipulator(preg_replace('! !', '_', preg_replace('!,!', '', $file->fileName)));
 		$file->url = preg_replace('! !', '_', preg_replace('!,!', '', $file->url));
 		 
 		return $file;
@@ -204,28 +204,28 @@ class File extends Object implements IFileObject
 	public static function CreateFileByString($str)
   {
 		$file = new File;
-		$file->data = new String((string) $str);
+		$file->data = new StringManipulator((string) $str);
 		return $file;
 	}
 
   /**
    * Implementa as modificações e obtém os dados do arquivo.
    *
-   * @return \Solutio\Utils\Data\String
+   * @return \Solutio\Utils\Data\StringManipulator
    */
 	public function getData()
   {
-		return new String((string) $this->data);
+		return new StringManipulator((string) $this->data);
 	}
 	
 	/**
    * Retorna a url do arquivo.
    *
-   * @return \Solutio\Utils\Data\String
+   * @return \Solutio\Utils\Data\StringManipulator
    */
 	public function toString()
   {
-		return new String($this);
+		return new StringManipulator($this);
 	}
 
   /**

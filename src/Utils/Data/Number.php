@@ -100,12 +100,12 @@ class Number
 	}
 		
 	/**
-   * Retorna o numero em objeto String.
-   * @return string
+   * Retorna o numero em objeto StringManipulator.
+   * @return \Solutio\Utils\Data\StringManipulator
    */
 	public function toString()
   {
-		return $this->number;
+		return new StringManipulator($this->number);
 	}
 	
 	/**

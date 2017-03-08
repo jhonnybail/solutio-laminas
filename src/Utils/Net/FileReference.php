@@ -9,7 +9,7 @@
  */
 namespace Solutio\Utils\Net;
 
-use Solutio\Utils\Data\String,
+use Solutio\Utils\Data\StringManipulator,
   	Solutio\Utils\Data\HTMLFile,
   	Solutio\Utils\Data\XMLFile,
   	Solutio\Utils\Data\ImageFile,
@@ -38,19 +38,19 @@ class FileReference
   {
 
 		if(!empty($newName))
-			$file->fileName = new String($newName);
+			$file->fileName = new StringManipulator($newName);
 		else
 			if($file->fileName == '')
 				throw new InvalidArgumentException('O nome do arquivo está em branco', 2);
 
 		if(!empty($newExtension))
-			$file->extension = new String($newExtension);
+			$file->extension = new StringManipulator($newExtension);
 		else
 			if($file->extension == '')
 				throw new InvalidArgumentException('A extensão do tipo arquivo está em branco', 2);
 
-		$newPath = new String((string) $newPath);
-		$dirName = new String(dirname($file->url));
+		$newPath = new StringManipulator((string) $newPath);
+		$dirName = new StringManipulator(dirname($file->url));
 
 		if($newPath->search("http://") || $dirName->search("http://"))
 			throw NetException::FromCode(8);
@@ -173,12 +173,12 @@ class FileReference
 		if($file instanceof IFileObject){
 			$path = $file->urlRequest->url;
 			$returnFile = $file;
-		}elseif($file instanceof String)
+		}elseif($file instanceof StringManipulator)
 			$path = $file->toString();
 		elseif(!empty($file))
 			$path = $file;
 			
-		$path = new String((string) $path);	
+		$path = new StringManipulator((string) $path);	
 		
 		if(!empty($path)){
 				
@@ -194,7 +194,7 @@ class FileReference
 					
 					$urlR 		= new URLRequest($path);
 					$div1 		= explode(".", $path);
-					$extension 	= new String($div1[count($div1)-1]);
+					$extension 	= new StringManipulator($div1[count($div1)-1]);
 					
 					if($extension->toString() == 'html' || $extension->toString() == 'htm' || $extension->toString() == 'xhtml')
 						$returnFile = new HTMLFile($urlR);
@@ -239,12 +239,12 @@ class FileReference
     $path = '';
   	if($file instanceof IFileObject)
   		$path = $file->urlRequest->url;
-  	elseif($file instanceof String)
+  	elseif($file instanceof StringManipulator)
 	  	$path = $file->toString();
   	elseif(!empty($file))
   		$path = $file;
 
-  	$path = new String((string) $path);	
+  	$path = new StringManipulator((string) $path);	
   
   	if(!empty($path)){
   
@@ -284,12 +284,12 @@ class FileReference
 
     if($file instanceof File)
       if(!is_null($file->urlRequest)){
-        $path   = new String((string) $file->urlRequest->url);
+        $path   = new StringManipulator((string) $file->urlRequest->url);
       }
     else
-      $path 		= new String((string) $file);
+      $path 		= new StringManipulator((string) $file);
 
-		$newPath 	= new String((string) $newPath);
+		$newPath 	= new StringManipulator((string) $newPath);
 
 		if(!empty($path) && !empty($newPath)){
 				
@@ -350,12 +350,12 @@ class FileReference
     $path = '';
 		if($file instanceof IFileObject)
 			$path = $file->urlRequest->url;
-		elseif($file instanceof String)
+		elseif($file instanceof StringManipulator)
 			$path = $file->toString();
 		elseif(!empty($file))
 			$path = $file;
 		
-		$path = new String((string) $path);
+		$path = new StringManipulator((string) $path);
 		
 		if(!empty($path)){
 				

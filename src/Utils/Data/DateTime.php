@@ -9,8 +9,6 @@
  */
 namespace Solutio\Utils\Data;
 
-use Solutio\Utils\Data\String;
-
 /**
  * Tratamento de datas.
  */
@@ -203,11 +201,11 @@ class DateTime extends \DateTime {
    * Retorna a data segundo o formado desejado.
    *
    * @param   string  $format
-   * @return  (string)
+   * @return  \Solutio\Utils\Data\StringManipulator
    */
 	public function toString($format = 'd/m/Y')
   {
-		return (string) $this->format((string) $format);
+		return new StringManipulator($this->format((string) $format));
 	}
 
   /**

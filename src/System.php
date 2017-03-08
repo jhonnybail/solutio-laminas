@@ -10,7 +10,7 @@
 namespace Solutio;
 
 use Solutio\Utils\Data\ArrayObject,
-		Solutio\Utils\Data\String,
+		Solutio\Utils\Data\StringManipulator,
 		Zend\Session\Container;
 	
 /**
@@ -55,7 +55,7 @@ class System extends Object
    */
 	public static function GetVariable($data)
   {
-		$value = new String;
+		$value = new StringManipulator;
     if(self::$variablesSystem->offsetGet((string) $data) != "")
 			$value = self::$variablesSystem->offsetGet((string) $data);
 		elseif(!empty($_SERVER[(string) $data]))
@@ -106,12 +106,12 @@ class System extends Object
   {
 
 		if($varName == 'memory_limit'){
-			if(String::GetInstance(ini_get($varName))->search("M"))
-				return (float)String::GetInstance(ini_get($varName))->replace("M", "")->toString()*1048576;
-			elseif(String::GetInstance(ini_get($varName))->search("K"))
-				return (float)String::GetInstance(ini_get($varName))->replace("K", "")->toString()*1024;
-			elseif(String::GetInstance(ini_get($varName))->search("G"))
-				return (float)String::GetInstance(ini_get($varName))->replace("G", "")->toString()*1073741824;
+			if(StringManipulator::GetInstance(ini_get($varName))->search("M"))
+				return (float)StringManipulator::GetInstance(ini_get($varName))->replace("M", "")->toString()*1048576;
+			elseif(StringManipulator::GetInstance(ini_get($varName))->search("K"))
+				return (float)StringManipulator::GetInstance(ini_get($varName))->replace("K", "")->toString()*1024;
+			elseif(StringManipulator::GetInstance(ini_get($varName))->search("G"))
+				return (float)StringManipulator::GetInstance(ini_get($varName))->replace("G", "")->toString()*1073741824;
 		}
 			
 		return (float) ini_get($varName);

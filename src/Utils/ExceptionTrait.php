@@ -9,7 +9,7 @@
  */
 namespace Solutio;
 
-use Solutio\Utils\Data\String,
+use Solutio\Utils\Data\StringManipulator,
 	  Solutio\Utils\Data\ArrayObject;
 
 /**
@@ -27,7 +27,7 @@ class ExceptionTrait
   protected static function formatCode($code)
   {
   	
-  	$code = new String($code);
+  	$code = new StringManipulator($code);
 
   	if((int) $code->length() == 1)
   		$code = "0000".$code;

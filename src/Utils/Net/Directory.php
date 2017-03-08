@@ -13,7 +13,7 @@ use Solutio\Utils\Data\File,
   	Solutio\Utils\Data\HTMLFile,
   	Solutio\Utils\Data\XMLFile,
   	Solutio\Utils\Data\ImageFile,
-  	Solutio\Utils\Data\String;
+  	Solutio\Utils\Data\StringManipulator;
 
 /**
  *Classe que mantém diretórios.
@@ -159,11 +159,11 @@ class Directory
 	/**
    * Retorna o nome do diretório.
    *
-   * @return string
+   * @return \Solutio\Utils\Data\StringManipulator
    */
 	public function toString()
-    {
-		return (string) $this;
+  {
+		return new StringManipulator($this);
 	}
 	
 	/**
