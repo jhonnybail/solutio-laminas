@@ -15,32 +15,32 @@ class RestController extends AbstractRestfulController
 		$this->service = $service;
 	}
 
-  // Listar - GET
-  public function getList()
-  {
+	// Listar - GET
+	public function getList()
+	{
 		$data		= $this->service->find($this->getRequest()->getQuery()->toArray(), $this->getParams(), $this->getFields());
 		return new JsonModel([
 			'data'		=> $data, 
 			'success'	=> true
 		]);
-  }
+	}
 
   // Retornar o registro especifico - GET
   public function get($id)
   {
 		$data = $this->service->getById($id);
 		if($data){
-			$data = $data->toArray();
-			$success = true;
+			$return = [
+				'data'		=> $data,
+				'success'	=> true
+			];
 		}else{
-			$success = false;
-			$message = 'Objeto não encontrado.';
+			$return = [
+				'message'	=> 'Objeto não encontrado.',
+				'success'	=> false
+			];
 		}
-		return new JsonModel([
-			'data'		=> $data, 
-			'success'	=> $success, 
-			'message'	=> $message
-		]);
+		return new JsonModel($return);
   }
 
   // Insere registro - POST

@@ -13,15 +13,15 @@ use Zend\Hydrator;
 
 abstract class AbstractEntity {
 	
-	public function __construct(array $options = array())
+  public function __construct(array $options = array())
   {
     (new Hydrator\ClassMethods)->hydrate($options,$this);
   }
 	
-	public function toArray()
-	{
-		$obj = (new Hydrator\ClassMethods())->extract($this);
-		return $obj;
+  public function toArray()
+  {
+    $obj = (new Hydrator\ClassMethods())->extract($this);
+    return $obj;
   }
 	
 }
