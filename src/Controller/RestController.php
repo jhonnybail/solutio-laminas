@@ -3,7 +3,8 @@
 namespace Solutio\Controller;
 
 use Zend\Mvc\Controller\AbstractRestfulController,
-    Zend\View\Model\JsonModel;
+    Zend\View\Model\JsonModel,
+    Zend\Json;
 
 class RestController extends AbstractRestfulController
 {
