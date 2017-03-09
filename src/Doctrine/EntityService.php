@@ -12,7 +12,7 @@ class EntityService
     public function __construct(\Doctrine\ORM\EntityManager $em, \Solutio\AbstractEntity $entity = null)
     {
       $this->em     = $em;
-      $this->entity = $entity;
+      $this->setEntity($entity);
     }
     
     public function setEntity(\Solutio\AbstractEntity $entity)
