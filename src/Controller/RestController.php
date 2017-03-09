@@ -46,6 +46,9 @@ class RestController extends AbstractRestfulController
   // Insere registro - POST
   public function create($data)
   {
+  	if($content = $this->getRequest()->getContent()){
+  		$data = Json\Decoder::decode($content, Json\Json::TYPE_ARRAY);
+  	}
 		if($data){
 			$obj = $this->service->insert($data);
 			if($obj)				{
@@ -63,6 +66,9 @@ class RestController extends AbstractRestfulController
   // alteracao - PUT
   public function update($id, $data)
   {
+  	if($content = $this->getRequest()->getContent()){
+  		$data = Json\Decoder::decode($content, Json\Json::TYPE_ARRAY);
+  	}
 		if($data && $id){
 			$obj = $this->service->update($data);
 			if($obj){
