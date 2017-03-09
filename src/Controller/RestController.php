@@ -48,7 +48,7 @@ class RestController extends AbstractRestfulController
   {
 		if($data){
 			$obj = $this->service->insert($data);
-			if($url)				{
+			if($obj)				{
 				return new JsonModel([
 					'data'		=> $obj->toArray(),
 					'success'	=> true
@@ -65,7 +65,7 @@ class RestController extends AbstractRestfulController
   {
 		if($data && $id){
 			$obj = $this->service->update($data);
-			if($url){
+			if($obj){
 				return new JsonModel([
 					'data'		=> $obj->toArray(),
 					'success'	=> true
