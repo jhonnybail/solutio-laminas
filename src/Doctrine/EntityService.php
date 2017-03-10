@@ -44,20 +44,22 @@ class EntityService
 	  return $repo->getCollection($entity, $params, $fields, $type);
   }
   
-  public function insert(\Solutio\AbstractEntity $entity)
+  public function save(\Solutio\AbstractEntity $entity)
   {
     $entity = $this->getReferenceByEntity($entity);
     $this->em->persist($entity);
     $this->em->flush();
     return $entity;
   }
+  
+  public function insert(\Solutio\AbstractEntity $entity)
+  {
+    return $this->save($entity);
+  }
 
   public function update(\Solutio\AbstractEntity $entity)
   {
-    $entity = $this->getReferenceByEntity($entity);
-    $this->em->persist($entity);
-    $this->em->flush();
-    return $entity;
+    return $this->save($entity);
   }
 
   public function delete(\Solutio\AbstractEntity $entity)
