@@ -6,88 +6,95 @@ use Zend\Hydrator;
 
 class EntityService
 {
-    private $entity;
-    private $em;
-    
-    public function __construct(\Doctrine\ORM\EntityManager $em, \Solutio\AbstractEntity $entity = null)
-    {
-      $this->em     = $em;
-      if($entity)
-        $this->setEntity($entity);
-    }
-    
-    public function setEntity(\Solutio\AbstractEntity $entity)
-    {
-      $this->entity = get_class($entity);
-      return $this;
-    }
-    
-    public function getEntity()
-    {
-      return $this->entity;
-    }
-    
-    public function getById($id)
-    {
-      $repo   = $this->em->getRepository($this->entity);
-      return $repo->find($id);
-    }
-    
-    public function find($values, $params, $fields, $type = EntityRepository::RESULT_ARRAY)
-    {
-      $repo 	= $this->em->getRepository($this->entity);
-		  $entity	= new $this->entity;
+  private $entity;
+  private $em;
+  
+  public function __construct(\Doctrine\ORM\EntityManager $em, \Solutio\AbstractEntity $entity = null)
+  {
+    $this->em     = $em;
+    if($entity)
+      $this->setEntity($entity);
+  }
+  
+  public function getEntityManager()
+  {
+    return $this->em;
+  }
+  
+  public function setEntity(\Solutio\AbstractEntity $entity)
+  {
+    $this->entity = get_class($entity);
+    return $this;
+  }
+  
+  public function getEntity()
+  {
+    return $this->entity;
+  }
+  
+  public function getById($id)
+  {
+    $repo   = $this->em->getRepository($this->entity);
+    return $repo->find($id);
+  }
+  
+  public function find(\Solutio\AbstractEntity $entity, $params, $fields, $type = EntityRepository::RESULT_ARRAY)
+  {
+    $repo 	= $this->em->getRepository($this->entity);
+	  return $repo->getCollection($entity, $params, $fields, $type);
+  }
+  
+  public function insert(\Solutio\AbstractEntity $entity)
+  {
+    $entity = $this->getReferenceByEntity($entity);
+    $this->em->persist($entity);
+    $this->em->flush();
+    return $entity;
+  }
 
-		  return $repo->getCollection($this->makeEntityWithParams($values), $params, $fields, $type);
-    }
-    
-    public function insert(array $data)
-    {
-      $entity = new $this->entity($data);
+  public function update(\Solutio\AbstractEntity $entity)
+  {
+    $entity = $this->getReferenceByEntity($entity);
+    $this->em->persist($entity);
+    $this->em->flush();
+    return $entity;
+  }
 
-      $this->em->persist($entity);
-      $this->em->flush();
-      return $entity;
+  public function delete(\Solutio\AbstractEntity $entity)
+  {
+    $entity = $this->getReferenceByEntity($entity);
+    $this->em->remove($entity);
+    $this->em->flush();
+    return $entity;
+  }
+  
+  protected function getReferenceByEntity(\Solutio\AbstractEntity $entity)
+  {
+    $values = [];
+    $data = $entity->toArray();
+    $meta = $this->getEntityManager()->getMetadataFactory()->getMetadataFor(get_class($entity));
+    $ids  = $meta->identifier;
+    foreach($ids as $id){
+      if(!empty($data[$id]))
+        $values[$id] = $data[$id];
     }
-
-    public function update(array $data)
-    {
-      $entity = $this->em->getReference($this->entity, $data['id']);
-      (new Hydrator\ClassMethods())->hydrate($data, $entity);
-
-      $this->em->persist($entity);
-      $this->em->flush();
-      return $entity;
+    try{
+      $newEntity = $this->em->getReference(get_class($entity), $values);
+    }catch(\Doctrine\ORM\ORMException $e){
+      $newEntity = $entity;
     }
-
-    public function delete($identifiers)
-    {
-      $entity = $this->em->getReference($this->entity, $identifiers);
-      if($entity)
-      {
-        $this->em->remove($entity);
-        $this->em->flush();
-        return $entity;
-      }
-    }
-    
-    protected function makeEntityWithParams($values)
-    {
-      $meta	= $this->em->getMetadataFactory()->getMetadataFor($this->entity);
+    if(get_class($entity) === $this->getEntity()){
   		$maps 	= $meta->getAssociationMappings();
-  		$fields	= (new $this->entity)->toArray();
-  		foreach($fields as $k => $v){
-  			if(isset($maps[$k]) && isset($values[$k])){
+  		foreach($data as $k => $v){
+  			if(isset($maps[$k]) && $v !== null){
   				$am = $meta->getAssociationMapping($k);
   				if($am['type'] == 1 || $am['type'] == 2){
-  					$column = key($am['targetToSourceKeyColumns']);
-  					$fields[$k] = new $maps[$k]["targetEntity"]([
-  						$column => (int)$values[$k]
-  					]);
+  					$data[$k] = $this->getReferenceByEntity(new $maps[$k]["targetEntity"]($v->toArray()));
   				}
-  			}elseif(isset($values[$k]))
-  				$fields[$k] = $values[$k];
+  			}
   		}
-  		return new $this->entity($fields);
+      $newEntity->fromArray($data);
     }
+    return $newEntity;
+  }
 }

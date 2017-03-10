@@ -8,18 +8,27 @@ use Zend\Mvc\Controller\AbstractRestfulController,
 
 class RestController extends AbstractRestfulController
 {
-
-	protected	$service;
+	private	$service;
 	
 	public function __construct(\Solutio\Doctrine\EntityService $service)
 	{
 		$this->service = $service;
 	}
+	
+	public function getService()
+	{
+		return $this->service;
+	}
+	
+	public function getEntity()
+	{
+		return $this->getService()->getEntity();
+	}
 
 	// Listar - GET
 	public function getList()
 	{
-		$data		= $this->service->find($this->getRequest()->getQuery()->toArray(), $this->getParams(), $this->getFields());
+		$data		= $this->service->find(new $this->entity($this->getRequest()->getQuery()->toArray()), $this->getParams(), $this->getFields());
 		return new JsonModel([
 			'data'		=> $data, 
 			'success'	=> true
@@ -51,7 +60,8 @@ class RestController extends AbstractRestfulController
   		$data = Json\Decoder::decode($content, Json\Json::TYPE_ARRAY);
   	}
 		if($data){
-			$obj = $this->service->insert($data);
+			$entity = $this->getEntity();
+			$obj = $this->service->insert(new $entity($data));
 			if($obj)				{
 				return new JsonModel([
 					'data'		=> $obj->toArray(),
@@ -70,8 +80,14 @@ class RestController extends AbstractRestfulController
   	if($content = $this->getRequest()->getContent()){
   		$data = Json\Decoder::decode($content, Json\Json::TYPE_ARRAY);
   	}
-		if($data && $id){
-			$obj = $this->service->update($data);
+		if($data){
+			if(!empty($id)){
+				$data = new \Solutio\Utils\Data\ArrayObject($data);
+				$data = (array) $data->concat(is_array($id) ? $id : ['id' => $id]);
+			}
+			$entity = $this->getEntity();
+			$entity = new $entity($data);
+			$obj = $this->service->update($entity);
 			if($obj){
 				return new JsonModel([
 					'data'		=> $obj->toArray(),
@@ -87,7 +103,11 @@ class RestController extends AbstractRestfulController
   // delete - DELETE
   public function delete($id)
   {
-		$res = $this->service->delete($id);
+		$data = new \Solutio\Utils\Data\ArrayObject($data);
+		$data = (array) $data->concat(is_array($id) ? $id : ['id' => $id]);
+		$entity = $this->getEntity();
+		$entity = new $entity($data);
+		$res = $this->service->delete($entity);
 		if($res){
 			return new JsonModel(['success' => true]);
 		}else
@@ -112,5 +132,4 @@ class RestController extends AbstractRestfulController
 			$fields		= explode(',', $get->get('fields'));	
 		return $fields;
 	}
-
 }

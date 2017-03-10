@@ -65,7 +65,7 @@ class DateTime extends \DateTime {
    * @param   \DateTimeZone|null  $timezone
    * @return  \TemTudoAqui\Utils\Data\DateTime
    */
-	public static function createFromFormat($format, $time = "", \DateTimeZone $timezone = null)
+	public static function parse($format, $time = "", \DateTimeZone $timezone = null)
   {
 		return new DateTime($time, $format, $timezone);
 	}

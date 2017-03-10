@@ -14,9 +14,27 @@ use Zend\Hydrator,
 
 abstract class AbstractEntity implements \JsonSerializable {
 	
-  public function __construct(array $options = array())
+  public function __construct($options = [])
   {
-    (new Hydrator\ClassMethods)->hydrate($options,$this);
+    if(is_array($options))
+      $this->fromArray($options);
+  }
+  
+  public function fromArray(array $data)
+  {
+    $reflection = \Zend\Server\Reflection::reflectClass($this);
+    foreach($reflection->getMethods() as $v){
+      if(count($v->getPrototypes()) > 1){
+        $type = $v->getPrototypes()[1]->getParameters()[0]->getType();
+        if(class_exists($type)){
+          $name = lcfirst((new StringManipulator($v->getName()))->replace('^set', ''));
+          if(isset($data[$name]) && (is_array($data[$name]) || $data[$name] instanceof \Solutio\Utils\Data\ArrayObject)){
+            $data[$name] = new $type((array) $data[$name]);
+          }
+        }
+      }
+    }
+    (new Hydrator\ClassMethods)->hydrate($data,$this);
   }
 	
   public function toArray()
