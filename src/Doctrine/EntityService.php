@@ -70,33 +70,43 @@ class EntityService
     return $entity;
   }
   
-  protected function getReferenceByEntity(\Solutio\AbstractEntity $entity)
+  protected function getReferenceByEntity(\Solutio\AbstractEntity $entity, $onlyReference = false)
   {
     $values = [];
     $data = $entity->toArray();
     $meta = $this->getEntityManager()->getMetadataFactory()->getMetadataFor(get_class($entity));
     $ids  = $meta->identifier;
     foreach($ids as $id){
-      if(!empty($data[$id]))
-        $values[$id] = $data[$id];
+      if(!empty($data[$id])){
+        if($data[$id] instanceof \Solutio\AbstractEntity){
+          $metaField = $this->getEntityManager()->getMetadataFactory()->getMetadataFor(get_class($entity));
+          $map = $metaField->getAssociationMapping($id);
+          $values[$id] = $data[$id]->toArray()[$map['joinColumns'][0]['referencedColumnName']];
+        }else
+          $values[$id] = $data[$id];
+      }
     }
     try{
       $newEntity = $this->em->getReference(get_class($entity), $values);
+      if($onlyReference)
+        return $newEntity;
     }catch(\Doctrine\ORM\ORMException $e){
       $newEntity = $entity;
     }
-    if(get_class($entity) === $this->getEntity()){
-  		$maps 	= $meta->getAssociationMappings();
-  		foreach($data as $k => $v){
-  			if(isset($maps[$k]) && $v !== null){
-  				$am = $meta->getAssociationMapping($k);
-  				if($am['type'] == 1 || $am['type'] == 2){
-  					$data[$k] = $this->getReferenceByEntity(new $maps[$k]["targetEntity"]($v->toArray()));
-  				}
-  			}
-  		}
-      $newEntity->fromArray($data);
-    }
+    
+		$maps 	= $meta->getAssociationMappings();
+		foreach($data as $k => $v){
+			if(isset($maps[$k]) && $v !== null){
+				$am = $meta->getAssociationMapping($k);
+				if(($am['type'] == 1 || $am['type'] == 2) && $am['isCascadePersist']){
+					$data[$k] = $this->getReferenceByEntity($v);
+				}elseif($am['type'] == 1 || $am['type'] == 2){
+				  $data[$k] = $this->getReferenceByEntity($v, true);
+				}
+			}
+		}
+  		
+    $newEntity->fromArray($data);
     return $newEntity;
   }
 }

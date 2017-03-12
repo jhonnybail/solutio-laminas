@@ -71,7 +71,7 @@ class ArrayObject extends \ArrayObject
     if(!is_array((array) $array))
       throw InvalidArgumentException::FromCode(3);
     else
-      return new ArrayObject(array_merge_recursive((array) $this, (array) $array));
+      return new ArrayObject(array_merge((array) $this, (array) $array));
   }
 
   /**

@@ -65,7 +65,7 @@ class RestController extends AbstractRestfulController
 			$obj = $this->service->insert(new $entity($data));
 			if($obj)				{
 				return new JsonModel([
-					'data'		=> $obj->toArray(),
+					'data'		=> $obj,
 					'success'	=> true
 				]);
 			}else{
@@ -84,14 +84,14 @@ class RestController extends AbstractRestfulController
 		if($data){
 			if(!empty($id)){
 				$data = new \Solutio\Utils\Data\ArrayObject($data);
-				$data = (array) $data->concat(is_array($id) ? $id : ['id' => $id]);
+				$data = (array) $data->concat(is_array($id) ? $id : ['id' => is_numeric($id) ? $id+0 : $id]);
 			}
 			$entity = $this->getEntity();
 			$entity = new $entity($data);
 			$obj = $this->service->update($entity);
 			if($obj){
 				return new JsonModel([
-					'data'		=> $obj->toArray(),
+					'data'		=> $obj,
 					'success'	=> true
 				]);
 			}else{
