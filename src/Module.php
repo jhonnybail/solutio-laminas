@@ -2,7 +2,8 @@
 
 namespace Solutio;
 
-use Zend\Mvc\MvcEvent;
+use Zend\Mvc\MvcEvent,
+    Solutio\Utils\Data\ArrayObject;
 
 class Module
 {
