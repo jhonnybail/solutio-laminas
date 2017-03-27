@@ -16,28 +16,28 @@ use Solutio\InvalidArgumentException;
  */
 class Number
 {
-	
-	/**
+  
+  /**
    * Guarda o numero passada.
    * @var float|integer
    */
-	private $number;
-	
-	/**
+  private $number;
+  
+  /**
    * Construtor
    *
    * @param   float|int    $numero
    * @throws  \Solutio\InvalidArgumentException
    */
-	public function __construct($numero = 0)
+  public function __construct($numero = 0)
   {
-		if(!is_numeric($numero)){
-			throw InvalidArgumentException::FromCode(1);
-		}else
-			$this->number = $numero;
-	}
+    if(!is_numeric($numero)){
+      $this->number = 0;
+    }else
+      $this->number = $numero;
+  }
 
-	/**
+  /**
    * Retorna uma String, com a quantidade de decimais especificada.
    *
    * @param  int	 $decimals
@@ -45,49 +45,49 @@ class Number
    * @param  string	$milhar
    * @return string
    */
-	public function toFixed($decimals, $decimal = '.', $milhar = ',')
+  public function toFixed($decimals, $decimal = '.', $milhar = ',')
   {
-		return number_format($this->number, $decimals, $decimal, $milhar);
-	}
-	
-	/**
+    return number_format($this->number, $decimals, $decimal, $milhar);
+  }
+  
+  /**
    * Retorna o número em formato de String.
    * @return string
    */
-	public function __toString()
+  public function __toString()
   {
-		return (string) $this->toString();
-	}
-	
-	/**
+    return (string) $this->toString();
+  }
+  
+  /**
    * Retorna o valor do número do Objeto.
    * @return float|integer
    */
-	public function getValue()
+  public function getValue()
   {
-		return $this->number;
-	}
+    return $this->number;
+  }
 
-	/**
+  /**
    * Verifica se realmente é um objeto Number ou é um número válido e retorna o número.
    * 
    * @param   \TemTudoAqui\Utils\Data\Number|float|int    $num
    * @return  mixed
    */
-	public static function VerifyNumber($num)
+  public static function VerifyNumber($num)
   {
-		if(is_object($num)){
-			if($num instanceof Number)
-				return $num->getValue();
-			else
-				return false;
-		}elseif(is_numeric($num))
-			return $num;
-		elseif($num == 0 || $num == "0")
-			return 0;
-		else
-			return false;
-	}
+    if(is_object($num)){
+      if($num instanceof Number)
+        return $num->getValue();
+      else
+        return false;
+    }elseif(is_numeric($num))
+      return $num;
+    elseif($num == 0 || $num == "0")
+      return 0;
+    else
+      return false;
+  }
 
   /**
    * Usada para serialização do objeto.
@@ -96,23 +96,23 @@ class Number
    */
   public function __sleep()
   {
-		return new ArrayObject(array('number'));
-	}
-		
-	/**
+    return new ArrayObject(array('number'));
+  }
+    
+  /**
    * Retorna o numero em objeto StringManipulator.
    * @return \Solutio\Utils\Data\StringManipulator
    */
-	public function toString()
+  public function toString()
   {
-		return new StringManipulator($this->number);
-	}
-	
-	/**
+    return new StringManipulator($this->number);
+  }
+  
+  /**
    * Chamado quando é destruido o objeto.
    * @return void
    */
-	public function __destruct()
+  public function __destruct()
   {
   }
 
@@ -122,9 +122,9 @@ class Number
    * @param  float|int    $num
    * @return \TemTudoAqui\Utils\Data\Number
    */
-	public static function GetInstance($num = 0)
-	{
-		return new Number($num);
-	}
-	
+  public static function GetInstance($num = 0)
+  {
+    return new Number($num);
+  }
+  
 }

@@ -17,32 +17,24 @@ use Solutio\Utils\Net\URLRequest;
 interface IFileObject
 {
 	
-	/**
-     * Constructor
-     */
+	/*
+	 * Constructor
+   */
 	public function __construct();
 	
 	/**
-   * Script executado toda a vez que o arquivo for carregado.
+   * Abre o arquivo.
    *
-   * @return	void
+   * @param  \Solutio\Utils\Net\URLRequest|null	$urlRequest
+   * @return void
    */
-	protected function whenLoaded();
-	
-	/**
-     * Abre o arquivo.
-     *
-     * @param  \Solutio\Utils\Net\URLRequest|null	$urlRequest
-     * @return void
-     */
 	public function open(URLRequest $urlRequest = null);
 	
 	/**
-     * Retorna os dados do objeto.
-     *
-     * @return string
-     */
+   * Retorna os dados do objeto.
+   *
+   * @return string
+   */
 	public function getData();
-
 	
 }
