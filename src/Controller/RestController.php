@@ -29,7 +29,7 @@ class RestController extends AbstractRestfulController
 	public function getList()
 	{
 		$entity = $this->getEntity();
-		$data		= $this->service->find(new $entity($this->getRequest()->getQuery()->toArray()), $this->getParams(), $this->getFields());
+		$data		= $this->service->find(new $entity($this->getDataEntity()), $this->getParams(), $this->getFields());
 		return new JsonModel([
 			'data'		=> $data, 
 			'success'	=> true
@@ -113,6 +113,14 @@ class RestController extends AbstractRestfulController
 			return new JsonModel(['success' => true]);
 		}else
 			return new JsonModel(['success' => false]);
+  }
+  
+  protected function getDataEntity()
+  {
+  	$data = $this->getRequest()->getQuery()->toArray();
+  	foreach($data as $k => $v)
+  		$data[$k] = json_decode($v, true);
+		return $data;
   }
 	
 	protected function getParams()
