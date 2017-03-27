@@ -19,7 +19,7 @@ use Solutio\System,
 /**
  * Classe que mantém arquivos de qualquer tipo.
  */
-class File implements IFileObject
+class File implements IFileObject, \JsonSerializable
 {
 
   /**
@@ -234,6 +234,11 @@ class File implements IFileObject
   public function __sleep()
   {
     return array('urlRequest', 'url');
+  }
+  
+  public function jsonSerialize()
+  {
+    return $this->urlRequest->url;
   }
 
   /**

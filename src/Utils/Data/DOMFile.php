@@ -20,7 +20,7 @@ use Solutio\System,
 /**
  * Classe que trabalham com arquivos estruturados em DOM.
  */
-class DOMFile extends ArrayObject implements IFileObject
+class DOMFile extends ArrayObject implements IFileObject, \JsonSerializable
 {
 
   /**
@@ -802,6 +802,11 @@ class DOMFile extends ArrayObject implements IFileObject
   public function toString()
   {
     return new StringManipulator((string) $this);
+  }
+  
+  public function jsonSerialize()
+  {
+    return (string) $this;
   }
   
   /**

@@ -14,7 +14,7 @@ use Solutio\InvalidArgumentException;
 /**
  * Classe usada para tratar arrays.
  */
-class ArrayObject extends \ArrayObject
+class ArrayObject extends \ArrayObject implements \JsonSerializable
 {
   
   /**
@@ -310,6 +310,11 @@ class ArrayObject extends \ArrayObject
    */
   public function __destruct()
   {
+  }
+  
+  public function jsonSerialize()
+  {
+    return (array) $this;
   }
 
   /**

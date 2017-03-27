@@ -237,7 +237,7 @@ class DateTime extends \DateTime {
    */
   public function __toString()
   {
-    return (string) $this->toString("U");
+    return (string) $this->toString(\DateTime::ISO8601);
   }
 
   /**
