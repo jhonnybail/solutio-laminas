@@ -41,7 +41,7 @@ class EntityService
   public function find(\Solutio\AbstractEntity $entity, $params, $fields, $type = EntityRepository::RESULT_ARRAY)
   {
     $repo 	= $this->em->getRepository($this->entity);
-	  return $repo->getCollection($entity, $params, $fields, $type);
+    return $repo->getCollection($entity, $params, $fields, $type);
   }
   
   public function save(\Solutio\AbstractEntity $entity)
@@ -94,18 +94,18 @@ class EntityService
       $newEntity = $entity;
     }
     
-		$maps 	= $meta->getAssociationMappings();
-		foreach($data as $k => $v){
-			if(isset($maps[$k]) && $v !== null){
-				$am = $meta->getAssociationMapping($k);
-				if(($am['type'] == 1 || $am['type'] == 2) && $am['isCascadePersist']){
-					$data[$k] = $this->getReferenceByEntity($v);
-				}elseif($am['type'] == 1 || $am['type'] == 2){
-				  $data[$k] = $this->getReferenceByEntity($v, true);
-				}
-			}
-		}
-  		
+    $maps 	= $meta->getAssociationMappings();
+    foreach($data as $k => $v){
+      if(isset($maps[$k]) && $v !== null){
+        $am = $meta->getAssociationMapping($k);
+        if(($am['type'] == 1 || $am['type'] == 2) && $am['isCascadePersist']){
+          $data[$k] = $this->getReferenceByEntity($v);
+        }elseif($am['type'] == 1 || $am['type'] == 2){
+          $data[$k] = $this->getReferenceByEntity($v, true);
+        }
+      }
+    }
+      
     $newEntity->fromArray($data);
     return $newEntity;
   }

@@ -16,5 +16,5 @@ use Solutio\Exception;
  */
 class NetException extends Exception
 {
-	
+    
 }

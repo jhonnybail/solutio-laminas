@@ -184,7 +184,7 @@ class URLRequest
     $type = @filetype($this->url);
     
     $verifyExtension = function($value, $key, $array, $oB){
-      if(!empty($key) && count($array) > 0){
+      if(!empty($value) && count($array) > 0){
         if(\Solutio\Utils\Data\StringManipulator::GetInstance($oB->url)->search('\.'.$value))
             return false;
         if(StringManipulator::GetInstance($oB->requestHeaders['Content-Type'][1])->search($value))

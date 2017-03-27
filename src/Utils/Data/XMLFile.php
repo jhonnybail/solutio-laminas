@@ -17,67 +17,67 @@ use Solutio\Utils\Net\URLRequest;
 final class XMLFile extends DOMFile
 {
 
-	public function __construct(URLRequest $urlRequest = null)
+  public function __construct(URLRequest $urlRequest = null)
   {
-		$this->headString = new StringManipulator('<?xml version="1.0"?>');
-		parent::__construct($urlRequest);
-		
-	}
-	
-	/**
+    $this->headString = new StringManipulator('<?xml version="1.0"?>');
+    parent::__construct($urlRequest);
+    
+  }
+  
+  /**
    * Script executado toda a vez que o arquivo for carregado.
    *
    * @return	void
    */
-	protected function whenLoaded()
-	{
-		parent::whenLoaded();
-		$this->loadXML($this->data);
-	}
-
-	public static function CreateDOMFileByString($data)
+  protected function whenLoaded()
   {
-		
-		$data = (string) $data;
-		
-		$fileXML = new XMLFile;
-		$fileXML->data = $data;
-		$fileXML->open();
-		
-		return $fileXML;
-			
-	}
-	
-	protected static function CreateDOMFileBySimpleXMLElement(\SimpleXMLElement $data)
-  {
-		
-		$fileXML = new XMLFile;
-		$fileXML->xml = $data;
-		$fileXML->open();
-		
-		return $fileXML;
-			
-	}
+    parent::whenLoaded();
+    $this->loadXML($this->data);
+  }
 
-	/**
+  public static function CreateDOMFileByString($data)
+  {
+    
+    $data = (string) $data;
+    
+    $fileXML = new XMLFile;
+    $fileXML->data = $data;
+    $fileXML->open();
+    
+    return $fileXML;
+      
+  }
+  
+  protected static function CreateDOMFileBySimpleXMLElement(\SimpleXMLElement $data)
+  {
+    
+    $fileXML = new XMLFile;
+    $fileXML->xml = $data;
+    $fileXML->open();
+    
+    return $fileXML;
+      
+  }
+
+  /**
    * Retorna em formato de string.
    *
    * @return string
    */
-	public function __toString()
+  public function __toString()
   {
-		return $this->toString();
-	}
-	
+    return $this->toString();
+  }
+  
 
-	/**
+  /**
    * Retorna em formato de string.
    *
    * @return \Solutio\Utils\Data\StringManipulator
    */
-	public function toString()
+  public function toString()
   {
-		return $this->getData();
-	}
-		
+    return $this->getData();
+  }
+    
 }

@@ -13,7 +13,7 @@ use Zend\Hydrator,
     Solutio\Utils\Data\StringManipulator;
 
 abstract class AbstractEntity implements \JsonSerializable {
-	
+  
   public function __construct($options = [])
   {
     if(is_array($options))
@@ -38,7 +38,7 @@ abstract class AbstractEntity implements \JsonSerializable {
     }
     (new Hydrator\ClassMethods)->hydrate($data,$this);
   }
-	
+  
   public function toArray()
   {
     $obj = (new Hydrator\ClassMethods(false))->extract($this);
@@ -52,5 +52,5 @@ abstract class AbstractEntity implements \JsonSerializable {
   {
     return $this->toArray();
   }
-	
+  
 }
