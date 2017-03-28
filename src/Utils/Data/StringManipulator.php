@@ -83,8 +83,11 @@ class StringManipulator
    * @param   string $delimiter
    * @return  \Solutio\Utils\Data\ArrayObject
    */
-  public function split($delimiter)
+  public function split($delimiter = '')
   {
+    if(empty($delimiter))
+      return new ArrayObject(str_split($this->string));
+    
     $array = new ArrayObject(explode($delimiter, $this->string));
     foreach($array as $k => $v)
       $array[$k] = new StringManipulator($v);
