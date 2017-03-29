@@ -88,7 +88,7 @@ class URLRequest
       if(!($this->getLocalFileHeaders()))
         throw new NetException("URL não existe: ".$url, 6);
     }else{
-      if(empty('Content-Length'))
+      if(empty($headers['Content-Length']))
         throw new NetException("URL não existe: ".$url, 6);
       $this->requestHeaders = $this->requestHeaders->concat((array) $headers);
     }
