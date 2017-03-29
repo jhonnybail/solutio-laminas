@@ -53,8 +53,6 @@ class CURL
     if(!function_exists("curl_init"))
       throw InvalidArgumentException::FromCode(4);
     
-    parent::__construct();
-    
     $this->urlRequest = $urlRequest;
     $this->proxy = '';
   
