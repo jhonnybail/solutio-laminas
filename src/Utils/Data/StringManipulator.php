@@ -168,7 +168,7 @@ class StringManipulator
    */
   public function toUpperCase()
     {
-    $this->string = strtoupper($this->string);
+    $this->string = mb_strtoupper($this->string);
     return $this;
   }
   
@@ -178,7 +178,7 @@ class StringManipulator
    */
   public function toLowerCase()
     {
-    $this->string = strtolower($this->string);
+    $this->string = mb_strtolower($this->string);
     return $this;
   }
   
@@ -188,7 +188,7 @@ class StringManipulator
    */
   public function toUpperCaseFirstChars()
   {
-    $ex = explode(' ', strtolower($this->string));
+    $ex = explode(' ', mb_strtolower($this->string));
     $this->string = '';
     foreach($ex as $v)
       if(strlen($v) > 3)
