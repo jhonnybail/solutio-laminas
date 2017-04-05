@@ -118,8 +118,13 @@ class RestController extends AbstractRestfulController
   protected function getDataEntity()
   {
     $data = $this->getRequest()->getQuery()->toArray();
-    foreach($data as $k => $v)
-      $data[$k] = json_decode($v, true);
+    foreach($data as $k => $v){
+      if(!empty($v)){
+        $data[$k] = json_decode($v, true);
+        if(empty($data[$k]))
+          $data[$k] = $v;
+      }
+    }
     return $data;
   }
   
