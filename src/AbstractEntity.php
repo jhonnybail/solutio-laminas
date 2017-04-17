@@ -45,7 +45,7 @@ abstract class AbstractEntity implements \JsonSerializable {
     foreach($obj as $k => $v)
       if((new StringManipulator($k))->search('^__(.*)__$'))
         unset($obj[$k]);
-      elseif($v instanceof \Doctrine\Common\Collections\ArrayCollection && $v instanceof \Doctrine\ORM\PersistentCollection)
+      elseif($v instanceof \Doctrine\Common\Collections\ArrayCollection || $v instanceof \Doctrine\ORM\PersistentCollection)
         $obj[$k] = $v->toArray();
     return $obj;
   }
