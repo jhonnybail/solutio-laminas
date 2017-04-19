@@ -1,7 +1,7 @@
 {
   "name": "solutio/module-zf3",
   "description": "ZF3 library development by Solutio.Me",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "type": "library",
   "license": "MIT",
   "keywords": [

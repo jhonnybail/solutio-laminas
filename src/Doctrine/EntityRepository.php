@@ -94,14 +94,17 @@ class EntityRepository extends ORM\EntityRepository
         }
         if(($am['type'] == 2 || $am['type'] == 1) && $obj[$fieldName] != null){
           $id 	= null;
-          $column = key($am['targetToSourceKeyColumns']);
-          if($obj[$fieldName] instanceof \Solutio\AbstractEntity)
+          if($obj[$fieldName] instanceof \Solutio\AbstractEntity){
             $obj2	= $obj[$fieldName]->toArray();
-          else
+            foreach($obj2 as $k => $v){
+            		if(is_string($v) || is_numeric($v))
+            				$query->andWhere($fieldName.".".$k." = '".$v."'");
+            }
+          }else{
             $obj2	= $obj[$fieldName];
-          if(!empty($obj2[$column])){
+          		$column = key($am['targetToSourceKeyColumns']);
             $id = $obj2[$column];
-            $query->andWhere($fieldName.".".$column." = ".$id);
+          		$query->andWhere($fieldName.".".$column." = ".$id);
           }
         }elseif(is_string($obj[$fieldName]) || is_numeric($obj[$fieldName])){
           if((int)((string)$obj[$fieldName]) < 0){
