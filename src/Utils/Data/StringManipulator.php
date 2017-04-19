@@ -169,7 +169,7 @@ class StringManipulator
    */
   public function removeAccents()
   {
-    if (!preg_match('/[\x80-\xff]/', $string))
+    if (!preg_match('/[\x80-\xff]/', $this->string))
         return $this;
 
     $chars = [
@@ -269,7 +269,7 @@ class StringManipulator
       chr(197).chr(190) => 'z', chr(197).chr(191) => 's'
     ];
 
-    $this->string = strtr($string, $chars);
+    $this->string = strtr($this->string, $chars);
     return $this;
   }
   
