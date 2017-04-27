@@ -88,6 +88,8 @@ class EntityService
     }
     try{
       $newEntity = $this->em->getReference(get_class($entity), $values);
+      if($newEntity === null)
+        $newEntity = $entity;
       if($onlyReference)
         return $newEntity;
     }catch(\Doctrine\ORM\ORMException $e){
