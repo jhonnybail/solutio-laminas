@@ -26,8 +26,8 @@ abstract class AbstractEntity implements \JsonSerializable {
     foreach($reflection->getMethods() as $v){
       $name = lcfirst((new StringManipulator($v->getName()))->replace('^set', ''));
       if(!empty($data[$name])){
-        if(count($v->getPrototypes()) > 1){
-          $type = $v->getPrototypes()[1]->getParameters()[0]->getType();
+        if(!($v instanceof \Doctrine\Common\Collections\ArrayCollection)){
+          $type = $v->getPrototypes()[0]->getParameters()[0]->getType();
           if(class_exists($type)){
             if(isset($data[$name]) && (is_array($data[$name]) || $data[$name] instanceof \Solutio\Utils\Data\ArrayObject)){
               $data[$name] = new $type((array) $data[$name]);
