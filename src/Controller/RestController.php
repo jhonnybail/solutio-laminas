@@ -104,7 +104,7 @@ class RestController extends AbstractRestfulController
   // delete - DELETE
   public function delete($id)
   {
-    $data = new \Solutio\Utils\Data\ArrayObject($data);
+    $data = new \Solutio\Utils\Data\ArrayObject();
     $data = (array) $data->concat(is_array($id) ? $id : ['id' => $id]);
     $entity = $this->getEntity();
     $entity = new $entity($data);
