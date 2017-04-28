@@ -87,7 +87,10 @@ class EntityService
       }
     }
     try{
-      $newEntity = $this->em->getReference(get_class($entity), $values);
+      $class = get_class($entity);
+      if(count($meta->parentClasses) > 0)
+        $class = $meta->parentClasses[0];
+      $newEntity = $this->em->getReference($class, $values);
       if($newEntity === null)
         $newEntity = $entity;
       if($onlyReference)
