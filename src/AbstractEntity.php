@@ -12,14 +12,19 @@ namespace Solutio;
 use Zend\Hydrator,
     Solutio\Utils\Data\StringManipulator;
 
-abstract class AbstractEntity implements \JsonSerializable {
-  
+abstract class AbstractEntity implements \JsonSerializable
+{
+
+  protected static $primaryKeys = ['id'];
+
   public function __construct($options = [])
   {
     if(is_array($options))
-      $this->fromArray($options);
+      $this->fromArray((array) $options);
+    elseif(!empty($options) && method_exists($this, "setId"))
+      $this->setId($options);
   }
-  
+
   public function fromArray(array $data)
   {
     $reflection = \Zend\Server\Reflection::reflectClass($this);
@@ -29,8 +34,8 @@ abstract class AbstractEntity implements \JsonSerializable {
         if(count($v->getPrototypes()) > 1){
           $type = $v->getPrototypes()[1]->getParameters()[0]->getType();
           if(class_exists($type)){
-            if(isset($data[$name]) && (is_array($data[$name]) || $data[$name] instanceof \Solutio\Utils\Data\ArrayObject)){
-              $data[$name] = new $type((array) $data[$name]);
+            if(isset($data[$name]) && !($data[$name] instanceof \Solutio\AbstractEntity)){
+              $data[$name] = new $type($data[$name] instanceof \Solutio\Utils\Data\ArrayObject ? (array) $data[$name] : $data[$name]);
             }
           }
         }
@@ -38,7 +43,7 @@ abstract class AbstractEntity implements \JsonSerializable {
     }
     (new Hydrator\ClassMethods)->hydrate($data,$this);
   }
-  
+
   public function toArray()
   {
     $obj = (new Hydrator\ClassMethods(false))->extract($this);
@@ -51,10 +56,15 @@ abstract class AbstractEntity implements \JsonSerializable {
         unset($obj[$k]);
     return $obj;
   }
-  
+
+  public static function NameOfPrimaryKeys()
+  {
+    return static::$primaryKeys;
+  }
+
   public function jsonSerialize()
   {
     return $this->toArray();
   }
-  
+
 }

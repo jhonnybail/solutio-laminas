@@ -66,7 +66,7 @@ class ArrayObject extends \ArrayObject implements \JsonSerializable
    * @throws  \Solutio\InvalidArgumentException
    * @return  \Solutio\Utils\Data\ArrayObject
    */
-  public function concat(array $array)
+  public function concat($array)
   {
     if(!is_array((array) $array))
       throw InvalidArgumentException::FromCode(3);
