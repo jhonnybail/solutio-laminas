@@ -143,7 +143,7 @@ class EntityRepository extends ORM\EntityRepository
     ];
     
     if($type === self::RESULT_OBJECT){
-      $rs = $query->getQuery()->getResult(\Doctrine\ORM\AbstractQuery::HYDRATE_OBJECT);
+      $rs['result'] = $query->getQuery()->getResult(\Doctrine\ORM\AbstractQuery::HYDRATE_OBJECT);
     }elseif($type === self::RESULT_ARRAY){
       $rs['result'] = $query->getQuery()->getResult(\Doctrine\ORM\AbstractQuery::HYDRATE_ARRAY);
     }
