@@ -3,8 +3,8 @@
 namespace Solutio\Controller;
 
 use Zend\Mvc\Controller\AbstractRestfulController,
-  Zend\View\Model\JsonModel,
-  Zend\Json;
+    Zend\View\Model\JsonModel,
+    Zend\Json;
 
 class RestController extends AbstractRestfulController
 {
@@ -90,11 +90,7 @@ class RestController extends AbstractRestfulController
   public function update($id, $data)
   {
     $values = new \Solutio\Utils\Data\ArrayObject((array) $this->getDataEntity());
-    if(is_array($data) && count($data) > 0){
-      $data = new \Solutio\Utils\Data\ArrayObject((array) $data);
-    }else{
-      $data = new \Solutio\Utils\Data\ArrayObject(Json\Decoder::decode($data, Json\Json::TYPE_ARRAY));
-    }
+    $data = new \Solutio\Utils\Data\ArrayObject(Json\Decoder::decode($this->getRequest()->getContent(), Json\Json::TYPE_ARRAY));
     $ids    = $this->getEntity()::NameOfPrimaryKeys();
     if(count($ids) > 1){
       $idsNotNull = 0;
