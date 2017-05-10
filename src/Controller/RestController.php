@@ -99,7 +99,8 @@ class RestController extends AbstractRestfulController
         else $idsNotNull++;
       if($idsNotNull < count($ids)-1)
         $values = ['id' => $id];
-    }
+    }else
+      $values = [$ids[0] => $id];
     $data   = $data->concat($values);
     if($data->length() > 0){
       $entity = $this->getEntity();
@@ -131,7 +132,8 @@ class RestController extends AbstractRestfulController
         else $idsNotNull++;
       if($idsNotNull < count($ids)-1)
         $values = ['id' => $id];
-    }
+    }else
+      $values = [$ids[0] => $id];
     $data   = $data->concat($values);
     if($data->length() > 0){
       $entity = $this->getEntity();

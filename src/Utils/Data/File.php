@@ -85,10 +85,12 @@ class File implements IFileObject, \JsonSerializable
    */
   protected function whenLoaded()
   {
-    $this->url = $this->urlRequest->url;
-    $name = explode(".", basename($this->urlRequest->url));
-    $this->fileName = str_replace(".".$name[count($name)-1], "", basename($this->urlRequest->url));
-    $this->extension = $name[count($name)-1];
+    if(!is_null($this->urlRequest)){
+      $this->url = $this->urlRequest->url;
+      $name = explode(".", basename($this->urlRequest->url));
+      $this->fileName = str_replace(".".$name[count($name)-1], "", basename($this->urlRequest->url));
+      $this->extension = $name[count($name)-1];
+    }
   }
 
   /**
