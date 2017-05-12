@@ -129,6 +129,10 @@ class EntityService
         }
       }
     }
+    
+    foreach($data as $k => $v)
+      if($v === '')
+        $data[$k] = null;
 
     $newEntity->fromArray($data);
     return $newEntity;
