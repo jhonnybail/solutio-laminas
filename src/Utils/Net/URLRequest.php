@@ -130,7 +130,9 @@ class URLRequest
    */
   private function getHeaders()
   {
-    $headers = new ArrayObject((array)@get_headers($this->url, 1));
+    $headers = @get_headers($this->url, 1);
+    if($headers)
+      $headers = new ArrayObject((array)$headers);
     return $headers;
   }
   
@@ -145,14 +147,14 @@ class URLRequest
     if(!file_exists($this->url))
       return false;
 
-    if(System::GetVariable('SERVER_PROTOCOL')->search("HTTP"))
+    if((new StringManipulator(System::GetVariable('SERVER_PROTOCOL')))->search("HTTP"))
       $protocol = 'http';
-    elseif(System::GetVariable('SERVER_PROTOCOL')->search("HTTPS"))
+    elseif((new StringManipulator(System::GetVariable('SERVER_PROTOCOL')))->search("HTTPS"))
       $protocol = 'https';
     else
       $protocol = System::GetVariable('SERVER_PROTOCOL');
 
-    $url 		    = $this->url;
+    $url 		    = new StringManipulator($this->url);
     $newURL		  = $url->replace(System::GetVariable('DOCUMENT_ROOT'), $protocol."://".System::GetVariable('HTTP_HOST'));
     //$this->url	= $newURL;
     //$this->requestHeaders = $this->requestHeaders->concat((array) $this->getHeaders());
