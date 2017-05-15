@@ -82,15 +82,11 @@ class EntityRepository extends ORM\EntityRepository
       
       foreach($maps as $fieldName => $field){
         $am = $metaData->getAssociationMapping($fieldName);
-        if($am['type'] == 1 || $am['type'] == 2){
+        if($am['type'] == 1 || $am['type'] == 2 || ($am['type'] == 4 && $type === self::RESULT_OBJECT)){
           $query->leftJoin("{$alias}.{$fieldName}", $fieldName);
           if(count($fields) <= 0)
             $query->addSelect($fieldName);
-          if($am['type'] == 4){
-            foreach($metaData->getIdentifier() as $order => $identifier){
-              $query->addGroupBy("{$alias}.id");
-            }
-          }
+          
         }
         if(isset($obj[$fieldName])){
           if(($am['type'] == 2 || $am['type'] == 1) && $obj[$fieldName] != null){
