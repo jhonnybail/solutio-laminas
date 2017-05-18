@@ -44,7 +44,7 @@ class EntityRepository extends ORM\EntityRepository
     
       foreach($attrs as $field){
         if(isset($obj[$field]) && $obj[$field] != null && $obj[$field] != ''){
-          if($metaData->getTypeOfField($field) == 'integer'){
+          if(preg_match("/int/", $metaData->getTypeOfField($field))){
             $query->andWhere($alias.'.'.$field.' = :'.$field)
                 ->setParameter($field, $obj[$field]);		
           }elseif($metaData->getTypeOfField($field) == 'float'){
