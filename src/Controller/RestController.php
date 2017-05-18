@@ -52,12 +52,9 @@ class RestController extends AbstractRestfulController
         'data'		=> $data,
         'success'	=> true
       ];
-    }else{
-      $return = [
-        'success'	=> false,
-        'message'	=> 'The entity don\'t extists.'
-      ];
-    }
+    }else
+      throw new \Solutio\NotFoundException('Content not found.');
+    
     return new JsonModel($return);
   }
 
