@@ -36,8 +36,12 @@ class EntityService
   {
     $repo   = $this->em->getRepository($this->entity);
     try{
-      $results  = $repo->findBy($id);
-      return count($results) > 0 ? $results[0] : false;
+      if(!is_array($id)){
+        return $repo->find($id);
+      }else{
+        $results  = $repo->findBy($id);
+        return count($results) > 0 ? $results[0] : false;
+      }
     }catch(\Doctrine\ORM\ORMInvalidArgumentException $e){
       if(!is_array($id)){
         $results = $repo->findById($id);
