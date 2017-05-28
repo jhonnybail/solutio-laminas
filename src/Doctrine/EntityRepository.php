@@ -96,6 +96,14 @@ class EntityRepository extends ORM\EntityRepository
               foreach($obj2 as $k => $v){
                 if(is_string($v) || is_numeric($v))
                   $query->andWhere($fieldName.".".$k." = '".$v."'");
+                elseif($v instanceof \Solutio\AbstractEntity){
+                  $vIds = get_class($v)::NameOfPrimaryKeys();
+                  $va   = $v->toArray();
+                  $query->innerJoin("{$fieldName}.{$k}", $fieldName."_".$k);
+                  foreach($vIds as $vId)
+                    if(!empty($va[$vId]) && (is_string($va[$vId]) || is_numeric($va[$vId])))
+                      $query->andWhere($fieldName."_".$k.".".$vId." = '".$va[$vId]."'");
+                }
               }
             }else{
               $obj2	= $obj[$fieldName];
