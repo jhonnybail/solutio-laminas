@@ -160,6 +160,17 @@ class ImageFile extends File
   }
   
   /**
+   * Setar imagem interlacada ou não. (JPEG seria progressivo)
+   * 
+   * @param  boolean $interlace
+   * @return void
+   */ 
+  public function setInterlace($interlace = true)
+  {
+    imageinterlace($this->image, $interlace);
+  }
+  
+  /**
    * Retorna o objeto Image redimensionado de acordo com os parâmetros passado.
    * 
    * @param   int $width
