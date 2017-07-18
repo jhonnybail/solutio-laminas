@@ -3,6 +3,8 @@
 namespace Solutio\Doctrine;
 
 use Doctrine\ORM,
+    Doctrine\DBAL\Query\Expression\ExpressionBuilder,
+    Doctrine\DBAL\Query\Expression\CompositeExpression,
     Doctrine\ORM\Tools\Pagination\Paginator;
 
 class EntityRepository extends ORM\EntityRepository 
@@ -21,7 +23,7 @@ class EntityRepository extends ORM\EntityRepository
     return $entity;
   }
 
-  public function getCollection(\Solutio\AbstractEntity $entity, $params = [], $fields = [], $type = self::RESULT_ARRAY)
+  public function getCollection(\Solutio\AbstractEntity $entity, array $filters = [], array $params = [], array $fields = [], $type = self::RESULT_ARRAY)
   {
     
     $metaData 	= $this->getClassMetadata();
@@ -41,82 +43,245 @@ class EntityRepository extends ORM\EntityRepository
     }
     
     if(!$this->disabledefaultFilters){
+      
+      if(count($filters) <= 0){
     
-      foreach($attrs as $field){
-        if(isset($obj[$field]) && $obj[$field] != null && $obj[$field] != ''){
-          if(preg_match("/int/", $metaData->getTypeOfField($field))){
-            $query->andWhere($alias.'.'.$field.' = :'.$field)
-                ->setParameter($field, $obj[$field]);		
-          }elseif($metaData->getTypeOfField($field) == 'float'){
-            if((float)((string)$obj[$field]) > 0)
-                $query->andWhere($alias.'.'.$field.' = :'.$field)
-                    ->setParameter($field, ((float)((string)$obj[$field])));
-          }elseif($metaData->getTypeOfField($field) == 'string'){
-            if(strpos((string) $obj[$field], "|(equals)") !== false)
-              $query->orWhere($alias.'.'.$field.' = :'.$field)
-                ->setParameter($field, addslashes((string) str_replace("|(equals)", "", $obj[$field])));
-            elseif(strpos((string) $obj[$field], "(equals)") !== false)
+        foreach($attrs as $field){
+          if(isset($obj[$field]) && $obj[$field] != null && $obj[$field] != ''){
+            if(preg_match("/int/", $metaData->getTypeOfField($field))){
               $query->andWhere($alias.'.'.$field.' = :'.$field)
-                ->setParameter($field, addslashes((string) str_replace("(equals)", "", $obj[$field])));
-            elseif(strpos((string) $obj[$field], "|") === 0)
-              $query->orWhere($alias.'.'.$field.' LIKE :'.$field)
-                ->setParameter($field, '%'.addslashes(str_replace('|', '', (string) $obj[$field])).'%');
-            else
+                  ->setParameter($field, $obj[$field]);		
+            }elseif($metaData->getTypeOfField($field) == 'float'){
+              if((float)((string)$obj[$field]) > 0)
+                  $query->andWhere($alias.'.'.$field.' = :'.$field)
+                      ->setParameter($field, ((float)((string)$obj[$field])));
+            }elseif($metaData->getTypeOfField($field) == 'string'){
+              if(strpos((string) $obj[$field], "|(equals)") !== false)
+                $query->orWhere($alias.'.'.$field.' = :'.$field)
+                  ->setParameter($field, addslashes((string) str_replace("|(equals)", "", $obj[$field])));
+              elseif(strpos((string) $obj[$field], "(equals)") !== false)
+                $query->andWhere($alias.'.'.$field.' = :'.$field)
+                  ->setParameter($field, addslashes((string) str_replace("(equals)", "", $obj[$field])));
+              elseif(strpos((string) $obj[$field], "|") === 0)
+                $query->orWhere($alias.'.'.$field.' LIKE :'.$field)
+                  ->setParameter($field, '%'.addslashes(str_replace('|', '', (string) $obj[$field])).'%');
+              else
+                $query->andWhere($alias.'.'.$field.' LIKE :'.$field)
+                  ->setParameter($field, '%'.addslashes((string) $obj[$field]).'%');
+            }elseif($obj[$field] instanceof \DateTime){
               $query->andWhere($alias.'.'.$field.' LIKE :'.$field)
-                ->setParameter($field, '%'.addslashes((string) $obj[$field]).'%');
-          }elseif($obj[$field] instanceof \DateTime){
-            $query->andWhere($alias.'.'.$field.' LIKE :'.$field)
-                  ->setParameter($field, $obj[$field]->format("Y-m-d H:i:s"));
-          }elseif($metaData->getTypeOfField($field) == 'boolean'){
-            $bool = $obj[$field];
-            if((string) $obj[$field] == (string)'0')
-              $obj[$field] = 0;
-            elseif((string) $obj[$field] == (string)'1')
-              $obj[$field] = 1;
-            $query->andWhere($alias.'.'.$field.' = :'.$field)
-              ->setParameter($field, $obj[$field]);
-            $obj[$field] = $bool;
+                    ->setParameter($field, $obj[$field]->format("Y-m-d H:i:s"));
+            }elseif($metaData->getTypeOfField($field) == 'boolean'){
+              $bool = $obj[$field];
+              if((string) $obj[$field] == (string)'0')
+                $obj[$field] = 0;
+              elseif((string) $obj[$field] == (string)'1')
+                $obj[$field] = 1;
+              $query->andWhere($alias.'.'.$field.' = :'.$field)
+                ->setParameter($field, $obj[$field]);
+              $obj[$field] = $bool;
+            }
           }
         }
-      }
+        
+        foreach($maps as $fieldName => $field){
+          $am = $metaData->getAssociationMapping($fieldName);
+          if($am['type'] == 1 || $am['type'] == 2 || ($am['type'] == 4 && $type === self::RESULT_OBJECT)){
+            $query->leftJoin("{$alias}.{$fieldName}", $fieldName);
+            if(count($fields) <= 0)
+              $query->addSelect($fieldName);
+            
+          }
+          if(isset($obj[$fieldName])){
+            if(($am['type'] == 2 || $am['type'] == 1) && $obj[$fieldName] != null){
+              $id 	= null;
+              if($obj[$fieldName] instanceof \Solutio\AbstractEntity){
+                $obj2	= $obj[$fieldName]->toArray();
+                foreach($obj2 as $k => $v){
+                  if(is_string($v) || is_numeric($v))
+                    $query->andWhere($fieldName.".".$k." = '".$v."'");
+                  elseif($v instanceof \Solutio\AbstractEntity){
+                    $vIds = get_class($v)::NameOfPrimaryKeys();
+                    $va   = $v->toArray();
+                    $query->innerJoin("{$fieldName}.{$k}", $fieldName."_".$k);
+                    foreach($vIds as $vId)
+                      if(!empty($va[$vId]) && (is_string($va[$vId]) || is_numeric($va[$vId])))
+                        $query->andWhere($fieldName."_".$k.".".$vId." = '".$va[$vId]."'");
+                  }
+                }
+              }else{
+                $obj2	= $obj[$fieldName];
+                $column = key($am['targetToSourceKeyColumns']);
+                $id = $obj2[$column];
+                $query->andWhere($fieldName.".".$column." = ".$id);
+              }
+            }elseif(is_string($obj[$fieldName]) || is_numeric($obj[$fieldName])){
+              if((int)((string)$obj[$fieldName]) < 0){
+                $query->andWhere($alias.'.'.$fieldName.' IS NULL');
+              }
+            }
+          }
+        }
       
-      foreach($maps as $fieldName => $field){
-        $am = $metaData->getAssociationMapping($fieldName);
-        if($am['type'] == 1 || $am['type'] == 2 || ($am['type'] == 4 && $type === self::RESULT_OBJECT)){
-          $query->leftJoin("{$alias}.{$fieldName}", $fieldName);
-          if(count($fields) <= 0)
-            $query->addSelect($fieldName);
+      }else{
+        
+        //Get filters by object
+        $objectFilter = [];
+        foreach($attrs as $field){
+          if(isset($obj[$field]) && $obj[$field] != null && $obj[$field] != ''){
+            if(preg_match("/int/", $metaData->getTypeOfField($field))){
+              $objectFilter[] = [
+                'field' => $field,
+                'value' => $obj[$field]
+              ];	
+            }elseif($metaData->getTypeOfField($field) == 'float'){
+              $objectFilter[] = [
+                'field' => $field,
+                'value' => ((float)((string)$obj[$field]))
+              ];
+            }elseif($metaData->getTypeOfField($field) == 'string'){
+              if(strpos((string) $obj[$field], "(equals)") !== false)
+                $objectFilter[] = [
+                  'field'     => $field,
+                  'condition' => '!=',
+                  'value'     => (string) str_replace("|(equals)", "", $obj[$field])
+                ];
+              else
+                $objectFilter[] = [
+                  'field'     => $field,
+                  'condition' => '%',
+                  'value'     => '%'.addslashes((string) $obj[$field]).'%'
+                ];
+            }elseif($obj[$field] instanceof \DateTime){
+              $objectFilter[] = [
+                'field' => $field,
+                'value' => $obj[$field]->format("Y-m-d H:i:s")
+              ];
+            }elseif($metaData->getTypeOfField($field) == 'boolean'){
+              $bool = $obj[$field];
+              if((string) $obj[$field] == (string)'0')
+                $obj[$field] = 0;
+              elseif((string) $obj[$field] == (string)'1')
+                $obj[$field] = 1;
+              $obj[$field] = $bool;
+              $objectFilter[] = [
+                'field' => $field,
+                'value' => $obj[$field]
+              ];
+            }
+          }
+        }
+        if(count($objectFilter) > 0)
+          $filters = [$objectFilter, $filters];
+        //
+        
+        $listValues = [];
+        
+        function getCondition($query, $field, $value, $condition){
+          
+          if($condition === '='){
+            $exp = $query->expr()->eq($field, $value);
+          }elseif($condition === '!='){
+            $exp = $query->expr()->neq($field, $value);
+          }elseif($condition === '<'){
+            $exp = $query->expr()->lt($field, $value);
+          }elseif($condition === '<='){
+            $exp = $query->expr()->lte($field, $value);
+          }elseif($condition === '>'){
+            $exp = $query->expr()->gt($field, $value);
+          }elseif($condition === '>='){
+            $exp = $query->expr()->gte($field, $value);
+          }elseif($condition === 'isn'){
+            $exp = $query->expr()->isNull($field);
+            $fieldName = null;
+          }elseif($condition === 'isnn'){
+            $exp = $query->expr()->isNotNull($field);
+            $fieldName = null;
+          }elseif($condition === '%'){
+            $exp = $query->expr()->like($field, $value);
+          }elseif($condition === '!%'){
+            $exp = $query->expr()->notLike($field, $value);
+          }elseif($condition === 'in'){
+            $exp = $query->expr()->in($field, $value);
+          }elseif($condition === 'nin'){
+            $exp = $query->expr()->notIn($field, $value);
+          }
+          
+          return $exp;
           
         }
-        if(isset($obj[$fieldName])){
-          if(($am['type'] == 2 || $am['type'] == 1) && $obj[$fieldName] != null){
-            $id 	= null;
-            if($obj[$fieldName] instanceof \Solutio\AbstractEntity){
-              $obj2	= $obj[$fieldName]->toArray();
-              foreach($obj2 as $k => $v){
-                if(is_string($v) || is_numeric($v))
-                  $query->andWhere($fieldName.".".$k." = '".$v."'");
-                elseif($v instanceof \Solutio\AbstractEntity){
-                  $vIds = get_class($v)::NameOfPrimaryKeys();
-                  $va   = $v->toArray();
-                  $query->innerJoin("{$fieldName}.{$k}", $fieldName."_".$k);
-                  foreach($vIds as $vId)
-                    if(!empty($va[$vId]) && (is_string($va[$vId]) || is_numeric($va[$vId])))
-                      $query->andWhere($fieldName."_".$k.".".$vId." = '".$va[$vId]."'");
-                }
-              }
+        
+        function makeExpression($query, &$listValues, $filters, $or = false){
+          
+          if($or === true || $or === 'true' || $or == 1)
+            $type = CompositeExpression::TYPE_OR;
+          else
+            $type = CompositeExpression::TYPE_AND;
+          
+          $expr = new CompositeExpression($type);
+          
+          foreach($filters as $index => $filter){
+            
+            if(is_array($filter)){
+              if(isset($filter['field']))
+                $field      = $filter['field'];
+              if(isset($filter['condition']))
+                $condition  = $filter['condition'];
+              if(isset($filter['value']))
+                $value      = $filter['value'];
+                
             }else{
-              $obj2	= $obj[$fieldName];
-              $column = key($am['targetToSourceKeyColumns']);
-              $id = $obj2[$column];
-              $query->andWhere($fieldName.".".$column." = ".$id);
+              $field  = $index;
+              $value  = $filter;
             }
-          }elseif(is_string($obj[$fieldName]) || is_numeric($obj[$fieldName])){
-            if((int)((string)$obj[$fieldName]) < 0){
-              $query->andWhere($alias.'.'.$fieldName.' IS NULL');
+            if(empty($condition))
+              $condition = '=';
+              
+            if(empty($field) && empty($value) && count($filter) > 0){
+              $childOr = false;
+              if(isset($filter['or'])){
+                $childOr = $filter['or'];
+                unset($filter['or']);
+              }
+              $expression = makeExpression($query, $listValues, $filter, $childOr);
+            }else{
+              $fieldName = $field . rand();  
+              $expression = getCondition($query, $query->getRootAliases()[0].".".$field, ':'.$fieldName, $condition);
+              $listValues[$fieldName] = $value;
             }
+            
+            if(!empty($expression))
+              $expr->add($expression);
+            
+          }
+          
+          if($expr->count() > 0)
+            return $expr;
+            
+          return null;
+          
+        }
+        
+        $orFilter = false;
+        if(isset($filters['or'])){
+          $orFilter = $filters['or'];
+          unset($filters['or']);
+        }
+        $expression = makeExpression($query, $listValues, $filters, $orFilter);
+        if($expression){
+          $query->where((string) $expression)
+                  ->setParameters($listValues);
+        }
+        
+        foreach($maps as $fieldName => $field){
+          $am = $metaData->getAssociationMapping($fieldName);
+          if($am['type'] == 1 || $am['type'] == 2 || ($am['type'] == 4 && $type === self::RESULT_OBJECT)){
+            $query->leftJoin("{$alias}.{$fieldName}", $fieldName);
+            if(count($fields) <= 0)
+              $query->addSelect($fieldName);
           }
         }
+        
       }
       
     }

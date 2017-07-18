@@ -53,10 +53,10 @@ class EntityService
     }
   }
 
-  public function find(\Solutio\AbstractEntity $entity, $params, $fields, $type = EntityRepository::RESULT_ARRAY)
+  public function find(\Solutio\AbstractEntity $entity, $filters = [], $params = [], $fields = [], $type = EntityRepository::RESULT_ARRAY)
   {
     $repo 	= $this->em->getRepository($this->entity);
-    return $repo->getCollection($entity, $params, $fields, $type);
+    return $repo->getCollection($entity, $filters, $params, $fields, $type);
   }
 
   public function save(\Solutio\AbstractEntity $entity)
