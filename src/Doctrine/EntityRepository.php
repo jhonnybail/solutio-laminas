@@ -211,7 +211,7 @@ class EntityRepository extends ORM\EntityRepository
           
         }
         
-        function makeExpression($query, &$listValues, $filters, $or = false){
+        function makeExpression($metaData, $query, &$listValues, $filters, $or = false){
           
           if($or === true || $or === 'true' || $or == 1)
             $type = CompositeExpression::TYPE_OR;
@@ -243,8 +243,8 @@ class EntityRepository extends ORM\EntityRepository
                 $childOr = $filter['or'];
                 unset($filter['or']);
               }
-              $expression = makeExpression($query, $listValues, $filter, $childOr);
-            }else{
+              $expression = makeExpression($metaData, $query, $listValues, $filter, $childOr);
+            }elseif(isset($metaData->getReflectionProperties()[$field])){
               $fieldName = $field . rand();  
               $expression = getCondition($query, $query->getRootAliases()[0].".".$field, ':'.$fieldName, $condition);
               $listValues[$fieldName] = $value;
@@ -267,7 +267,7 @@ class EntityRepository extends ORM\EntityRepository
           $orFilter = $filters['or'];
           unset($filters['or']);
         }
-        $expression = makeExpression($query, $listValues, $filters, $orFilter);
+        $expression = makeExpression($metaData, $query, $listValues, $filters, $orFilter);
         if($expression){
           $query->where((string) $expression)
                   ->setParameters($listValues);
