@@ -177,91 +177,96 @@ class EntityRepository extends ORM\EntityRepository
         
         $listValues = [];
         
-        function getCondition($query, $field, $value, $condition){
-          
-          if($condition === '='){
-            $exp = $query->expr()->eq($field, $value);
-          }elseif($condition === '!='){
-            $exp = $query->expr()->neq($field, $value);
-          }elseif($condition === '<'){
-            $exp = $query->expr()->lt($field, $value);
-          }elseif($condition === '<='){
-            $exp = $query->expr()->lte($field, $value);
-          }elseif($condition === '>'){
-            $exp = $query->expr()->gt($field, $value);
-          }elseif($condition === '>='){
-            $exp = $query->expr()->gte($field, $value);
-          }elseif($condition === 'isn'){
-            $exp = $query->expr()->isNull($field);
-            $fieldName = null;
-          }elseif($condition === 'isnn'){
-            $exp = $query->expr()->isNotNull($field);
-            $fieldName = null;
-          }elseif($condition === '%'){
-            $exp = $query->expr()->like($field, $value);
-          }elseif($condition === '!%'){
-            $exp = $query->expr()->notLike($field, $value);
-          }elseif($condition === 'in'){
-            $exp = $query->expr()->in($field, $value);
-          }elseif($condition === 'nin'){
-            $exp = $query->expr()->notIn($field, $value);
+        if(!function_exists(__NAMESPACE__ . '\getCondition')){
+          function getCondition($query, $field, $value, $condition){
+            
+            if($condition === '='){
+              $exp = $query->expr()->eq($field, $value);
+            }elseif($condition === '!='){
+              $exp = $query->expr()->neq($field, $value);
+            }elseif($condition === '<'){
+              $exp = $query->expr()->lt($field, $value);
+            }elseif($condition === '<='){
+              $exp = $query->expr()->lte($field, $value);
+            }elseif($condition === '>'){
+              $exp = $query->expr()->gt($field, $value);
+            }elseif($condition === '>='){
+              $exp = $query->expr()->gte($field, $value);
+            }elseif($condition === 'isn'){
+              $exp = $query->expr()->isNull($field);
+              $fieldName = null;
+            }elseif($condition === 'isnn'){
+              $exp = $query->expr()->isNotNull($field);
+              $fieldName = null;
+            }elseif($condition === '%'){
+              $exp = $query->expr()->like($field, $value);
+            }elseif($condition === '!%'){
+              $exp = $query->expr()->notLike($field, $value);
+            }elseif($condition === 'in'){
+              $exp = $query->expr()->in($field, $value);
+            }elseif($condition === 'nin'){
+              $exp = $query->expr()->notIn($field, $value);
+            }
+            
+            return $exp;
+            
           }
-          
-          return $exp;
-          
         }
         
-        function makeExpression($metaData, $query, &$listValues, $filters, $or = false){
-          
-          if($or === true || $or === 'true' || $or == 1)
-            $type = CompositeExpression::TYPE_OR;
-          else
-            $type = CompositeExpression::TYPE_AND;
-          
-          $expr = new CompositeExpression($type);
-          
-          foreach($filters as $index => $filter){
+        if(!function_exists(__NAMESPACE__ . '\makeExpression')){
+          function makeExpression($metaData, $query, &$listValues, $filters, $or = false){
             
-            if(is_array($filter)){
-              if(isset($filter['field']))
-                $field      = $filter['field'];
-              if(isset($filter['condition']))
-                $condition  = $filter['condition'];
-              if(isset($filter['value']))
-                $value      = $filter['value'];
-                
-            }else{
-              $field  = $index;
-              $value  = $filter;
-            }
-            if(empty($condition))
-              $condition = '=';
+            if($or === true || $or === 'true' || $or == 1)
+              $type = CompositeExpression::TYPE_OR;
+            else
+              $type = CompositeExpression::TYPE_AND;
+            
+            $expr = new CompositeExpression($type);
+            
+            foreach($filters as $index => $filter){
               
-            if(empty($field) && empty($value) && count($filter) > 0){
-              $childOr = false;
-              if(isset($filter['or'])){
-                $childOr = $filter['or'];
-                unset($filter['or']);
+              if(is_array($filter)){
+                if(isset($filter['field']))
+                  $field      = $filter['field'];
+                if(isset($filter['condition']))
+                  $condition  = $filter['condition'];
+                if(isset($filter['value']))
+                  $value      = $filter['value'];
+                  
+              }else{
+                $field  = $index;
+                $value  = $filter;
               }
-              $expression = makeExpression($metaData, $query, $listValues, $filter, $childOr);
-            }elseif(isset($metaData->getReflectionProperties()[$field])){
-              $fieldName = $field . rand();  
-              $expression = getCondition($query, $query->getRootAliases()[0].".".$field, ':'.$fieldName, $condition);
-              $listValues[$fieldName] = $value;
+              if(empty($condition))
+                $condition = '=';
+                
+              if(empty($field) && empty($value) && count($filter) > 0){
+                $childOr = false;
+                if(isset($filter['or'])){
+                  $childOr = $filter['or'];
+                  unset($filter['or']);
+                }
+                $expression = makeExpression($metaData, $query, $listValues, $filter, $childOr);
+              }elseif(isset($metaData->getReflectionProperties()[$field])){
+                $fieldName = $field . rand();  
+                $expression = getCondition($query, $query->getRootAliases()[0].".".$field, ':'.$fieldName, $condition);
+                $listValues[$fieldName] = $value;
+              }
+              
+              if(!empty($expression))
+                $expr->add($expression);
+              
             }
             
-            if(!empty($expression))
-              $expr->add($expression);
+            if($expr->count() > 0)
+              return $expr;
+              
+            return null;
             
           }
           
-          if($expr->count() > 0)
-            return $expr;
-            
-          return null;
-          
         }
-        
+          
         $orFilter = false;
         if(isset($filters['or'])){
           $orFilter = $filters['or'];
@@ -281,7 +286,7 @@ class EntityRepository extends ORM\EntityRepository
               $query->addSelect($fieldName);
           }
         }
-        
+      
       }
       
     }
@@ -306,10 +311,12 @@ class EntityRepository extends ORM\EntityRepository
       $offset	= $params['offset'];
       $query = $query->setFirstResult($offset);
     }
-          
-    $rs = [
-      'total' => count(new Paginator($query))
-    ];
+    
+    if(count($fields) <= 0){
+      $rs = [
+        'total' => count(new Paginator($query))
+      ];
+    }
     
     if($type === self::RESULT_OBJECT){
       $rs['result'] = $query->getQuery()->getResult(\Doctrine\ORM\AbstractQuery::HYDRATE_OBJECT);
