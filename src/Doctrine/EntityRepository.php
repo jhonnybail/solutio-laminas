@@ -171,6 +171,36 @@ class EntityRepository extends ORM\EntityRepository
             }
           }
         }
+        foreach($maps as $fieldName => $field){
+          if(isset($obj[$fieldName])){
+            $am = $metaData->getAssociationMapping($fieldName);
+            if(($am['type'] == 2 || $am['type'] == 1) && $obj[$fieldName] != null){
+              $id 	= null;
+              if($obj[$fieldName] instanceof \Solutio\AbstractEntity){
+                $obj2	= $obj[$fieldName]->toArray();
+                foreach($obj2 as $k => $v){
+                  if(is_string($v) || is_numeric($v))
+                    $objectFilter[] = [
+                      'field' => $fieldName,
+                      'value' => $v
+                    ];
+                }
+              }else{
+                $objectFilter[] = [
+                  'field' => $fieldName,
+                  'value' => $id
+                ];
+              }
+            }elseif(is_string($obj[$fieldName]) || is_numeric($obj[$fieldName])){
+              if((int)((string)$obj[$fieldName]) < 0){
+                $objectFilter[] = [
+                  'field'     => $fieldName,
+                  'condition' => 'isn'
+                ];
+              }
+            }
+          }
+        }
         if(count($objectFilter) > 0)
           $filters = [$objectFilter, $filters];
         //
