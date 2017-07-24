@@ -178,11 +178,12 @@ class EntityRepository extends ORM\EntityRepository
               $id 	= null;
               if($obj[$fieldName] instanceof \Solutio\AbstractEntity){
                 $obj2	= $obj[$fieldName]->toArray();
-                foreach($obj2 as $k => $v){
-                  if(is_string($v) || is_numeric($v))
+                $vIds = get_class($obj[$fieldName])::NameOfPrimaryKeys();
+                foreach($vIds as $k => $v){
+                  if(is_string($obj2[$v]) || is_numeric($obj2[$v]))
                     $objectFilter[] = [
                       'field' => $fieldName,
-                      'value' => $v
+                      'value' => $obj2[$v]
                     ];
                 }
               }else{
