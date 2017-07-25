@@ -237,7 +237,8 @@ class EntityRepository extends ORM\EntityRepository
               $exp = $query->expr()->in($field, $value);
             }elseif($condition === 'nin'){
               $exp = $query->expr()->notIn($field, $value);
-            }
+            }else
+              throw new \Solutio\InvalidArgumentException("Expression '{$condition}' don`t exists.");
             
             return $exp;
             
