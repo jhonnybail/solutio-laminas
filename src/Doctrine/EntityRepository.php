@@ -279,7 +279,7 @@ class EntityRepository extends ORM\EntityRepository
                   unset($filter['or']);
                 }
                 $expression = makeExpression($metaData, $query, $listValues, $filter, $childOr);
-              }elseif(isset($metaData->getReflectionProperties()[$field])){
+              }elseif(!empty($field) && isset($metaData->getReflectionProperties()[$field])){
                 $fieldName = $field . rand();  
                 $expression = getCondition($query, $query->getRootAliases()[0].".".$field, ':'.$fieldName, $condition);
                 $listValues[$fieldName] = $value;
