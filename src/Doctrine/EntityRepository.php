@@ -86,11 +86,10 @@ class EntityRepository extends ORM\EntityRepository
         
         foreach($maps as $fieldName => $field){
           $am = $metaData->getAssociationMapping($fieldName);
-          if($am['type'] == 1 || $am['type'] == 2 || ($am['type'] == 4 && $type === self::RESULT_OBJECT)){
+          if($am['type'] == 1 || $am['type'] == 2){
             $query->leftJoin("{$alias}.{$fieldName}", $fieldName);
             if(count($fields) <= 0)
               $query->addSelect($fieldName);
-            
           }
           if(isset($obj[$fieldName])){
             if(($am['type'] == 2 || $am['type'] == 1) && $obj[$fieldName] != null){
@@ -312,7 +311,7 @@ class EntityRepository extends ORM\EntityRepository
         
         foreach($maps as $fieldName => $field){
           $am = $metaData->getAssociationMapping($fieldName);
-          if($am['type'] == 1 || $am['type'] == 2 || ($am['type'] == 4 && $type === self::RESULT_OBJECT)){
+          if($am['type'] == 1 || $am['type'] == 2){
             $query->leftJoin("{$alias}.{$fieldName}", $fieldName);
             if(count($fields) <= 0)
               $query->addSelect($fieldName);
