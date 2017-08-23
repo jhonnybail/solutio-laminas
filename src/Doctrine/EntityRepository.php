@@ -256,6 +256,8 @@ class EntityRepository extends ORM\EntityRepository
             
             foreach($filters as $index => $filter){
               
+              $value = null;
+              
               if(is_array($filter)){
                 if(isset($filter['field']))
                   $field      = $filter['field'];
@@ -281,7 +283,8 @@ class EntityRepository extends ORM\EntityRepository
               }elseif(!empty($field) && isset($metaData->getReflectionProperties()[$field])){
                 $fieldName = $field . rand();  
                 $expression = getCondition($query, $query->getRootAliases()[0].".".$field, ':'.$fieldName, $condition);
-                $listValues[$fieldName] = $value;
+                if($value)
+                  $listValues[$fieldName] = $value;
               }
               
               if(!empty($expression))
