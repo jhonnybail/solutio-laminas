@@ -245,7 +245,16 @@ class EntityRepository extends ORM\EntityRepository
         }
         
         if(!function_exists(__NAMESPACE__ . '\makeExpression')){
-          function makeExpression($metaData, $query, &$listValues, $filters, $or = false){
+          function fieldExists($em, $metaData, $field){
+            $divs = explode(".", $field);
+            if(count($divs) > 1){
+              $metaDataField  = $metaData->getAssociationMappings()[$divs[0]];
+              $field          = str_replace($divs[0] . '.', '', $field);
+              return fieldExists($em, $em->getClassMetadata($metaDataField['targetEntity']), $field);
+            }
+            return isset($metaData->getReflectionProperties()[$field]);
+          }
+          function makeExpression($em, $metaData, $query, &$listValues, $filters, $or = false){
             
             if($or === true || $or === 'true' || $or == 1)
               $type = CompositeExpression::TYPE_OR;
@@ -279,10 +288,10 @@ class EntityRepository extends ORM\EntityRepository
                   $childOr = $filter['or'];
                   unset($filter['or']);
                 }
-                $expression = makeExpression($metaData, $query, $listValues, $filter, $childOr);
-              }elseif(!empty($field) && isset($metaData->getReflectionProperties()[$field])){
-                $fieldName = $field . rand();  
-                $expression = getCondition($query, $query->getRootAliases()[0].".".$field, ':'.$fieldName, $condition);
+                $expression = makeExpression($em, $metaData, $query, $listValues, $filter, $childOr);
+              }elseif(!empty($field) && fieldExists($em, $metaData, $field)){
+                $fieldName = str_replace(".", "", $field . rand());  
+                $expression = getCondition($query, $field, ':'.$fieldName, $condition);
                 if($value)
                   $listValues[$fieldName] = $value;
               }
@@ -306,7 +315,7 @@ class EntityRepository extends ORM\EntityRepository
           $orFilter = $filters['or'];
           unset($filters['or']);
         }
-        $expression = makeExpression($metaData, $query, $listValues, $filters, $orFilter);
+        $expression = makeExpression($this->getEntityManager(), $metaData, $query, $listValues, $filters, $orFilter);
         if($expression){
           $query->where((string) $expression)
                   ->setParameters($listValues);
