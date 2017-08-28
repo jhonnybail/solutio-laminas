@@ -290,9 +290,9 @@ class EntityRepository extends ORM\EntityRepository
                 }
                 $expression = makeExpression($em, $metaData, $query, $listValues, $filter, $childOr);
               }elseif(!empty($field) && fieldExists($em, $metaData, $field)){
-                $fieldName = str_replace(".", "", $field . rand());  
+                $fieldName = str_replace(".", "", $field . rand());
                 $expression = getCondition($query, (!preg_match('/\./', $field) ? $query->getRootAliases()[0]."." : "").$field, ':'.$fieldName, $condition);
-                if($value)
+                if($value || $value === false)
                   $listValues[$fieldName] = $value;
               }
               
