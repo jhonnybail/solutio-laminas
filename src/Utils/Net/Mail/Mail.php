@@ -1,14 +1,16 @@
 <?php
 
-namespace Solutio\Utils\Net;
+namespace Solutio\Utils\Net\Mail;
 
 use AcMailer\Service\MailService;
 use Zend\View\Model\ViewModel;
 
-class Message
+class Mail
 {
   private $mailService;
-  private $charset = 'utf-8';
+  private $charset  = 'utf-8';
+  private $template;
+  private $data     = [];
   
   public function __construct(MailService $mailService)
   {
@@ -36,16 +38,33 @@ class Message
     $this->charset = $charset;
   }
   
-  public function addBody(ViewModel $template)
+  public function setTemplate($template)
   {
-    $this->mailService->setTemplate($template, [
-        'charset' => $this->charset
-      ]);
+    $this->template = $template;
+  }
+  
+  public function addData(array $data)
+  {
+    $this->data = array_merge($this->data, $data);
   }
   
   public function send()
   {
-    $this->mailService->send();
+    if($this->template instanceof ViewModel){
+      $applyData = function($template, $data, $function){
+        $template->setVariables($data);
+        if($template->hasChildren()){
+          foreach($template->getChildren() as $child)
+            $function($child, $data, $function);
+        }
+      };
+      $applyData($this->template, $this->data, $applyData);
+      $this->mailService->setTemplate($this->template);
+    }else
+      $this->mailService->setBody($this->template);
+    $result = $this->mailService->send();
+    if(!empty($result->getException()))
+      throw $result->getException();
   }
   
 }
