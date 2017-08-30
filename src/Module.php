@@ -31,6 +31,9 @@ class Module
       'factories' => [
         'Solutio\Doctrine\EntityService' => function($container) {
           return new Doctrine\EntityService($container->get('Doctrine\ORM\EntityManager'));
+        },
+        'Solutio\Utils\Net\Mail' => function($container) {
+          return new Utils\Net\Mail\Mail($container->get('acmailer.mailservice.default'));
         }
       ]
     ];
