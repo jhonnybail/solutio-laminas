@@ -66,7 +66,8 @@ class RestController extends AbstractRestfulController
     if(is_array($data) && count($data) > 0){
       $data = new \Solutio\Utils\Data\ArrayObject((array) $data);
     }else{
-      $data = new \Solutio\Utils\Data\ArrayObject(Json\Decoder::decode($this->getRequest()->getContent(), Json\Json::TYPE_ARRAY));
+      $json = Json\Decoder::decode($this->getRequest()->getContent(), Json\Json::TYPE_ARRAY);
+      $data = new \Solutio\Utils\Data\ArrayObject($json ? $json : []);
     }
     $data   = $data->concat($values);
     if($data->length() > 0){
