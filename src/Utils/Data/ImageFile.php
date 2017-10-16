@@ -425,20 +425,20 @@ class ImageFile extends File
   private function generateData($type = self::IMAGETYPEPNG)
   {
     
-    if($this->extension->toString() == '' && !empty($type))
+    if($this->extension == '' && !empty($type))
       $this->extension = new StringManipulator($type);
     
-    if($this->extension->toString() != '' && is_resource($this->image)){
+    if($this->extension != '' && is_resource($this->image)){
       
       ob_start();
       
-      if($this->extension->toLowerCase()->toString() == ImageFile::IMAGETYPEJPG || $this->extension->toLowerCase()->toString() == ImageFile::IMAGETYPEJPEG)
+      if(StringManipulator::GetInstance($this->extension)->toLowerCase()->toString() == ImageFile::IMAGETYPEJPG || StringManipulator::GetInstance($this->extension)->toLowerCase()->toString() == ImageFile::IMAGETYPEJPEG)
         imagejpeg($this->image, null, $this->quality->getValue());
       
-      if($this->extension->toLowerCase()->toString() == ImageFile::IMAGETYPEPNG)
+      if(StringManipulator::GetInstance($this->extension)->toLowerCase()->toString() == ImageFile::IMAGETYPEPNG)
         imagepng($this->image, null);
         
-      if($this->extension->toLowerCase()->toString() == ImageFile::IMAGETYPEGIF)
+      if(StringManipulator::GetInstance($this->extension)->toLowerCase()->toString() == ImageFile::IMAGETYPEGIF)
         imagegif($this->image);
         
       $this->data = ob_get_contents();
