@@ -12,11 +12,16 @@ namespace Solutio;
 use Zend\Hydrator,
     Solutio\Utils\Data\StringManipulator;
 
+/**
+ * @ORM\MappedSuperclass
+ * @ORM\EntityListeners({
+ *  "Solutio\Doctrine\Listeners\ValidateFieldsListener",
+ *  "Solutio\Doctrine\Listeners\MappingsReferenceListener",
+ *  "Solutio\Doctrine\Listeners\GeneretateIdentifierListener"
+ * })
+ */
 abstract class AbstractEntity implements \JsonSerializable
 {
-
-  protected static $primaryKeys = ['id'];
-
   public function __construct($options = [])
   {
     if(is_array($options))
@@ -29,14 +34,20 @@ abstract class AbstractEntity implements \JsonSerializable
   {
     $reflection = \Zend\Server\Reflection::reflectClass($this);
     foreach($reflection->getMethods() as $v){
-      $name = lcfirst((new StringManipulator($v->getName()))->replace('^set', ''));
-      if(!empty($data[$name])){
-        if(count($v->getPrototypes()) > 1){
-          $type = $v->getPrototypes()[1]->getParameters()[0]->getType();
-          if(class_exists($type)){
-            if(isset($data[$name]) && !($data[$name] instanceof \Solutio\AbstractEntity)){
-              $data[$name] = new $type($data[$name] instanceof \Solutio\Utils\Data\ArrayObject ? (array) $data[$name] : $data[$name]);
-            }
+      if(strpos($v->getName(), 'set') === 0){
+        $name = StringManipulator::GetInstance($v->getName())->replace('set', '')->toLowerCaseFirstChars();
+        if(isset($data[$name]) && $data[$name] !== null){
+          $class  = $v->getParameters()[0]->getClass() ? $v->getParameters()[0]->getClass()->getName() : null;
+          if(isset($data[$name]) && !($data[$name] instanceof \Solutio\AbstractEntity) && !empty($class)){
+            $data[$name] = new $class($data[$name]);
+          }
+        }
+      }elseif(strpos($v->getName(), 'add') === 0){
+        $name = StringManipulator::GetInstance($v->getName())->replace('add', '')->toLowerCaseFirstChars().'s';
+        if(isset($data[$name]) && $data[$name] !== null){
+          $class  = $v->getParameters()[0]->getClass() ? $v->getParameters()[0]->getClass()->getName() : null;
+          foreach($data[$name] as $index => $occ){
+            $data[$name][$index] = ($class && !($occ instanceof $class) ? new $class($occ) : $occ);
           }
         }
       }
@@ -47,14 +58,36 @@ abstract class AbstractEntity implements \JsonSerializable
   public function toArray()
   {
     $obj = (new Hydrator\ClassMethods(false))->extract($this);
-    foreach($obj as $k => $v)
-      if((new StringManipulator($k))->search('^__(.*)__$'))
+     foreach($obj as $k => $v)
+      if(preg_match('/^__(.*)__$/', $k))
         unset($obj[$k]);
-      elseif($v instanceof \Doctrine\Common\Collections\ArrayCollection)
+      elseif($v instanceof \Lubro\Sistema\Entities\AbstractEntity){
         $obj[$k] = $v->toArray();
-      elseif($v === null)
+      }elseif($v instanceof \Doctrine\Common\Collections\ArrayCollection
+              || $v instanceof \Doctrine\ORM\PersistentCollection){
+        $obj[$k] = $v->toArray();
+        if(count($obj[$k]) <= 0) unset($obj[$k]);
+      }elseif($v === null)
         unset($obj[$k]);
+        
     return $obj;
+  }
+
+  public function getKeys()
+  {
+    $keys   = self::NameOfPrimaryKeys();
+    $data   = $this->toArray();
+    $return = [];
+    foreach($keys as $key){
+      $methodName = 'get' . ucfirst($key);
+      $return[$key] = $this->{$methodName}();
+      if($this->{$methodName}() instanceof AbstractEntity){
+        $return[$key] = $this->{$methodName}()->getKeys();
+        if(count($return[$key]) === 1)
+          $return[$key] = current($return[$key]);
+      }
+    }
+    return $return;
   }
 
   public static function NameOfPrimaryKeys()
@@ -66,5 +99,22 @@ abstract class AbstractEntity implements \JsonSerializable
   {
     return $this->toArray();
   }
-
+  
+  protected function findEntityInList(\Traversable $list, AbstractEntity $entity)
+  {
+    $keys = $entity->getKeys();
+    if($list->count() > 0){
+      foreach($list as $occ){
+        $data   = $occ->getKeys();
+        $exists = true;
+        foreach($keys as $k => $v)
+          if(!($data[$k] === $v) || $v === null){
+            $exists = false;
+            break;
+          }
+        if($exists) return $occ;
+      }
+      return false;
+    }
+  }
 }

@@ -311,6 +311,20 @@ class StringManipulator
   }
   
   /**
+   * Retorna a string com os primeiros caracteres das palavras em minúsculo.
+   * @return \Solutio\Utils\Data\StringManipulator
+   */
+  public function toLowerCaseFirstChars()
+  {
+    $ex = explode(' ', mb_strtolower($this->string));
+    $this->string = '';
+    foreach($ex as $v)
+      $this->string .= $v.' ';
+    $this->string = trim($this->string);
+    return $this;
+  }
+  
+  /**
    * Retorna verdadeiro se a string estiver vazia.
    *
    * @return bool

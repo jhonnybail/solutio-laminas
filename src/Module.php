@@ -8,7 +8,7 @@ use Zend\Mvc\MvcEvent,
 class Module
 {
     
-  const VERSION = '1.3.0';
+  const VERSION = '2.0.0';
   
   public function onBootstrap(MvcEvent $e)
   {
@@ -24,6 +24,11 @@ class Module
 
     System::SetSystem((array) $sys);
   }
+
+  public function getConfig()
+  {
+    return include __DIR__ . '/../config/module.config.php';
+  }
   
   public function getServiceConfig()
   {
@@ -34,6 +39,9 @@ class Module
         },
         'Solutio\Utils\Net\Mail' => function($container) {
           return new Utils\Net\Mail\Mail($container->get('acmailer.mailservice.default'));
+        },
+        'Solutio\Middleware\Cors' => function($container){
+          return new \Tuupola\Middleware\Cors($container->getConfig()['solutio']['cors']);
         }
       ]
     ];

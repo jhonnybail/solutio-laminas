@@ -9,7 +9,6 @@ use Doctrine\ORM,
 
 class EntityRepository extends ORM\EntityRepository 
 {
-  
   const		RESULT_OBJECT						= 1;
   const 	RESULT_ARRAY						= 2;
   
@@ -18,8 +17,51 @@ class EntityRepository extends ORM\EntityRepository
 
   public function save(\Solutio\AbstractEntity $entity)
   {
-    $this->getEntityManager()->persist($entity);
+    try{
+      $this->getEntityManager()->persist($entity);
+      $this->getEntityManager()->flush();
+      return $entity;
+    }catch(\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e){
+      throw new \InvalidArgumentException('Content already exists.');
+    }
+  }
+  
+  public function insert(AbstractEntity $entity)
+  {
+    return $this->save($entity);
+  }
+  
+  public function update(AbstractEntity $entity)
+  {
+    $metaData = $this->getClassMetadata();
+    $keys     = $entity->getKeys();
+    $data     = $entity->toArray();
+    foreach($keys as $key => $value)
+      unset($data[$key]);
+    $entity   = $this->getEntityManager()->getReference(get_class($entity), $keys);
+    $entity->fromArray($data);
+    return $this->save($entity);
+  }
+  
+  public function delete(AbstractEntity $entity)
+  {
+    $entity = $this->find($entity->getKeys());
+    $this->getEntityManager()->remove($entity);
     $this->getEntityManager()->flush();
+    return $entity;
+  }
+  
+  public function find($id)
+  {
+    $metaData 	= $this->getClassMetadata();
+    if(count($metaData->getIdentifier()) > 1 && !is_array($id)){
+      $entities = $this->findById($id);
+      if(count($entities) === 1)
+        $entity = current($entities);
+    }else
+      $entity = parent::find($id);
+    if(!$entity)
+      throw new \InvalidArgumentException('Content not found.');
     return $entity;
   }
 
@@ -85,34 +127,47 @@ class EntityRepository extends ORM\EntityRepository
         }
         
         foreach($maps as $fieldName => $field){
-          $am = $metaData->getAssociationMapping($fieldName);
+          $am         = $metaData->getAssociationMapping($fieldName);
+          $className  = $am['targetEntity'];
+          $nick       = "{$fieldName}";
           if($am['type'] == 1 || $am['type'] == 2){
-            $query->leftJoin("{$alias}.{$fieldName}", $fieldName);
-            if(count($fields) <= 0)
-              $query->addSelect($fieldName);
+            $query->leftJoin("{$alias}.{$fieldName}", $nick);
+            if(count($fields) <= 0){
+              $query->addSelect($nick);
+              $subMetaData  = $this->getEntityManager()->getClassMetadata($className);
+              foreach($subMetaData->getIdentifier() as $key){
+                try{
+                  if($subMetaData->getAssociationMapping($key)){
+                    $query->leftJoin("{$nick}.{$key}", "sub".$nick.$key);
+                    $query->addSelect("sub".$nick.$key);
+                  }
+                }catch(\Exception $e){}
+              }
+            }
           }
           if(isset($obj[$fieldName])){
             if(($am['type'] == 2 || $am['type'] == 1) && $obj[$fieldName] != null){
               $id 	= null;
-              if($obj[$fieldName] instanceof \Solutio\AbstractEntity){
-                $obj2	= $obj[$fieldName]->toArray();
+              if(is_subclass_of($className, AbstractEntity::class)){
+                $obj2	= $obj[$fieldName];
                 foreach($obj2 as $k => $v){
                   if(is_string($v) || is_numeric($v))
-                    $query->andWhere($fieldName.".".$k." = '".$v."'");
-                  elseif($v instanceof \Solutio\AbstractEntity){
-                    $vIds = get_class($v)::NameOfPrimaryKeys();
-                    $va   = $v->toArray();
-                    $query->innerJoin("{$fieldName}.{$k}", $fieldName."_".$k);
+                    $query->andWhere($nick.".".$k." = '".$v."'");
+                  elseif($v instanceof AbstractEntity){
+                    $class  = get_class($v);
+                    $vIds   = $class::NameOfPrimaryKeys();
+                    $va     = $v->toArray();
+                    $query->innerJoin("{$nick}.{$k}", $nick."_".$k);
                     foreach($vIds as $vId)
                       if(!empty($va[$vId]) && (is_string($va[$vId]) || is_numeric($va[$vId])))
-                        $query->andWhere($fieldName."_".$k.".".$vId." = '".$va[$vId]."'");
+                        $query->andWhere($nick."_".$k.".".$vId." = '".$va[$vId]."'");
                   }
                 }
               }else{
                 $obj2	= $obj[$fieldName];
                 $column = key($am['targetToSourceKeyColumns']);
                 $id = $obj2[$column];
-                $query->andWhere($fieldName.".".$column." = ".$id);
+                $query->andWhere($nick.".".$column." = ".$id);
               }
             }elseif(is_string($obj[$fieldName]) || is_numeric($obj[$fieldName])){
               if((int)((string)$obj[$fieldName]) < 0){
@@ -290,10 +345,22 @@ class EntityRepository extends ORM\EntityRepository
                 }
                 $expression = makeExpression($em, $metaData, $query, $listValues, $filter, $childOr);
               }elseif(!empty($field) && fieldExists($em, $metaData, $field)){
-                $fieldName = str_replace(".", "", $field . rand());
-                $expression = getCondition($query, (!preg_match('/\./', $field) ? $query->getRootAliases()[0]."." : "").$field, ':'.$fieldName, $condition);
-                if($value || $value === false)
-                  $listValues[$fieldName] = $value;
+                if(is_array($value) && !isset($value[0])){
+                  foreach($value as $subField => $subValue){
+                    $fieldName = str_replace(".", "", $field.$subField . rand());
+                    $expression = getCondition($query, $field.".".$subField, ':'.$fieldName, $condition);
+                    if($subValue || $subValue === false)
+                      $listValues[$fieldName] = $subValue;
+                    if(!empty($expression))
+                      $expr->add($expression);
+                  }
+                  $expression = null;
+                }else{
+                  $fieldName = str_replace(".", "", $field . rand());
+                  $expression = getCondition($query, (!preg_match('/\./', $field) ? $query->getRootAliases()[0]."." : "").$field, ':'.$fieldName, $condition);
+                  if($value || $value === false)
+                    $listValues[$fieldName] = $value;
+                }
               }
               
               if(!empty($expression))
@@ -322,11 +389,23 @@ class EntityRepository extends ORM\EntityRepository
         }
         
         foreach($maps as $fieldName => $field){
-          $am = $metaData->getAssociationMapping($fieldName);
+          $am         = $metaData->getAssociationMapping($fieldName);
+          $className  = $am['targetEntity'];
+          $nick       = $fieldName;
           if($am['type'] == 1 || $am['type'] == 2){
-            $query->leftJoin("{$alias}.{$fieldName}", $fieldName);
-            if(count($fields) <= 0)
-              $query->addSelect($fieldName);
+            $query->leftJoin("{$alias}.{$fieldName}", $nick);
+            if(count($fields) <= 0){
+              $query->addSelect($nick);
+              $subMetaData  = $this->getEntityManager()->getClassMetadata($className);
+              foreach($subMetaData->getIdentifier() as $key){
+                try{
+                  if($subMetaData->getAssociationMapping($key)){
+                    $query->leftJoin("{$nick}.{$key}", "sub".$nick.$key);
+                    $query->addSelect("sub".$nick.$key);
+                  }
+                }catch(\Exception $e){}
+              }
+            }
           }
         }
       
@@ -366,7 +445,7 @@ class EntityRepository extends ORM\EntityRepository
     if($type === self::RESULT_OBJECT){
       $rs['result'] = $query->getQuery()->getResult(\Doctrine\ORM\AbstractQuery::HYDRATE_OBJECT);
     }elseif($type === self::RESULT_ARRAY){
-      $rs['result'] = $query->getQuery()->getResult(\Doctrine\ORM\AbstractQuery::HYDRATE_ARRAY);
+      $rs['result'] = $query->getQuery()->getResult('SolutioArrayHydrator');
     }
     
     return $rs;

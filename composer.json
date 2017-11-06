@@ -1,7 +1,7 @@
 {
   "name": "solutio/module-zf3",
   "description": "ZF3 library development by Solutio.Me",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "type": "library",
   "license": "MIT",
   "keywords": [
@@ -22,7 +22,10 @@
     "php-curl-class/php-curl-class": "^7.2",
     "doctrine/doctrine-orm-module": "^1.1",
     "zendframework/zend-server": "^2.7",
-    "acelaya/zf2-acmailer": "^6.4.0"
+    "zendframework/zend-eventmanager": "^3.2",
+    "acelaya/zf2-acmailer": "^6.4.0",
+    "tuupola/cors-middleware": "v0.3.7",
+    "ramsey/uuid": "^3.7"
   },
   "autoload": {
     "psr-4": {
