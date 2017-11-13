@@ -71,7 +71,7 @@ class ArrayObject extends \ArrayObject implements \JsonSerializable
     if(!is_array((array) $array))
       throw InvalidArgumentException::FromCode(3);
     else
-      return new ArrayObject(array_merge((array) $this, (array) $array));
+      return new ArrayObject(array_replace_recursive((array) $this, (array) $array));
   }
 
   /**
@@ -251,10 +251,9 @@ class ArrayObject extends \ArrayObject implements \JsonSerializable
    */
   public function &end()
   {
-    $value = null;
     $aI = $this->getIterator();
-    foreach($aI as $value);
-    return $value;
+    $aI->seek($aI->count()-1);
+    return $aI->current();
   }
 
   /**

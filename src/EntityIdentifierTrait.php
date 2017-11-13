@@ -4,12 +4,11 @@ namespace Solutio;
 
 trait EntityIdentifierTrait
 {
-  protected static $primaryKeys = ['id'];
-  
   /**
    * @var string
    *
    * @ORM\Id
+   * @ORM\GeneratedValue(strategy="NONE")
    * @ORM\Column(name="id", type="integer", nullable=false)
    */
   private $id;
@@ -21,7 +20,7 @@ trait EntityIdentifierTrait
   
   public function setId($id)
   {
-    $this->id = $id;
+    $this->id = (int) $id;
     return $this;
   }
 }

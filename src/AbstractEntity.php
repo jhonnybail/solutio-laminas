@@ -10,18 +10,24 @@
 namespace Solutio;
 
 use Zend\Hydrator,
+    Doctrine\ORM\Mapping as ORM,
+    Doctrine\Common\Annotations\AnnotationReader,
     Solutio\Utils\Data\StringManipulator;
 
 /**
  * @ORM\MappedSuperclass
  * @ORM\EntityListeners({
+ *  "Solutio\Doctrine\Listeners\GenerateIdentifierListener",
  *  "Solutio\Doctrine\Listeners\ValidateFieldsListener",
- *  "Solutio\Doctrine\Listeners\MappingsReferenceListener",
- *  "Solutio\Doctrine\Listeners\GeneretateIdentifierListener"
+ *  "Solutio\Doctrine\Listeners\MappingsReferenceListener"
  * })
  */
 abstract class AbstractEntity implements \JsonSerializable
 {
+  private $annotationReader;
+  private $childrenPendingRemovation  = [];
+  private static $primaryKeys         = [];
+  
   public function __construct($options = [])
   {
     if(is_array($options))
@@ -29,39 +35,113 @@ abstract class AbstractEntity implements \JsonSerializable
     elseif(!empty($options) && method_exists($this, "setId"))
       $this->setId($options);
   }
+    
+  protected function __get($name)
+  {
+      return $this->{$name};
+  }
+  
+  public function __call($name, $arguments)
+  {
+    $methodName = StringManipulator::GetInstance($name);
+    if($methodName->search('get')){
+      $propertyName = $methodName->replace('get')->toLowerCaseFirstChars();
+      return $this->{$propertyName};
+    }elseif($methodName->search('set')){
+      $propertyName = $methodName->replace('set')->toLowerCaseFirstChars();
+      $this->{$propertyName} = $arguments[0];
+      return $this;
+    }elseif($methodName->search('add')){
+      $propertyName = $methodName->replace('add')->toLowerCaseFirstChars();
+      if($propertyName->charAt($propertyName->length()-1) === 'y')
+        $propertyName = $propertyName->substr(0, -1) . 'ies';
+      else
+        $propertyName .= 's';
+      
+      if(property_exists($this, $propertyName) && empty($this->{$propertyName}))
+        $this->{$propertyName} = new \Doctrine\Common\Collections\ArrayCollection;
+        
+      if($entity = $this->findEntityInList($this->{$propertyName}, $arguments[0])){
+        $entity->fromArray($arguments[0]->toArray());
+      }else{
+        $this->{$propertyName}[]  = $arguments[0];
+        $setDependencyName           = 'set' . StringManipulator::GetInstance(get_class($this))
+                                                                ->split('\\')
+                                                                ->end();
+        $getDependencyName           = 'get' . StringManipulator::GetInstance(get_class($this))
+                                                                ->split('\\')
+                                                                ->end();
+        if(empty($arguments[0]->{$getDependencyName}()))
+          $arguments[0]->{$setDependencyName}($this);
+      }
+      return $this;
+    }
+  }
 
   public function fromArray(array $data)
   {
     $reflection = \Zend\Server\Reflection::reflectClass($this);
-    foreach($reflection->getMethods() as $v){
-      if(strpos($v->getName(), 'set') === 0){
-        $name = StringManipulator::GetInstance($v->getName())->replace('set', '')->toLowerCaseFirstChars();
-        if(isset($data[$name]) && $data[$name] !== null){
-          $class  = $v->getParameters()[0]->getClass() ? $v->getParameters()[0]->getClass()->getName() : null;
-          if(isset($data[$name]) && !($data[$name] instanceof \Solutio\AbstractEntity) && !empty($class)){
-            $data[$name] = new $class($data[$name]);
+    $pending    = [];
+    foreach($reflection->getProperties() as $property){
+      $method = 'get' . ucfirst($property->getName());
+      $name = $property->getName();
+      $propertyAnnotations = $this->getAnnotationReader()->getPropertyAnnotations($property);
+      foreach($propertyAnnotations as $propertyAnnotation)
+        if($propertyAnnotation instanceof ORM\OneToMany || $propertyAnnotation instanceof ORM\ManyToMany){
+          if(isset($data[$name]) && $data[$name] !== null){
+            $pending[$method] = [
+              'name'                => $name,
+              'propertyAnnotation'  => $propertyAnnotation,
+              'data'                => $data[$name]
+            ];
+            unset($data[$name]);
+          }
+        }elseif($propertyAnnotation instanceof ORM\ManyToOne || $propertyAnnotation instanceof ORM\OneToOne){
+          if(isset($data[$name]) && $data[$name] !== null){
+            $className  = preg_match('/\\/', $propertyAnnotation->targetEntity) ? $propertyAnnotation->targetEntity : $reflection->getNamespaceName() . '\\' . $propertyAnnotation->targetEntity;
+            $className = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
+            if(isset($data[$name]) && !($data[$name] instanceof \Solutio\AbstractEntity)){
+              $data[$name] = new $className(($data[$name] instanceof \Traversable) ? (array) $data[$name] : $data[$name]);
+            }
           }
         }
-      }elseif(strpos($v->getName(), 'add') === 0){
-        $name = StringManipulator::GetInstance($v->getName())->replace('add', '')->toLowerCaseFirstChars().'s';
-        if(isset($data[$name]) && $data[$name] !== null){
-          $class  = $v->getParameters()[0]->getClass() ? $v->getParameters()[0]->getClass()->getName() : null;
-          foreach($data[$name] as $index => $occ){
-            $data[$name][$index] = ($class && !($occ instanceof $class) ? new $class($occ) : $occ);
-          }
-        }
-      }
     }
     (new Hydrator\ClassMethods)->hydrate($data,$this);
+    foreach($pending as $method => $array){
+      $name               = $array['name'];
+      $propertyAnnotation = $array['propertyAnnotation'];
+      $data               = $array['data'];
+      $method = StringManipulator::GetInstance('add' . ucfirst($name));
+      $method = (string) ($method->substr($method->length()-3, 3)->toString() === 'ies' ? $method->substr(0, -3)->concat('y') : $method->substr(0, -1));
+      $className  = preg_match('/\\/', $propertyAnnotation->targetEntity) ? $propertyAnnotation->targetEntity : $reflection->getNamespaceName() . '\\' . $propertyAnnotation->targetEntity;
+      $className = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
+      foreach($data as $index => $occ){
+        $occEntity  = ($occ instanceof $className) ? $occ : new $className((array) $occ);
+        $this->{$method}($occEntity);
+        if((is_array($occ) || $occ instanceof \Traversable) && isset($occ['remove']) && $occ['remove'])
+          $this->childrenPendingRemovation[$className][] = $occEntity;
+      }
+    }
   }
 
-  public function toArray()
+  public function toArray() : array
   {
-    $obj = (new Hydrator\ClassMethods(false))->extract($this);
-     foreach($obj as $k => $v)
+    $className  = get_class($this);
+    if(is_subclass_of($className, \Doctrine\ORM\Proxy\Proxy::class))
+      $className = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
+    $reflection = \Zend\Server\Reflection::reflectClass($className);
+    $obj      = [];
+    foreach($reflection->getProperties() as $property){
+      $method = 'get' . ucfirst($property->getName());
+      if ($this->{$method}() !== null) {
+        $obj[$property->getName()] = $this->{$method}();
+      }
+    }
+    
+    foreach($obj as $k => $v)
       if(preg_match('/^__(.*)__$/', $k))
         unset($obj[$k]);
-      elseif($v instanceof \Lubro\Sistema\Entities\AbstractEntity){
+      elseif($v instanceof AbstractEntity){
         $obj[$k] = $v->toArray();
       }elseif($v instanceof \Doctrine\Common\Collections\ArrayCollection
               || $v instanceof \Doctrine\ORM\PersistentCollection){
@@ -72,11 +152,15 @@ abstract class AbstractEntity implements \JsonSerializable
         
     return $obj;
   }
+  
+  public function getChildrenPendingRemovation() : array
+  {
+    return $this->childrenPendingRemovation;
+  }
 
-  public function getKeys()
+  public function getKeys() : array
   {
     $keys   = self::NameOfPrimaryKeys();
-    $data   = $this->toArray();
     $return = [];
     foreach($keys as $key){
       $methodName = 'get' . ucfirst($key);
@@ -90,14 +174,36 @@ abstract class AbstractEntity implements \JsonSerializable
     return $return;
   }
 
-  public static function NameOfPrimaryKeys()
+  public static function NameOfPrimaryKeys() : array
   {
-    return static::$primaryKeys;
+    $className        = get_called_class();
+    if(is_subclass_of($className, \Doctrine\ORM\Proxy\Proxy::class))
+      $className = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
+    if(empty(self::$primaryKeys[$className])){
+      $reflection       = \Zend\Server\Reflection::reflectClass($className);
+      $annotationReader = new AnnotationReader;
+      self::$primaryKeys[$className]  = [];
+      foreach($reflection->getProperties() as $property){
+        $propertyAnnotations = $annotationReader->getPropertyAnnotations($property);
+        foreach($propertyAnnotations as $propertyAnnotation){
+          if($propertyAnnotation instanceof ORM\Id)
+            self::$primaryKeys[$className] [] = $property->getName();
+        }
+      }
+    }
+    return self::$primaryKeys[$className];
   }
 
-  public function jsonSerialize()
+  public function jsonSerialize() : array
   {
     return $this->toArray();
+  }
+  
+  private function getAnnotationReader() : AnnotationReader
+  {
+    if(empty($this->annotationReader))
+      $this->annotationReader = new AnnotationReader;
+    return $this->annotationReader;
   }
   
   protected function findEntityInList(\Traversable $list, AbstractEntity $entity)

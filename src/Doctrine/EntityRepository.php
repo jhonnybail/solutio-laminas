@@ -5,7 +5,8 @@ namespace Solutio\Doctrine;
 use Doctrine\ORM,
     Doctrine\DBAL\Query\Expression\ExpressionBuilder,
     Doctrine\DBAL\Query\Expression\CompositeExpression,
-    Doctrine\ORM\Tools\Pagination\Paginator;
+    Doctrine\ORM\Tools\Pagination\Paginator,
+    Solutio\AbstractEntity;
 
 class EntityRepository extends ORM\EntityRepository 
 {
@@ -15,7 +16,7 @@ class EntityRepository extends ORM\EntityRepository
   private	$conditions							= [];
   private $disabledefaultFilters	= false;
 
-  public function save(\Solutio\AbstractEntity $entity)
+  protected function save(AbstractEntity $entity)
   {
     try{
       $this->getEntityManager()->persist($entity);
@@ -38,9 +39,15 @@ class EntityRepository extends ORM\EntityRepository
     $data     = $entity->toArray();
     foreach($keys as $key => $value)
       unset($data[$key]);
-    $entity   = $this->getEntityManager()->getReference(get_class($entity), $keys);
-    $entity->fromArray($data);
-    return $this->save($entity);
+    try{
+      $findedEntity   = $this->getEntityManager()->getReference(get_class($entity), $keys);
+    }catch(\Exception $e){
+      if(isset($data['id']))
+        $findedEntity   = $this->find($data['id']);
+    }
+    if(!$findedEntity) throw new \InvalidArgumentException('Content not found.');
+    $findedEntity->fromArray($data);
+    return $this->save($findedEntity);
   }
   
   public function delete(AbstractEntity $entity)
@@ -65,7 +72,7 @@ class EntityRepository extends ORM\EntityRepository
     return $entity;
   }
 
-  public function getCollection(\Solutio\AbstractEntity $entity, array $filters = [], array $params = [], array $fields = [], $type = self::RESULT_ARRAY)
+  public function getCollection(AbstractEntity $entity, array $filters = [], array $params = [], array $fields = [], $type = self::RESULT_ARRAY)
   {
     
     $metaData 	= $this->getClassMetadata();

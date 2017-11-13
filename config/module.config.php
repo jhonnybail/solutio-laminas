@@ -6,11 +6,10 @@ return [
   'solutio' => [
     'cors'  => [
       "origin"          => ["*"],
-      "methods"         => ["GET", "POST", "PUT", "PATCH", "DELETE"],
+      "methods"         => ["*"],
       "headers.allow"   => [],
-      "headers.expose"  => [],
       "credentials"     => false,
-      "cache"           => 0,
+      "cache"           => -1,
     ]
   ],
   'doctrine' => [
@@ -24,6 +23,18 @@ return [
           'query_cache'           => 'apc',
           'result_cache'          => 'apc'
         ]
+      ],
+      'SolutioConfig_driver' => [
+        'class' => \Doctrine\ORM\Mapping\Driver\AnnotationDriver::class,
+        'cache' => 'array',
+        'paths' => [
+          __DIR__.'/../src'
+        ]
+      ],
+      'orm_default' => [
+        'drivers' => [
+          'Solutio' => 'SolutioConfig_driver'
+        ]
       ]
     ],
     'configuration' => [
@@ -34,5 +45,13 @@ return [
             ],
         ]
     ]
-  ]
+  ],
+  'service_listener'  => [
+    Service\Listener\RemoveChildrenPendingListener::class  => Factory\ServiceListenerWithContainerFactory::class
+  ],
+  'view_manager' => [
+    'strategies' => [
+      'ViewJsonStrategy',
+    ]
+  ],
 ];

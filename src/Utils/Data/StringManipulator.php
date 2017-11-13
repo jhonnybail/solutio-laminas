@@ -130,9 +130,9 @@ class StringManipulator
    * @param   string|null $delimiter	Delimitador para análise da expressão regular
    * @return  \Solutio\Utils\Data\StringManipulator
    */
-  public function replace($pattern, $replace, $delimiter = "|")
+  public function replace($pattern, $replace, $delimiter = "/")
   {
-    return new StringManipulator(preg_replace($delimiter.((string) $pattern).$delimiter, (string) $replace, $this->string));
+    return new StringManipulator(preg_replace($delimiter.($pattern).$delimiter, $replace, $this->string));
   }
   
   /**
@@ -142,9 +142,9 @@ class StringManipulator
    * @param  string	$delimiter	Delimitador para análise da expressão regular
    * @return bool
    */
-  public function search($search, $delimiter = "|")
+  public function search($search, $delimiter = "/")
   {
-    if(preg_match($delimiter.((string) $search).$delimiter, $this->string))
+    if(preg_match($delimiter.($search).$delimiter, $this->string))
       return true;
     else
       return false;
@@ -316,10 +316,10 @@ class StringManipulator
    */
   public function toLowerCaseFirstChars()
   {
-    $ex = explode(' ', mb_strtolower($this->string));
+    $ex = explode(' ', $this->string);
     $this->string = '';
     foreach($ex as $v)
-      $this->string .= $v.' ';
+      $this->string .= lcfirst($v).' ';
     $this->string = trim($this->string);
     return $this;
   }

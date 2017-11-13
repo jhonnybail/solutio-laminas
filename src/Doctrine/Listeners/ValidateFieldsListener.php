@@ -3,7 +3,7 @@
 namespace Solutio\Doctrine\Listeners;
 
 use Doctrine\ORM\Mapping as ORM;
-use Lubro\Sistema\Entities\AbstractEntity;
+use Solutio\AbstractEntity;
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
 
 class ValidateFieldsListener

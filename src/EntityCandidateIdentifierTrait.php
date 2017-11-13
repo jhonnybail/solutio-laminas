@@ -5,9 +5,7 @@ namespace Solutio;
 trait EntityCandidateIdentifierTrait
 {
   /**
-   * @var string
-   *
-   * @ORM\Column(name="id_occ", type="string", length=36, nullable=false)
+   * @ORM\Column(name="id", type="string", length=36, nullable=false)
    */
   private $id;
   
