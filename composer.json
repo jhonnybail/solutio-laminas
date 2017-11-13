@@ -27,7 +27,7 @@
     "zendframework/zend-eventmanager": "^3.2",
     "zendframework/zend-json": "^3.0",
     "acelaya/zf2-acmailer": "^6.4.0",
-    "ramsey/uuid": "^3.7",
+    "ramsey/uuid": "^3.7"
   },
   "autoload": {
     "psr-4": {
