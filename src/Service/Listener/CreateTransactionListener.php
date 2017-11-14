@@ -31,6 +31,7 @@ class CreateTransactionListener extends AbstractServiceListener
   
   public function rollback(EventInterface $event)
   {
-    $this->getContainer()->get('Doctrine\ORM\EntityManager')->rollback();
+    if($this->getContainer()->get('Doctrine\ORM\EntityManager')->getConnection()->isTransactionActive())
+      $this->getContainer()->get('Doctrine\ORM\EntityManager')->rollback();
   }
 }
