@@ -103,29 +103,12 @@ class ServiceRestController extends AbstractRestfulController
   // delete - DELETE
   public function delete($id)
   {
-    $values = new \Solutio\Utils\Data\ArrayObject((array) $this->getDataEntity());
-    $data   = new \Solutio\Utils\Data\ArrayObject(
-      $this->getRequest()->getContent() ? Json\Decoder::decode($this->getRequest()->getContent(), Json\Json::TYPE_ARRAY) : []);
-    $ids    = $this->getEntity()::NameOfPrimaryKeys();
-    if(count($ids) > 1){
-      $idsNotNull = 0;
-      foreach($ids as $key)
-        if(empty($values[$key])) $values[$key] = $id;
-        else $idsNotNull++;
-      if($idsNotNull < count($ids)-1)
-        $values = ['id' => $id];
+    $values   = (array) $this->getDataEntity();
+    $res = $this->service->delete($this->getEntity($values));
+    if($res){
+      return new JsonModel(['success' => true]);
     }else
-      $values = [$ids[0] => $id];
-    $data   = $data->concat($values);
-    if($data->length() > 0){
-      $entity = $this->getEntity();
-      $entity = new $entity((array) $data);
-      $res = $this->service->delete($entity);
-      if($res){
-        return new JsonModel(['success' => true]);
-      }else
-        return new JsonModel(['success' => false]);
-    }
+      return new JsonModel(['success' => false]);
     return new JsonModel(['success' => false]);
   }
 

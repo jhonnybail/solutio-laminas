@@ -9,7 +9,7 @@ use Zend\Mvc\MvcEvent,
 class Module
 {
     
-  const VERSION = '2.0.1';
+  const VERSION = '2.0.2';
   
   public function onBootstrap(MvcEvent $e)
   {
@@ -24,7 +24,7 @@ class Module
     System::SetSystem((array) $sys);
     
     $this->applyCors($e);
-    $e->getTarget()->getEventManager()->attach('dispatch.error', [$this, 'onDispatchError'], 100);
+    $e->getTarget()->getEventManager()->attach('dispatch.error', [$this, 'onDispatchError'], 0);
     
     //Register Listeners Aggregate
     $serviceListeners = $e->getTarget()->getConfig()['service_listener'];

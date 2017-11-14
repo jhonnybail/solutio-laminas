@@ -9,7 +9,7 @@ class ServiceListenerFactory implements FactoryInterface
 {
   public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
   {
-    $listener     = new $requestedName;
+    $listener     = new $requestedName($container);
     $eventManager = $container->get('Zend\EventManager\EventManagerInterface');
     $listener->attach($eventManager);
   }
