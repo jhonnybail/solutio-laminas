@@ -35,11 +35,6 @@ abstract class AbstractEntity implements \JsonSerializable
     elseif(!empty($options) && method_exists($this, "setId"))
       $this->setId($options);
   }
-    
-  protected function __get($name)
-  {
-      return $this->{$name};
-  }
   
   public function __call($name, $arguments)
   {
