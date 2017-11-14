@@ -12,8 +12,8 @@ namespace Solutio\Utils\Data;
 /**
  * Tratamento de datas.
  */
-class DateTime extends \DateTime {
-  
+class DateTime extends \DateTime
+{
   const	DAY                 = 'd';
   const	DAY_SHORT           = 'j';
   const	WEEKDAY             = 'w';
@@ -248,5 +248,4 @@ class DateTime extends \DateTime {
   public function __destruct()
   {
   }
-  
 }

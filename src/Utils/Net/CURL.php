@@ -16,7 +16,6 @@ use Solutio\InvalidArgumentException;
  */
 class CURL
 {
-
   /**
    * Objeto URLRequest informada.
    * @var \Solutio\Utils\Net\URLRequest
@@ -49,13 +48,11 @@ class CURL
    */
   public function __construct(URLRequest $urlRequest)
   {
-    
     if(!function_exists("curl_init"))
       throw InvalidArgumentException::FromCode(4);
     
     $this->urlRequest = $urlRequest;
     $this->proxy = '';
-  
   }
     
   /**
@@ -65,7 +62,6 @@ class CURL
    */
   public function load()
   {
-  
     if($this->urlRequest->method == URLRequest::METHODGET){
         
       if($this->urlRequest->data != '')
@@ -117,7 +113,6 @@ class CURL
       return true;
     else
       return false;
-    
   }
   
   /**
@@ -138,5 +133,4 @@ class CURL
   public function __sleep(){
     return parent::__sleep()->concat(array('urlRequest', 'userAgent', 'proxy', 'content'));
   }
-
 }

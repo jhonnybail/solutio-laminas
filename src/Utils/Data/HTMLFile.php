@@ -16,7 +16,6 @@ use Solutio\Utils\Net\URLRequest;
  */
 final class HTMLFile extends DOMFile
 {
-  
   public function __construct(URLRequest $urlRequest = null)
   {
     $this->headString = new StringManipulator('<!DOCTYPE html>');
@@ -135,5 +134,4 @@ final class HTMLFile extends DOMFile
     $data = parent::getData();
     return new StringManipulator(trim((string) $data->replace("<\?xml(.*)\"\?>", "")));
   }
-    
 }

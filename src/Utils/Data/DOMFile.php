@@ -22,7 +22,6 @@ use Solutio\System,
  */
 class DOMFile extends ArrayObject implements IFileObject, \JsonSerializable
 {
-
   /**
    * Responsável para acessar as Annotations da classe.
    * @var \ReflectionClass
@@ -818,5 +817,4 @@ class DOMFile extends ArrayObject implements IFileObject, \JsonSerializable
   {
     parent::__destruct();
   }
-
 }

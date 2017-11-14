@@ -17,7 +17,6 @@ use Solutio\InvalidArgumentException,
  */
 class ImageFile extends File
 {
-  
   const IMAGETYPEJPG 	= 'jpg';
   const IMAGETYPEJPEG = 'jpeg';
   const IMAGETYPEGIF 	= 'gif';
@@ -570,5 +569,4 @@ class ImageFile extends File
     $this->generateData();
     return (string) $this->data;
   }
-  
 }

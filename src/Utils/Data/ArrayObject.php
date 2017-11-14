@@ -16,7 +16,6 @@ use Solutio\InvalidArgumentException;
  */
 class ArrayObject extends \ArrayObject implements \JsonSerializable
 {
-  
   /**
    * Construtor
    *
@@ -326,5 +325,4 @@ class ArrayObject extends \ArrayObject implements \JsonSerializable
   {
     return new ArrayObject($array);
   }
-    
 }

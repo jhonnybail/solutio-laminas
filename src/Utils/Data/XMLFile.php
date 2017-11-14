@@ -16,12 +16,10 @@ use Solutio\Utils\Net\URLRequest;
  */
 final class XMLFile extends DOMFile
 {
-
   public function __construct(URLRequest $urlRequest = null)
   {
     $this->headString = new StringManipulator('<?xml version="1.0"?>');
     parent::__construct($urlRequest);
-    
   }
   
   /**
@@ -37,7 +35,6 @@ final class XMLFile extends DOMFile
 
   public static function CreateDOMFileByString($data)
   {
-    
     $data = (string) $data;
     
     $fileXML = new XMLFile;
@@ -45,18 +42,15 @@ final class XMLFile extends DOMFile
     $fileXML->open();
     
     return $fileXML;
-      
   }
   
   protected static function CreateDOMFileBySimpleXMLElement(\SimpleXMLElement $data)
   {
-    
     $fileXML = new XMLFile;
     $fileXML->xml = $data;
     $fileXML->open();
     
     return $fileXML;
-      
   }
 
   /**
@@ -79,5 +73,4 @@ final class XMLFile extends DOMFile
   {
     return $this->getData();
   }
-    
 }

@@ -14,7 +14,6 @@ namespace Solutio\Utils\Data;
  */
 class StringMask
 {
-    
   /**
    * Aplica uma mascara em uma string.
    * Para caracteres especiais, aplique ? antes do carácter.
@@ -25,7 +24,6 @@ class StringMask
    */
   public static function mask($mask, $value, $charMask = 'X')
   {
-    
     $mask   = new StringManipulator($mask);
     $value  = new StringManipulator($value);
     
@@ -37,5 +35,4 @@ class StringMask
     return vsprintf($mask->replace('\?'.$charMask, $charMask)->replace($charMask, '%s'), $value->split());
       
   }
-    
 }

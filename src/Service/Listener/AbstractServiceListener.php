@@ -37,9 +37,9 @@ abstract class AbstractServiceListener implements ListenerAggregateInterface
 
   public function detach(EventManagerInterface $events)
   {
-      foreach ($this->listeners as $index => $listener) {
-          $events->detach($listener);
-          unset($this->listeners[$index]);
-      }
+    foreach ($this->listeners as $index => $listener) {
+      $events->detach($listener);
+      unset($this->listeners[$index]);
+    }
   }
 }

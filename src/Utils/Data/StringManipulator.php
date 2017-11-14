@@ -14,7 +14,6 @@ namespace Solutio\Utils\Data;
  */
 class StringManipulator
 {
-  
   /**
    * Guarda a string passada.
    * @var string
@@ -380,5 +379,4 @@ class StringManipulator
   {
     return new StringManipulator($string);
   }
-  
 }

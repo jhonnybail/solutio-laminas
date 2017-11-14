@@ -16,7 +16,6 @@ use Solutio\Utils\Net\URLRequest;
  */
 interface IFileObject
 {
-	
 	/*
 	 * Constructor
    */
@@ -36,5 +35,4 @@ interface IFileObject
    * @return string
    */
 	public function getData();
-	
 }

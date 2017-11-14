@@ -16,7 +16,6 @@ use Solutio\Utils\Data\ArrayObject;
  */
 class URLRequestHeader
 {
-  
   /**
    * @const string Constante definida para status da requisição.
    */
@@ -74,7 +73,6 @@ class URLRequestHeader
    */
   public static function GetHeader()
   {
-    
     $ar = new ArrayObject();
     
     $ar[self::CACHECONTROL] 		  = '';
@@ -89,7 +87,5 @@ class URLRequestHeader
     $ar[self::XXSSPROTECTION] 		= '';
     
     return $ar;
-    
   }
-  
 }

@@ -21,7 +21,6 @@ use Solutio\System,
  */
 class File implements IFileObject, \JsonSerializable
 {
-
   /**
    * URLRequest informada.
    * @var \Solutio\Utils\Net\URLRequest
@@ -252,5 +251,4 @@ class File implements IFileObject, \JsonSerializable
   {
     return !is_null($this->urlRequest) ? (string) $this->urlRequest->url : (string) "";
   }
-  
 }

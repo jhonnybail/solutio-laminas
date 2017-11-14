@@ -16,7 +16,6 @@ use Solutio\InvalidArgumentException;
  */
 class Number
 {
-  
   /**
    * Guarda o numero passada.
    * @var float|integer
@@ -126,5 +125,4 @@ class Number
   {
     return new Number($num);
   }
-  
 }

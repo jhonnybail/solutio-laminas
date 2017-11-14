@@ -22,7 +22,6 @@ use Solutio\Utils\Data\StringManipulator,
  */
 class FileReference
 {
-
   /**
    * Salva o arquivo passado por referencia.
    *
@@ -36,7 +35,6 @@ class FileReference
    */
   public static function Save(IFileObject $file, $newPath = '', $newName = '', $newExtension = '')
   {
-
     if(!empty($newName))
       $file->fileName = new StringManipulator($newName);
     else
@@ -157,7 +155,6 @@ class FileReference
       }
        
     }
-
   }
 
   /**
@@ -169,7 +166,6 @@ class FileReference
    */
   public static function Delete($file)
   {
-
     $returnFile = '';
     $path       = '';
     if($file instanceof IFileObject){
@@ -224,7 +220,6 @@ class FileReference
     }
 
     return $returnFile;
-
   }
 
   /**
@@ -269,7 +264,6 @@ class FileReference
         throw NetException::FromCode(7);
         
     }
-  
   }
 
   /**
@@ -283,7 +277,6 @@ class FileReference
    */
   public static function Move($file, $newPath, $overwrite = false)
   {
-
     if($file instanceof File)
       if(!is_null($file->urlRequest)){
         $path   = new StringManipulator((string) $file->urlRequest->url);
@@ -335,7 +328,6 @@ class FileReference
         throw NetException::FromCode(7);
         
     }
-
   }
 
   /**
@@ -348,7 +340,6 @@ class FileReference
    */
   public static function Rename($file, $newName)
   {
-
     $path = '';
     if($file instanceof IFileObject)
       $path = $file->urlRequest->url;
@@ -386,7 +377,5 @@ class FileReference
       }
         
     }
-
   }
-
 }

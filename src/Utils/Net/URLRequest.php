@@ -19,7 +19,6 @@ use Solutio\System,
  */
 class URLRequest
 {
-
   const URLFILETYPE       = 'file';
   const URLDIRECTORYTYPE  = 'dir';
   const URLFIFOTYPE       = 'fifo';
@@ -73,7 +72,6 @@ class URLRequest
    */
   public function __construct($url)
   {
-
     $this->listFile = new ArrayObject(array('jpg', 'jpeg', 'gif', 'png', 'bmp', 'txt', 'wav', 'mp3', 'wma', 'midi', 'pdf', 'php', 'html', 'js', 'json', 'xls', 'xlsx', 'doc', 'docx', 'otf', 'sql', 'ppt', 'pptx', 'psd', 'ai', 'cdr', 'ttf', 'wmv', 'avi', 'mpg', 'mpeg', 'mov', 'mkv', 'rmvb', 'swf', 'swc', 'fla', 'as', 'rar', 'zip', '7z'));
     
     if(empty($url))
@@ -143,7 +141,6 @@ class URLRequest
    */
   private function getLocalFileHeaders()
   {
-      
     if(!file_exists($this->url))
       return false;
 
@@ -163,7 +160,6 @@ class URLRequest
     $this->requestHeaders->offsetSet(URLRequestHeader::CONTENTLENGTH, filesize($this->url));
     
     return true;
-
   }
   
   /**
@@ -184,7 +180,6 @@ class URLRequest
    */
   public function getType()
   {
-    
     $type = @filetype($this->url);
     
     $verifyExtension = function($value, $key, $array, $oB){
@@ -207,7 +202,6 @@ class URLRequest
       return self::URLLINKTYPE;
     else
       return self::URLUNKNOWNTYPE;
-    
   }
   
   /**
@@ -259,5 +253,4 @@ class URLRequest
   {
     return $this->url;
   }
-  
 }

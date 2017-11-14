@@ -20,7 +20,6 @@ use Solutio\Utils\Data\File,
  */
 class Directory
 {
-  
   /**
    * URLRequest informada.
    * @var \Solutio\Utils\Net\URLRequest
@@ -47,7 +46,6 @@ class Directory
    */
   public function __construct(URLRequest $rootPath)
   {
-    
     parent::__construct();
     
     if(URLRequest::URLDIRECTORYTYPE == $rootPath->getType()){
@@ -56,7 +54,6 @@ class Directory
       $this->dir			  = dir($this->url);
     }else
       throw NetException::FromCode(12);
-      
   }
   
   /**
@@ -97,7 +94,6 @@ class Directory
    */
   public function read()
   {
-    
     while($d = $this->dir->read()){
         
       if($d != '.' && $d != '..'){
@@ -127,7 +123,6 @@ class Directory
     }
 
     return null;
-
   }
   
   /**
@@ -175,5 +170,4 @@ class Directory
   {
     return (string) $this->urlRequest->url;
   }
-
 }
