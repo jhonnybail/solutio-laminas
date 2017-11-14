@@ -12,6 +12,7 @@ namespace Solutio;
 /**
  * Classe de excessão para argumentos inválidos.
  */
-class Exception extends Exception
+class SystemException extends Exception
 {
+  
 }
