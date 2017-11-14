@@ -11,7 +11,8 @@ use Zend\Mvc\Controller\AbstractRestfulController,
 
 class ServiceRestController extends AbstractRestfulController
 {
-  private	$service;
+  private	  $service;
+  protected $allowedCollectionMethods = [];
 
   public function __construct(EntityService $service)
   {
@@ -27,6 +28,16 @@ class ServiceRestController extends AbstractRestfulController
   {
     $className  = $this->getService()->getClassName();
     return new $className($this->getDataEntity($data));
+  }
+  
+  public function setAllowedCollectionMethods($methods = [])
+  {
+    $this->allowedCollectionMethods = $methods;
+  }
+  
+  public function getAllowedCollectionMethods()
+  {
+    return $this->allowedCollectionMethods;
   }
 
   // Listar - GET
@@ -110,6 +121,20 @@ class ServiceRestController extends AbstractRestfulController
     }else
       return new JsonModel(['success' => false]);
     return new JsonModel(['success' => false]);
+  }
+  
+  public function options()
+  {
+    if(in_array('*', $this->allowedCollectionMethods))
+      $this->getResponse()->getHeaders()->addHeaderLine("Access-Control-Allow-Methods", "*");
+    elseif(count($this->allowedCollectionMethods) > 0){
+      $methods = '';
+      foreach($this->allowedCollectionMethods as $v)
+        $methods .= $v.', ';
+      $methods = substr($methods, 0, -2);
+      $this->getResponse()->getHeaders()->addHeaderLine("Access-Control-Allow-Methods", "{$methods}");
+    }
+    return $this->getResponse();
   }
 
   protected function getDataEntity(array $inheritData = [])

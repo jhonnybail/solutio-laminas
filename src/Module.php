@@ -8,7 +8,7 @@ use Zend\Mvc\MvcEvent,
 
 class Module
 {
-  const VERSION = '2.0.2';
+  const VERSION = '2.0.3';
   
   public function onBootstrap(MvcEvent $e)
   {
@@ -22,8 +22,8 @@ class Module
 
     System::SetSystem((array) $sys);
     
-    $this->applyCors($e);
-    $e->getTarget()->getEventManager()->attach('dispatch.error', [$this, 'onDispatchError'], 0);
+    $e->getTarget()->getEventManager()->attach('dispatch.error',  [$this, 'onDispatchError'], 0);
+    $e->getTarget()->getEventManager()->attach('finish',          [$this, 'applyCors'], 0);
     
     //Register Listeners Aggregate
     $serviceListeners = $e->getTarget()->getConfig()['service_listener'];
@@ -67,12 +67,7 @@ class Module
       $e->getResponse()->setStatusCode(\Zend\Http\PhpEnvironment\Response::STATUS_CODE_400);
       if($exception instanceof \Zend\Json\Exception\RuntimeException){
         $data['message'] = 'Invalid Request JSON';
-      }elseif($exception instanceof System\User\AuthException)
-        $e->getResponse()->setStatusCode(
-          \Zend\Http\PhpEnvironment\Response::STATUS_CODE_401,
-          'Unauthorized'
-        );
-      elseif($exception instanceof \InvalidArgumentException)
+      }elseif($exception instanceof \InvalidArgumentException)
         $e->getResponse()->setStatusCode(
           \Zend\Http\PhpEnvironment\Response::STATUS_CODE_400,
           'Bad Request'
@@ -88,40 +83,43 @@ class Module
       $data['message']  = 'Route don\'t exists.';
       
     $model = new JsonModel($data); 
-    // inject as needed with error/exception information. 
-    // maybe set HTTP response codes based on type of error. 
-    // etc. 
     
     $e->setViewModel($model); 
     $e->stopPropagation(); 
     return $model; 
   }
   
-  protected function applyCors(MvcEvent $e)
+  public function applyCors(MvcEvent $e)
   {
     $cors = $e->getApplication()->getServiceManager()->get('config')['solutio']['cors'];
     
     //Allow-Origin
-    $origin = System::GetVariable('HTTP_HOST');
-    if(in_array('*', $cors['origin']) || in_array($origin, $cors['origin']))
-      $e->getResponse()->getHeaders()->addHeaderLine("Access-Control-Allow-Origin", $origin);
-      
+    if(!$e->getResponse()->getHeaders()->has("Access-Control-Allow-Origin")){
+      $origin = System::GetVariable('HTTP_HOST');
+      if(in_array('*', $cors['origin']) || in_array($origin, $cors['origin']))
+        $e->getResponse()->getHeaders()->addHeaderLine("Access-Control-Allow-Origin", $origin);
+    }
+    
     //Allow-Methods
-    $methods = '';
-    foreach($cors['methods'] as $method) $methods .= $method . ', ';
-    $methods = substr($methods, 0, -2);
-    $e->getResponse()->getHeaders()->addHeaderLine("Access-Control-Allow-Methods", $methods);
+    if(!$e->getResponse()->getHeaders()->has("Access-Control-Allow-Methods")){
+      $methods = '';
+      foreach($cors['methods'] as $method) $methods .= $method . ', ';
+      $methods = substr($methods, 0, -2);
+      $e->getResponse()->getHeaders()->addHeaderLine("Access-Control-Allow-Methods", $methods);
+    }
     
     //Allow-Headers
-    $headers = '';
-    foreach($cors['headers.allow'] as $header) $headers .= $header . ', ';
-    $headers = substr($headers, 0, -2);
-    $e->getResponse()->getHeaders()->addHeaderLine("Access-Control-Allow-Headers", $headers);
+    if(!$e->getResponse()->getHeaders()->has("Access-Control-Allow-Headers")){
+      $headers = '';
+      foreach($cors['headers.allow'] as $header) $headers .= $header . ', ';
+      $headers = substr($headers, 0, -2);
+      $e->getResponse()->getHeaders()->addHeaderLine("Access-Control-Allow-Headers", $headers);
+    }
     
-    if($cors['credentials'])
+    if(!$e->getResponse()->getHeaders()->has("Access-Control-Allow-Credentials") && $cors['credentials'])
       $e->getResponse()->getHeaders()->addHeaderLine("Access-Control-Allow-Credentials", true);
       
-    if(is_numeric($cors['cache']))
+    if(!$e->getResponse()->getHeaders()->has("Access-Control-Max-Age") && is_numeric($cors['cache']))
       $e->getResponse()->getHeaders()->addHeaderLine("Access-Control-Max-Age", $cors['cache']);
   }
   
