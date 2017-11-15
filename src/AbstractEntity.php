@@ -40,10 +40,10 @@ abstract class AbstractEntity implements \JsonSerializable
   {
     $methodName = StringManipulator::GetInstance($name);
     if($methodName->search('get')){
-      $propertyName = $methodName->replace('get')->toLowerCaseFirstChars();
+      $propertyName = $methodName->replace('get', '')->toLowerCaseFirstChars();
       return $this->{$propertyName};
     }elseif($methodName->search('set')){
-      $propertyName         = $methodName->replace('set')->toLowerCaseFirstChars();
+      $propertyName         = $methodName->replace('set', '')->toLowerCaseFirstChars();
       if(is_string($arguments[0])){
         $propertyAnnotations  = $this->getAnnotationReader()->getPropertyAnnotations(new \ReflectionProperty(get_class($this), $propertyName));
         foreach($propertyAnnotations as $propertyAnnotation)
@@ -53,7 +53,7 @@ abstract class AbstractEntity implements \JsonSerializable
       $this->{$propertyName} = $arguments[0];
       return $this;
     }elseif($methodName->search('add')){
-      $propertyName = $methodName->replace('add')->toLowerCaseFirstChars();
+      $propertyName = $methodName->replace('add', '')->toLowerCaseFirstChars();
       if($propertyName->charAt($propertyName->length()-1) === 'y')
         $propertyName = $propertyName->substr(0, -1) . 'ies';
       else

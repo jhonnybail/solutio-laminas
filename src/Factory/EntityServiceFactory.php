@@ -19,7 +19,6 @@ class EntityServiceFactory implements FactoryInterface
     $service  = new EntityService($em->getRepository($className));
     $service->setEventManager(new EventManager($container->get('Zend\EventManager\SharedEventManager')));
     $service->getEventManager()->addIdentifiers([$requestedName]);
-    $container->setAlias($className, $service);
     return $service;
   }
   

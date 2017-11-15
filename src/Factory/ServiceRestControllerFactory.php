@@ -21,8 +21,6 @@ class ServiceRestControllerFactory implements FactoryInterface
       $controller = new $requestedName($service);
     else
       $controller = new ServiceRestController($service);
-      
-    //$container->setAlias($this->generateAliasName($requestedName), $requestedName);
     return $controller;
   }
   
