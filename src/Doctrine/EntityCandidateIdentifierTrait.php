@@ -1,6 +1,6 @@
 <?php
 
-namespace Solutio;
+namespace Solutio\Doctrine;
 
 trait EntityCandidateIdentifierTrait
 {

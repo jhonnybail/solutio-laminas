@@ -3,7 +3,7 @@
 namespace Solutio\Doctrine\Listeners;
 
 use Doctrine\ORM\Mapping as ORM;
-use Solutio\AbstractEntity;
+use Solutio\Doctrine\AbstractEntity;
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Ramsey\Uuid\Uuid;

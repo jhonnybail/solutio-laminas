@@ -47,8 +47,8 @@ return [
     ]
   ],
   'service_listener'  => [
-    Service\Listener\CreateTransactionListener::class      => Factory\ServiceListenerFactory::class,
-    Service\Listener\RemoveChildrenPendingListener::class  => Factory\ServiceListenerFactory::class
+    Doctrine\Service\Listener\CreateTransactionListener::class  => Factory\ServiceListenerFactory::class,
+    Service\Listener\RemoveChildrenPendingListener::class       => Factory\ServiceListenerFactory::class
   ],
   'view_manager' => [
     'strategies' => [

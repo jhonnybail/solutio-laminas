@@ -7,7 +7,7 @@ use Zend\Mvc\Controller\AbstractRestfulController,
     Zend\Json,
     Solutio\Utils\Data\StringManipulator,
     Solutio\Service\EntityService,
-    Solutio\AbstractEntity;
+    Solutio\EntityInterface;
 
 class ServiceRestController extends AbstractRestfulController
 {
@@ -24,7 +24,7 @@ class ServiceRestController extends AbstractRestfulController
     return $this->service;
   }
 
-  public function getEntity(array $data = []) : AbstractEntity
+  public function getEntity(array $data = []) : EntityInterface
   {
     $className  = $this->getService()->getClassName();
     return new $className($this->getDataEntity($data));
@@ -137,7 +137,7 @@ class ServiceRestController extends AbstractRestfulController
     return $this->getResponse();
   }
 
-  protected function getDataEntity(array $inheritData = [])
+  protected function getDataEntity(array $inheritData = []) : array
   {
     $data = [];
     $paramsRoute  = $this->params()->fromRoute();
@@ -183,7 +183,7 @@ class ServiceRestController extends AbstractRestfulController
     return $data;
   }
 
-  protected function getParams()
+  protected function getParams() : array
   {
     $get		= $this->getRequest()->getQuery();
     return [
@@ -193,7 +193,7 @@ class ServiceRestController extends AbstractRestfulController
     ];
   }
 
-  protected function getFields()
+  protected function getFields() : array
   {
     $get		= $this->getRequest()->getQuery();
     $fields		= [];

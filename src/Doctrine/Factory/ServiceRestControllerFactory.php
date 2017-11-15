@@ -1,6 +1,6 @@
 <?php
 
-namespace Solutio\Factory;
+namespace Solutio\Doctrine\Factory;
 
 use Zend\ServiceManager\Factory\FactoryInterface,
     Interop\Container\ContainerInterface,
@@ -11,8 +11,11 @@ class ServiceRestControllerFactory implements FactoryInterface
 {
   public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
   {
-    $serviceClassName   = $this->extractServiceClassName($requestedName);
-    $service            = $container->get($serviceClassName);
+    $serviceClassName  = $this->extractServiceClassName($requestedName);
+    if(!$container->has($serviceClassName))
+      $service = (new EntityServiceFactory)($container, $serviceClassName);
+    else
+      $service = $container->get($serviceClassName);
       
     if(class_exists($requestedName))
       $controller = new $requestedName($service);

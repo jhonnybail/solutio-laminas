@@ -7,7 +7,7 @@
  * @link        http://github.com/jhonnybail/solutio-zf2
  * @copyright   Copyright (c) 2017 Solutio.Me. (http://solutio.me)
  */
-namespace Solutio;
+namespace Solutio\Doctrine;
 
 use Zend\Hydrator,
     Doctrine\ORM\Mapping as ORM,
@@ -22,7 +22,7 @@ use Zend\Hydrator,
  *  "Solutio\Doctrine\Listeners\MappingsReferenceListener"
  * })
  */
-abstract class AbstractEntity implements \JsonSerializable
+abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInterface
 {
   private $annotationReader;
   private $childrenPendingRemovation  = [];

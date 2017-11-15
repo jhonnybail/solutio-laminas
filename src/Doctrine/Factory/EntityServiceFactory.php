@@ -1,12 +1,12 @@
 <?php
 
-namespace Solutio\Factory;
+namespace Solutio\Doctrine\Factory;
 
 use Zend\ServiceManager\Factory\FactoryInterface,
     Zend\EventManager\EventManager,
     Interop\Container\ContainerInterface,
     Solutio\Utils\Data\StringManipulator,
-    Solutio\Service\EntityService;
+    Solutio\Doctrine\Service\EntityService;
 
 class EntityServiceFactory implements FactoryInterface
 {

@@ -1,25 +1,17 @@
 <?php
 
-namespace Solutio\Service;
+namespace Solutio\Doctrine\Service;
 
 use Solutio\EntityInterface;
 use Solutio\EntityRepositoryInterface;
-use Zend\EventManager\EventManagerInterface;
 
-class EntityService extends AbstractService
+class EntityService extends \Solutio\Service\EntityService
 {
   protected $repository;
   
   public function __construct(EntityRepositoryInterface $repository)
   {
     $this->repository = $repository;
-  }
-  
-  public function setEventManager(EventManagerInterface $events)
-  {
-    parent::setEventManager($events);
-    if(get_class($this) !== __CLASS__)
-      $this->getEventManager()->addIdentifiers([__CLASS__]);
   }
   
   public function getRepository() : EntityRepositoryInterface
@@ -49,7 +41,17 @@ class EntityService extends AbstractService
   
   protected function getById($id) : EntityInterface
   {
-    return $this->getRepository()->find($id);
+    try{
+      return $this->getRepository()->find($id);
+    }catch(\Exception $e){
+      if(!is_array($id)){
+        $results = $this->getRepository()->getCollection($id);
+        if(count($results) > 1)
+          throw new \Solutio\Exception('More than one reference was returned by the parameters reported.');
+        return isset($results[0]) ? $results[0] : null;
+      }
+      throw $e;
+    }
   }
 
   protected function find(EntityInterface $entity, $filters = [], $params = [], $fields = [], $type = EntityRepositoryInterface::RESULT_ARRAY) : array

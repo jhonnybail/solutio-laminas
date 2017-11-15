@@ -6,13 +6,10 @@ use Doctrine\ORM,
     Doctrine\DBAL\Query\Expression\ExpressionBuilder,
     Doctrine\DBAL\Query\Expression\CompositeExpression,
     Doctrine\ORM\Tools\Pagination\Paginator,
-    Solutio\AbstractEntity;
+    Solutio\EntityInterface;
 
-class EntityRepository extends ORM\EntityRepository 
+class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRepositoryInterface
 {
-  const		RESULT_OBJECT						= 1;
-  const 	RESULT_ARRAY						= 2;
-  
   private	$conditions							= [];
   private $disabledefaultFilters	= false;
 
@@ -27,12 +24,12 @@ class EntityRepository extends ORM\EntityRepository
     }
   }
   
-  public function insert(AbstractEntity $entity)
+  public function insert(EntityInterface $entity) : EntityInterface
   {
     return $this->save($entity);
   }
   
-  public function update(AbstractEntity $entity)
+  public function update(EntityInterface $entity) : EntityInterface
   {
     $metaData = $this->getClassMetadata();
     $keys     = $entity->getKeys();
@@ -50,7 +47,7 @@ class EntityRepository extends ORM\EntityRepository
     return $this->save($findedEntity);
   }
   
-  public function delete(AbstractEntity $entity)
+  public function delete(EntityInterface $entity) : EntityInterface
   {
     $entity = $this->find($entity->getKeys());
     $this->getEntityManager()->remove($entity);
@@ -58,7 +55,7 @@ class EntityRepository extends ORM\EntityRepository
     return $entity;
   }
   
-  public function find($id)
+  public function find($id) : EntityInterface
   {
     $metaData 	= $this->getClassMetadata();
     if(count($metaData->getIdentifier()) > 1 && !is_array($id)){
@@ -72,9 +69,8 @@ class EntityRepository extends ORM\EntityRepository
     return $entity;
   }
 
-  public function getCollection(AbstractEntity $entity, array $filters = [], array $params = [], array $fields = [], $type = self::RESULT_ARRAY)
+  public function getCollection(EntityInterface $entity, array $filters = [], array $params = [], array $fields = [], $type = self::RESULT_ARRAY) : array
   {
-    
     $metaData 	= $this->getClassMetadata();
     $alias			= $metaData->getTableName();
     $query			= $this->createQueryBuilder($alias);
@@ -456,7 +452,6 @@ class EntityRepository extends ORM\EntityRepository
     }
     
     return $rs;
-      
   }
   
   protected function setFilter($conditions, $disableDefaultFilters = false)
@@ -469,5 +464,4 @@ class EntityRepository extends ORM\EntityRepository
   {
     return $this->conditions[0]($alias, $query);
   }
-  
 }
