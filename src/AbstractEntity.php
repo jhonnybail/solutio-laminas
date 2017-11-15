@@ -32,8 +32,13 @@ abstract class AbstractEntity implements \JsonSerializable
   {
     if(is_array($options))
       $this->fromArray((array) $options);
-    elseif(!empty($options) && method_exists($this, "setId"))
-      $this->setId($options);
+    elseif(!empty($options)){
+      try{
+        $propertyReflection = new \ReflectionProperty(StringManipulator::GetInstance(get_class($this))->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString(), 'id');
+        if($propertyReflection)
+          $this->setId($options);
+      }catch(\Exception $e){}
+    }
   }
   
   public function __call($name, $arguments)
@@ -45,7 +50,7 @@ abstract class AbstractEntity implements \JsonSerializable
     }elseif($methodName->search('set')){
       $propertyName         = $methodName->replace('set', '')->toLowerCaseFirstChars();
       if(is_string($arguments[0])){
-        $propertyAnnotations  = $this->getAnnotationReader()->getPropertyAnnotations(new \ReflectionProperty(get_class($this), $propertyName));
+        $propertyAnnotations  = $this->getAnnotationReader()->getPropertyAnnotations(new \ReflectionProperty(StringManipulator::GetInstance(get_class($this))->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString(), $propertyName));
         foreach($propertyAnnotations as $propertyAnnotation)
           if($propertyAnnotation instanceof ORM\Column && ($propertyAnnotation->type === 'date' || $propertyAnnotation->type === 'datetime'))
             $arguments[0] = new Utils\Data\DateTime($arguments[0]);
