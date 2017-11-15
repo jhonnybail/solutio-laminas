@@ -99,7 +99,7 @@ abstract class AbstractEntity implements \JsonSerializable
           }
         }elseif($propertyAnnotation instanceof ORM\ManyToOne || $propertyAnnotation instanceof ORM\OneToOne){
           if(isset($data[$name]) && $data[$name] !== null){
-            $className  = preg_match('/\\/', $propertyAnnotation->targetEntity) ? $propertyAnnotation->targetEntity : $reflection->getNamespaceName() . '\\' . $propertyAnnotation->targetEntity;
+            $className  = preg_match('/\\\/', $propertyAnnotation->targetEntity) ? $propertyAnnotation->targetEntity : $reflection->getNamespaceName() . '\\' . $propertyAnnotation->targetEntity;
             $className = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
             if(isset($data[$name]) && !($data[$name] instanceof \Solutio\AbstractEntity)){
               $data[$name] = new $className(($data[$name] instanceof \Traversable) ? (array) $data[$name] : $data[$name]);
@@ -114,7 +114,7 @@ abstract class AbstractEntity implements \JsonSerializable
       $data               = $array['data'];
       $method = StringManipulator::GetInstance('add' . ucfirst($name));
       $method = (string) ($method->substr($method->length()-3, 3)->toString() === 'ies' ? $method->substr(0, -3)->concat('y') : $method->substr(0, -1));
-      $className  = preg_match('/\\/', $propertyAnnotation->targetEntity) ? $propertyAnnotation->targetEntity : $reflection->getNamespaceName() . '\\' . $propertyAnnotation->targetEntity;
+      $className  = preg_match('/\\\/', $propertyAnnotation->targetEntity) ? $propertyAnnotation->targetEntity : $reflection->getNamespaceName() . '\\' . $propertyAnnotation->targetEntity;
       $className = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
       foreach($data as $index => $occ){
         $occEntity  = ($occ instanceof $className) ? $occ : new $className((array) $occ);
