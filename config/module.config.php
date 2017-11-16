@@ -4,6 +4,12 @@ namespace Solutio;
 
 return [
   'solutio' => [
+    'logs'  => [
+      'doctrine'  => [
+        'active'  => false,
+        'path'    => null
+      ]
+    ],
     'cors'  => [
       "origin"          => ["*"],
       "methods"         => ["*"],

@@ -4,11 +4,13 @@ namespace Solutio;
 
 use Zend\Mvc\MvcEvent,
     Zend\View\Model\JsonModel,
+    Doctrine\DBAL\Logging\LoggerChain,
+    Solutio\Doctrine\SqlLogger,
     Solutio\Utils\Data\ArrayObject;
 
 class Module
 {
-  const VERSION = '2.1.2';
+  const VERSION = '2.1.3';
   
   public function onBootstrap(MvcEvent $e)
   {
@@ -29,6 +31,23 @@ class Module
     $serviceListeners = $e->getTarget()->getConfig()['service_listener'];
     foreach($serviceListeners as $serviceListener => $invokable){
       (new $invokable)($e->getTarget()->getServiceManager(), $serviceListener);
+    }
+    //
+    
+    //Register Doctrine Log
+    $config = $e->getApplication()->getConfig()['solutio']['logs']['doctrine'];
+    if($config['active']){
+      $sm     = $e->getApplication()->getServiceManager();
+      $em     = $sm->get('Doctrine\ORM\EntityManager');
+      $log    = new SqlLogger((new \DateTime)->format("Y-m-d") . ".log", $config['path']);
+      if (null !== $em->getConfiguration()->getSQLLogger()) {
+          $logger = new LoggerChain();
+          $logger->addLogger($log);
+          $logger->addLogger($em->getConfiguration()->getSQLLogger());
+          $em->getConfiguration()->setSQLLogger($logger);
+      } else {
+          $em->getConfiguration()->setSQLLogger($log);
+      }
     }
     //
   }
