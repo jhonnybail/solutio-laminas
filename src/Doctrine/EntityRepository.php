@@ -37,13 +37,16 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
     foreach($keys as $key => $value)
       unset($data[$key]);
     try{
-      $findedEntity   = $this->getEntityManager()->getReference(get_class($entity), $keys);
+      if(!$this->getEntityManager()->contains($entity)){
+        $findedEntity   = $this->getEntityManager()->getReference(get_class($entity), $keys);
+        if(!$findedEntity) throw new \InvalidArgumentException('Content not found.');
+        $findedEntity->fromArray($data);
+      }else
+        $findedEntity = $entity;
     }catch(\Exception $e){
       if(isset($data['id']))
         $findedEntity   = $this->find($data['id']);
     }
-    if(!$findedEntity) throw new \InvalidArgumentException('Content not found.');
-    $findedEntity->fromArray($data);
     return $this->save($findedEntity);
   }
   
