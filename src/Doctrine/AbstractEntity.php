@@ -107,7 +107,7 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
             $className  = preg_match('/\\\/', $propertyAnnotation->targetEntity) ? $propertyAnnotation->targetEntity : $reflection->getNamespaceName() . '\\' . $propertyAnnotation->targetEntity;
             $className = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
             if(isset($data[$name]) && !($data[$name] instanceof \Solutio\AbstractEntity)){
-              $data[$name] = ($data[$name] instanceof $className) ? $data[$name] : new $className((array) $data[$name]);
+              $data[$name] = ($data[$name] instanceof \Traversable || is_array($data)) ? new $className((array) $data[$name]) : $data[$name];
             }
           }
         }
