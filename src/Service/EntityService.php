@@ -15,13 +15,6 @@ class EntityService extends AbstractService
     $this->repository = $repository;
   }
   
-  public function setEventManager(EventManagerInterface $events)
-  {
-    parent::setEventManager($events);
-    if(get_class($this) !== __CLASS__)
-      $this->getEventManager()->addIdentifiers([__CLASS__]);
-  }
-  
   public function getRepository() : EntityRepositoryInterface
   {
     return $this->repository;

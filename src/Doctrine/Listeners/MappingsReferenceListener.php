@@ -22,7 +22,10 @@ class MappingsReferenceListener
         if(($field['type'] == 1 || $field['type'] == 2) && $entity->{"get".ucfirst($fieldName)}()){
           $keys = $entity->{"get".ucfirst($fieldName)}()->getKeys();
           $obj  = $event->getEntityManager()->getReference($field['targetEntity'], $keys);
-          $entity->{"set".ucfirst($fieldName)}($obj); 
+          try{
+            $obj->getKeys();
+            $entity->{"set".ucfirst($fieldName)}($obj);
+          }catch(\Exception $e){} 
         }
       }
     }
@@ -41,7 +44,10 @@ class MappingsReferenceListener
         if(($field['type'] == 1 || $field['type'] == 2) && $entity->{"get".ucfirst($fieldName)}()){
           $keys = $entity->{"get".ucfirst($fieldName)}()->getKeys();
           $obj  = $event->getEntityManager()->getReference($field['targetEntity'], $keys);
-          $entity->{"set".ucfirst($fieldName)}($obj); 
+          try{
+            $obj->getKeys();
+            $entity->{"set".ucfirst($fieldName)}($obj);
+          }catch(\Exception $e){}  
         }
       }
     }

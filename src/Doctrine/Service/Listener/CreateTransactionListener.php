@@ -8,14 +8,8 @@ class CreateTransactionListener extends \Solutio\Service\Listener\AbstractServic
 {
   public function makeListeners($priority = 1)
   {
-    $this->listeners[] = $this->getEventManager()->getSharedManager()->attach(\Solutio\Doctrine\Service\EntityService::class, 'before.insert', [$this, 'beginTransaction'], 100);
-    $this->listeners[] = $this->getEventManager()->getSharedManager()->attach(\Solutio\Doctrine\Service\EntityService::class, 'before.update', [$this, 'beginTransaction'], 100);
-    $this->listeners[] = $this->getEventManager()->getSharedManager()->attach(\Solutio\Doctrine\Service\EntityService::class, 'before.delete', [$this, 'beginTransaction'], 100);
-    
-    $this->listeners[] = $this->getEventManager()->getSharedManager()->attach(\Solutio\Doctrine\Service\EntityService::class, 'after.insert',  [$this, 'commit'], 100);
-    $this->listeners[] = $this->getEventManager()->getSharedManager()->attach(\Solutio\Doctrine\Service\EntityService::class, 'after.update',  [$this, 'commit'], 100);
-    $this->listeners[] = $this->getEventManager()->getSharedManager()->attach(\Solutio\Doctrine\Service\EntityService::class, 'after.delete',  [$this, 'commit'], 100);
-    
+    $this->listeners[] = $this->getEventManager()->getSharedManager()->attach(\Solutio\Doctrine\Service\EntityService::class, 'before.*', [$this, 'beginTransaction'], 100);
+    $this->listeners[] = $this->getEventManager()->getSharedManager()->attach(\Solutio\Doctrine\Service\EntityService::class, 'after.*',  [$this, 'commit'], 100);
     $this->listeners[] = $this->getEventManager()->getSharedManager()->attach('*', 'dispatch.error', [$this, 'rollback'], 100);
   }
   
