@@ -15,12 +15,14 @@ class CreateTransactionListener extends \Solutio\Service\Listener\AbstractServic
   
   public function beginTransaction(EventInterface $event)
   {
-    $this->getContainer()->get('Doctrine\ORM\EntityManager')->beginTransaction();
+    if(!$this->getContainer()->get('Doctrine\ORM\EntityManager')->getConnection()->isTransactionActive())
+      $this->getContainer()->get('Doctrine\ORM\EntityManager')->beginTransaction();
   }
   
   public function commit(EventInterface $event)
   {
-    $this->getContainer()->get('Doctrine\ORM\EntityManager')->commit();
+    if($this->getContainer()->get('Doctrine\ORM\EntityManager')->getConnection()->isTransactionActive())
+      $this->getContainer()->get('Doctrine\ORM\EntityManager')->commit();
   }
   
   public function rollback(EventInterface $event)
