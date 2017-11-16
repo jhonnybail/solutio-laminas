@@ -32,7 +32,7 @@ class ValidateFieldsListener
     if(count($validators) > 0){
       $values = $entity->toArray();
       foreach($validators as $fieldName => $validationType)
-        if($validationType === 'required' && empty($values[$fieldName]))
+        if($validationType === 'required' && empty($values[$fieldName]) && $values[$fieldName] !== false)
           throw new \InvalidArgumentException("The {$fieldName} field of {$className} is required.");
     }
   }
