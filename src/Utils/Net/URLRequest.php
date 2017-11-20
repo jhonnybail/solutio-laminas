@@ -152,7 +152,7 @@ class URLRequest
       $protocol = System::GetVariable('SERVER_PROTOCOL');
 
     $url 		    = new StringManipulator($this->url);
-    $newURL		  = $url->replace(System::GetVariable('DOCUMENT_ROOT'), $protocol."://".System::GetVariable('HTTP_HOST'));
+    $newURL		  = $url->replace(System::GetVariable('DOCUMENT_ROOT'), $protocol.":\/\/".System::GetVariable('HTTP_HOST'));
     //$this->url	= $newURL;
     //$this->requestHeaders = $this->requestHeaders->concat((array) $this->getHeaders());
     $this->url	= $url;
@@ -170,7 +170,7 @@ class URLRequest
   public function getHTTPUrl()
   {
     $url = new StringManipulator($this->url);
-    return $url->replace(System::GetVariable('directory_root'), System::GetVariable('protocol')."://".System::GetVariable('host'))->toString();
+    return $url->replace(System::GetVariable('directory_root'), System::GetVariable('protocol').":\/\/".System::GetVariable('host'))->toString();
   }
   
   /**

@@ -37,7 +37,7 @@ class StringManipulator
    */
   public function length()
   {
-    return strlen($this->string);
+    return @strlen($this->string);
   }
   
   /**
@@ -61,7 +61,7 @@ class StringManipulator
   public function charCodeAt($pos = 0)
   {
     $pos = (int)(string) $pos;
-    return ord($this->string[$pos]);
+    return @ord($this->string[$pos]);
   }
   
   /**
@@ -85,7 +85,7 @@ class StringManipulator
   public function split($delimiter = '')
   {
     if(empty($delimiter))
-      return new ArrayObject(str_split($this->string));
+      return new ArrayObject(@str_split($this->string));
     
     $array = new ArrayObject(explode($delimiter, $this->string));
     foreach($array as $k => $v)
@@ -104,7 +104,7 @@ class StringManipulator
   {
     $start = (int)(string) $start;
     $end = (int)(string) $end;
-    return new StringManipulator(substr($this->string, $start, $end-$start+1));
+    return new StringManipulator(@substr($this->string, $start, $end-$start+1));
   }
     
   /**
@@ -118,7 +118,7 @@ class StringManipulator
   {
     $start = (int)(string) $start;
     $end = (int)(string) $length;
-    return new StringManipulator(substr($this->string, $start, $end));
+    return new StringManipulator(@substr($this->string, $start, $end));
   }
   
   /**
@@ -131,7 +131,7 @@ class StringManipulator
    */
   public function replace($pattern, $replace, $delimiter = "/")
   {
-    return new StringManipulator(preg_replace($delimiter.($pattern).$delimiter, $replace, $this->string));
+    return new StringManipulator(@preg_replace($delimiter.($pattern).$delimiter, $replace, $this->string));
   }
   
   /**
@@ -143,7 +143,7 @@ class StringManipulator
    */
   public function search($search, $delimiter = "/")
   {
-    if(preg_match($delimiter.($search).$delimiter, $this->string))
+    if(@preg_match($delimiter.($search).$delimiter, $this->string))
       return true;
     else
       return false;
@@ -157,7 +157,7 @@ class StringManipulator
    */
   public function match($pattern)
   {
-    preg_match_all((string) $pattern, $this->string, $array, PREG_SET_ORDER);
+    @preg_match_all((string) $pattern, $this->string, $array, PREG_SET_ORDER);
     return new ArrayObject($array);
   }
 
@@ -168,7 +168,7 @@ class StringManipulator
    */
   public function removeAccents()
   {
-    if (!preg_match('/[\x80-\xff]/', $this->string))
+    if (!@preg_match('/[\x80-\xff]/', $this->string))
         return $this;
 
     $chars = [
@@ -278,7 +278,7 @@ class StringManipulator
    */
   public function toUpperCase()
   {
-    $this->string = mb_strtoupper($this->string);
+    $this->string = @mb_strtoupper($this->string);
     return $this;
   }
   
@@ -288,7 +288,7 @@ class StringManipulator
    */
   public function toLowerCase()
   {
-    $this->string = mb_strtolower($this->string);
+    $this->string = @mb_strtolower($this->string);
     return $this;
   }
   
@@ -298,7 +298,7 @@ class StringManipulator
    */
   public function toUpperCaseFirstChars()
   {
-    $ex = explode(' ', mb_strtolower($this->string));
+    $ex = explode(' ', @mb_strtolower($this->string));
     $this->string = '';
     foreach($ex as $v)
       if(strlen($v) > 3)

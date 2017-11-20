@@ -6,6 +6,7 @@ use Zend\Mvc\Controller\AbstractRestfulController,
     Zend\View\Model\JsonModel,
     Zend\Json,
     Solutio\Utils\Data\StringManipulator,
+    Solutio\Utils\Data\ArrayObject,
     Solutio\Service\EntityService,
     Solutio\EntityInterface;
 
@@ -43,7 +44,7 @@ class ServiceRestController extends AbstractRestfulController
   // Listar - GET
   public function getList()
   {
-    $filters  = $this->getRequest()->getQuery()->get('filters') ? Json\Decoder::decode($this->getRequest()->getQuery()->get('filters'), Json\Json::TYPE_ARRAY) : [];
+    $filters  = new ArrayObject($this->getRequest()->getQuery()->get('filters') ? Json\Decoder::decode($this->getRequest()->getQuery()->get('filters'), Json\Json::TYPE_ARRAY) : []);
     $data		  = $this->service->find($this->getEntity(), $filters, $this->getParams(), $this->getFields());
     return new JsonModel([
       'data'		=> $data,

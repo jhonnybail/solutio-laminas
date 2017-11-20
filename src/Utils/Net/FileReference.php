@@ -52,7 +52,7 @@ class FileReference
     else
       $newPath = new StringManipulator(dirname($file->url));
 
-    if($newPath->search("http://"))
+    if($newPath->search("http:\/\/") || $newPath->search("https:\/\/"))
       throw NetException::FromCode(8);
     elseif($file->getData()->toString() == '')
       throw NetException::FromCode(15);
@@ -182,7 +182,7 @@ class FileReference
         
       $urlR = new URLRequest($path);
         
-      if($path->search("http://"))
+      if($path->search("http:\/\/") || $path->search("https:\/\/"))
         throw NetException::FromCode(8);
       elseif($urlR->getType() != URLRequest::URLFILETYPE)
         throw NetException::FromCode(9);
@@ -247,7 +247,7 @@ class FileReference
   
       $urlR = new URLRequest($path);
   
-      if($path->search("http://"))
+      if($path->search("http:\/\/") || $path->search("https:\/\/"))
         throw NetException::FromCode(8);
       elseif($urlR->getType() != URLRequest::URLFILETYPE)
         throw NetException::FromCode(9);
@@ -296,7 +296,7 @@ class FileReference
         throw new NetException("Caminho de destino inválido", 6);
       }
 
-      if($path->search("http://") && $newPath->search("http://"))
+      if(($path->search("http:\/\/") || $path->search("https:\/\/")) && ($newPath->search("http:\/\/") || $newPath->search("https:\/\/")))
         throw NetException::FromCode(8);
       elseif($urlR->getType() != URLRequest::URLFILETYPE)
         throw NetException::FromCode(8);
@@ -362,7 +362,7 @@ class FileReference
         if($e->getCode() != 6)
           throw $e;
           
-        if($path->search("http://"))
+        if($path->search("http:\/\/") || $path->search("https:\/\/"))
           throw NetException::FromCode(8);
         elseif($urlR->getType() != URLRequest::URLFILETYPE)
           throw NetException::FromCode(9);

@@ -53,7 +53,7 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
         $propertyAnnotations  = $this->getAnnotationReader()->getPropertyAnnotations(new \ReflectionProperty(StringManipulator::GetInstance(get_class($this))->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString(), $propertyName));
         foreach($propertyAnnotations as $propertyAnnotation)
           if($propertyAnnotation instanceof ORM\Column && ($propertyAnnotation->type === 'date' || $propertyAnnotation->type === 'datetime'))
-            $arguments[0] = new Utils\Data\DateTime($arguments[0]);
+            $arguments[0] = new \Solutio\Utils\Data\DateTime($arguments[0]);
       }
       $this->{$propertyName} = $arguments[0];
       return $this;

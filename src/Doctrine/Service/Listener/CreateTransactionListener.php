@@ -8,9 +8,9 @@ class CreateTransactionListener extends \Solutio\Service\Listener\AbstractServic
 {
   public function makeListeners($priority = 1)
   {
-    $this->listeners[] = $this->getEventManager()->getSharedManager()->attach(\Solutio\Doctrine\Service\EntityService::class, 'before.*', [$this, 'beginTransaction'], 100);
-    $this->listeners[] = $this->getEventManager()->getSharedManager()->attach(\Solutio\Doctrine\Service\EntityService::class, 'after.*',  [$this, 'commit'], 100);
-    $this->listeners[] = $this->getEventManager()->getSharedManager()->attach('*', 'dispatch.error', [$this, 'rollback'], 100);
+    $this->listeners[] = $this->getEventManager()->getSharedManager()->attach(\Solutio\Doctrine\Service\EntityService::class, 'before.*', [$this, 'beginTransaction'], 10);
+    $this->listeners[] = $this->getEventManager()->getSharedManager()->attach(\Solutio\Doctrine\Service\EntityService::class, 'after.*',  [$this, 'commit'], 10);
+    $this->listeners[] = $this->getEventManager()->getSharedManager()->attach('*', 'dispatch.error', [$this, 'rollback'], 10);
   }
   
   public function beginTransaction(EventInterface $event)

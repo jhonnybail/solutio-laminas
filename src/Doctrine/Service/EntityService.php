@@ -56,6 +56,6 @@ class EntityService extends \Solutio\Service\EntityService
 
   protected function find(EntityInterface $entity, $filters = [], $params = [], $fields = [], $type = EntityRepositoryInterface::RESULT_ARRAY) : array
   {
-    return $this->getRepository()->getCollection($entity, $filters, $params, $fields, $type);
+    return $this->getRepository()->getCollection($entity, (array) $filters, (array) $params, (array) $fields, $type);
   }
 }
