@@ -173,6 +173,9 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
                 $obj2	= $obj[$fieldName];
                 $column = key($am['targetToSourceKeyColumns']);
                 $id = $obj2[$column];
+                while(is_array($id)){
+                  $id = current($id);
+                }
                 $query->andWhere($nick.".".$column." = ".$id);
               }
             }elseif(is_string($obj[$fieldName]) || is_numeric($obj[$fieldName])){
@@ -247,6 +250,12 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
                     ];
                 }
               }else{
+                $obj2	= $obj[$fieldName];
+                $column = key($am['targetToSourceKeyColumns']);
+                $id = $obj2[$column];
+                while(is_array($id)){
+                  $id = current($id);
+                }
                 $objectFilter[] = [
                   'field' => $fieldName,
                   'value' => $id
@@ -326,7 +335,8 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
             
             foreach($filters as $index => $filter){
               
-              $value = null;
+              $expression = null;
+              $value      = null;
               
               if(is_array($filter)){
                 if(isset($filter['field']))

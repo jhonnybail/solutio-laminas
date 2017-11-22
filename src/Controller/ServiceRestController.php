@@ -13,7 +13,7 @@ use Zend\Mvc\Controller\AbstractRestfulController,
 class ServiceRestController extends AbstractRestfulController
 {
   private	  $service;
-  protected $allowedCollectionMethods = [];
+  protected $allowedCollectionMethods = ['*'];
 
   public function __construct(EntityService $service)
   {

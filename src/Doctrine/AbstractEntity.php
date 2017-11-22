@@ -18,8 +18,8 @@ use Zend\Hydrator,
  * @ORM\MappedSuperclass
  * @ORM\EntityListeners({
  *  "Solutio\Doctrine\Listeners\GenerateIdentifierListener",
- *  "Solutio\Doctrine\Listeners\ValidateFieldsListener",
- *  "Solutio\Doctrine\Listeners\MappingsReferenceListener"
+ *  "Solutio\Doctrine\Listeners\MappingsReferenceListener",
+ *  "Solutio\Doctrine\Listeners\ValidateFieldsListener"
  * })
  */
 abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInterface
@@ -57,10 +57,23 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
       }
       $this->{$propertyName} = $arguments[0];
       return $this;
+    }elseif($methodName->search('remove')){
+      $propertyName = $methodName->replace('remove', '')->toLowerCaseFirstChars();
+      if($propertyName->charAt($propertyName->length()-1) === 'y')
+        $propertyName = $propertyName->substr(0, -1) . 'ies';
+      elseif($propertyName->charAt($propertyName->length()-1) === 's')
+        $propertyName = $propertyName . 'es';
+      else
+        $propertyName .= 's';
+        
+      $this->{$propertyName}->removeElement($arguments[0]);
+      return $this;
     }elseif($methodName->search('add')){
       $propertyName = $methodName->replace('add', '')->toLowerCaseFirstChars();
       if($propertyName->charAt($propertyName->length()-1) === 'y')
         $propertyName = $propertyName->substr(0, -1) . 'ies';
+      elseif($propertyName->charAt($propertyName->length()-1) === 's')
+        $propertyName = $propertyName . 'es';
       else
         $propertyName .= 's';
       
@@ -107,7 +120,11 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
             $className  = preg_match('/\\\/', $propertyAnnotation->targetEntity) ? $propertyAnnotation->targetEntity : $reflection->getNamespaceName() . '\\' . $propertyAnnotation->targetEntity;
             $className = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
             if(isset($data[$name]) && !($data[$name] instanceof $className)){
-              $data[$name] = new $className(($data[$name] instanceof \Traversable || is_array($data[$name])) ? (array) $data[$name] : $data[$name]);
+              if($this->{$name} instanceof $className){
+                $this->{$name}->fromArray($data[$name]);
+                unset($data[$name]);
+              }else
+                $data[$name] = new $className(($data[$name] instanceof \Traversable || is_array($data[$name])) ? (array) $data[$name] : $data[$name]);
             }
           }
         }
@@ -118,14 +135,22 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
       $propertyAnnotation = $array['propertyAnnotation'];
       $data               = $array['data'];
       $method = StringManipulator::GetInstance('add' . ucfirst($name));
-      $method = (string) ($method->substr($method->length()-3, 3)->toString() === 'ies' ? $method->substr(0, -3)->concat('y') : $method->substr(0, -1));
+      if($method->substr($method->length()-3, 3)->toString() === 'ies')
+        $method = $method->substr(0, -3)->concat('y')->toString();
+      elseif($method->substr($method->length()-3, 3)->toString() === 'ses')
+        $method = $method->substr(0, -2)->toString();
+      else
+        $method = $method->substr(0, -1)->toString();
+      $methodRemove = StringManipulator::GetInstance($method)->replace('add', 'remove')->toString();
       $className  = preg_match('/\\\/', $propertyAnnotation->targetEntity) ? $propertyAnnotation->targetEntity : $reflection->getNamespaceName() . '\\' . $propertyAnnotation->targetEntity;
       $className = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
       foreach($data as $index => $occ){
         $occEntity  = ($occ instanceof $className) ? $occ : new $className((array) $occ);
         $this->{$method}($occEntity);
-        if((is_array($occ) || $occ instanceof \Traversable) && isset($occ['remove']) && $occ['remove'])
+        if((is_array($occ) || $occ instanceof \Traversable) && isset($occ['remove']) && $occ['remove']){
+          $this->{$methodRemove}($occEntity);
           $this->childrenPendingRemovation[$className][] = $occEntity;
+        }
       }
     }
   }
@@ -151,7 +176,9 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
         $obj[$k] = $v->toArray();
       }elseif($v instanceof \Doctrine\Common\Collections\ArrayCollection
               || $v instanceof \Doctrine\ORM\PersistentCollection){
-        $obj[$k] = $v->toArray();
+        $array = [];
+        foreach($v->toArray() as $content) $array[] = $content;
+        $obj[$k] = $array;
         if(count($obj[$k]) <= 0) unset($obj[$k]);
       }elseif($v === null)
         unset($obj[$k]);
@@ -202,7 +229,31 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
 
   public function jsonSerialize() : array
   {
-    return $this->toArray();
+    $className  = get_class($this);
+    if(is_subclass_of($className, \Doctrine\ORM\Proxy\Proxy::class))
+      $className = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
+    $reflection = \Zend\Server\Reflection::reflectClass($className);
+    $obj      = [];
+    foreach($reflection->getProperties() as $property){
+      $method = 'get' . ucfirst($property->getName());
+      if ($this->{$method}() !== null) {
+        $obj[$property->getName()] = $this->{$method}();
+      }
+    }
+    
+    foreach($obj as $k => $v)
+      if(preg_match('/^__(.*)__$/', $k))
+        unset($obj[$k]);
+      elseif($v instanceof \Doctrine\Common\Collections\ArrayCollection
+              || $v instanceof \Doctrine\ORM\PersistentCollection){
+        $array = [];
+        foreach($v->toArray() as $content) $array[] = $content;
+        $obj[$k] = $array;
+        if(count($obj[$k]) <= 0) unset($obj[$k]);
+      }elseif($v === null)
+        unset($obj[$k]);
+        
+    return $obj;
   }
   
   private function getAnnotationReader() : AnnotationReader

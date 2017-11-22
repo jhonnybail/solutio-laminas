@@ -39,16 +39,17 @@ class EntityService extends \Solutio\Service\EntityService
     return $this->getRepository()->delete($entity);
   }
   
-  protected function getById($id) : EntityInterface
+  protected function getById($id)
   {
     try{
       return $this->getRepository()->find($id);
     }catch(\Exception $e){
       if(!is_array($id)){
-        $results = $this->getRepository()->getCollection($id);
-        if(count($results) > 1)
+        $className  = $this->getClassName();
+        $results    = $this->getRepository()->getCollection(new $className($id), [], [], [], EntityRepositoryInterface::RESULT_OBJECT);
+        if($results['total'] > 1)
           throw new \Solutio\Exception('More than one reference was returned by the parameters reported.');
-        return isset($results[0]) ? $results[0] : null;
+        return isset($results['result'][0]) ? $results['result'][0] : null;
       }
       throw $e;
     }

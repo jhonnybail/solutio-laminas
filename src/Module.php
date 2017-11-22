@@ -10,17 +10,21 @@ use Zend\Mvc\MvcEvent,
 
 class Module
 {
-  const VERSION = '2.1.4';
+  const VERSION = '2.1.5';
   
   public function onBootstrap(MvcEvent $e)
   {
     $sys                = new ArrayObject;
     $sys['directory']		= $_SERVER['DOCUMENT_ROOT'];
-    if($sys['directory'][strlen($sys['directory'])-1] != "/")
+    if(strlen($sys['directory']) > 0 && $sys['directory'][strlen($sys['directory'])-1] != "/")
       $sys['directory'] .= '/';
-    $protocol           = explode('/', $_SERVER['SERVER_PROTOCOL']);
-    $sys['protocol']    = strtolower($protocol[0]);
-    $sys['url']         = $sys['protocol']."://".$_SERVER['HTTP_HOST']."/";
+    
+    if(isset($_SERVER['SERVER_PROTOCOL'])){
+      $protocol           = explode('/', $_SERVER['SERVER_PROTOCOL']);
+      $sys['protocol']    = strtolower($protocol[0]);
+    }
+    if(isset($_SERVER['HTTP_HOST']))
+     $sys['url']         = $sys['protocol']."://".$_SERVER['HTTP_HOST']."/";
 
     System::SetSystem((array) $sys);
     

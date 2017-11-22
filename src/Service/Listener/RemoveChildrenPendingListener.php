@@ -9,12 +9,12 @@ class RemoveChildrenPendingListener extends AbstractServiceListener
 {
   public function makeListeners($priority = 1)
   {
-    $this->listeners[] = $this->getEventManager()->getSharedManager()->attach(\Solutio\Service\AbstractService::class, 'after.update', [$this, 'remove'], $priority);
+    $this->listeners[] = $this->getEventManager()->getSharedManager()->attach(\Solutio\Service\AbstractService::class, 'before.update', [$this, 'remove'], 50);
   }
   
   public function remove(EventInterface $event)
   {
-    $entity = $event->getParams()[0];
+    $entity       = $event->getParams()[0];
     foreach($entity->getChildrenPendingRemovation() as $className => $list){
       $service = null;
       try{

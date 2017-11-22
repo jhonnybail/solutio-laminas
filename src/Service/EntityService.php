@@ -40,7 +40,7 @@ class EntityService extends AbstractService
     return $this->getRepository()->delete($entity);
   }
   
-  protected function getById($id) : EntityInterface
+  protected function getById($id)
   {
     return $this->getRepository()->find($id);
   }
