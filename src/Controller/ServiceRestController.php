@@ -11,7 +11,10 @@ use Zend\Mvc\Controller\AbstractRestfulController,
     Solutio\EntityInterface;
 
 class ServiceRestController extends AbstractRestfulController
+  implements CacheControllerInterface
 {
+  use CacheControllerTrait;
+  
   private	  $service;
   protected $allowedCollectionMethods = ['*'];
 
@@ -166,7 +169,7 @@ class ServiceRestController extends AbstractRestfulController
           $keyEmpty = $key;
         }
       }
-      if($keyFilled){
+      if($keyFilled && !empty($data['id'])){
         if(!empty($keyEmpty))
           $data[$keyEmpty]  = $data['id'];
         unset($data['id']);

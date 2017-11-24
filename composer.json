@@ -1,7 +1,7 @@
 {
   "name": "solutio/module-zf3",
   "description": "ZF3 library development by Solutio.Me",
-  "version": "2.1.5",
+  "version": "2.2.0",
   "type": "library",
   "license": "MIT",
   "keywords": [
@@ -29,6 +29,7 @@
     "zendframework/zend-mvc": "^3.1",
     "zendframework/zend-servicemanager": "^3.0.3 || ^2.7.5",
     "zendframework/zend-log": "^2.9",
+    "zendframework/zend-cache": "^2.7.1",
     "php-curl-class/php-curl-class": "^7.2",
     "acelaya/zf2-acmailer": "^6.4.0",
     "ramsey/uuid": "^3.7"

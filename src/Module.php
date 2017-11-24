@@ -10,7 +10,7 @@ use Zend\Mvc\MvcEvent,
 
 class Module
 {
-  const VERSION = '2.1.5';
+  const VERSION = '2.2.0';
   
   public function onBootstrap(MvcEvent $e)
   {
@@ -28,6 +28,12 @@ class Module
 
     System::SetSystem((array) $sys);
     
+    $e->getTarget()->getEventManager()->getSharedManager()
+                                        ->attach(\Zend\Mvc\Controller\AbstractController::class,
+                                                'dispatch', [$this, 'loadRequestCache'], 201);
+    $e->getTarget()->getEventManager()->getSharedManager()
+                                        ->attach(\Zend\Mvc\Controller\AbstractController::class,
+                                                'dispatch', [$this, 'saveRequestCache'], 0);
     $e->getTarget()->getEventManager()->attach('dispatch.error',  [$this, 'onDispatchError'], 0);
     $e->getTarget()->getEventManager()->attach('finish',          [$this, 'applyCors'], 0);
     
@@ -59,6 +65,58 @@ class Module
   public function getConfig()
   {
     return include __DIR__ . '/../config/module.config.php';
+  }
+  
+  public function loadRequestCache($e)
+  {
+    $key        = $e->getRequest()->getUri()->getPath() . ($e->getRequest()->getQuery()->count() > 0 ? urlencode(json_encode($e->getRequest()->getQuery()->toArray())) : '');
+    $controller = $e->getTarget();
+    if($controller instanceof Controller\CacheControllerInterface){
+      $adapter    = $controller->getCacheAdapter();
+      if($controller->isCacheable() && $adapter && $e->getRequest()->getMethod() === 'GET'){
+        $content  = $adapter->getItem($key);
+        if($content !== null){
+          $model = new View\Model\JsonStringModel([$content]);
+          $e->setViewModel($model);
+          $e->stopPropagation();
+          return $model;
+        }
+      }
+    }
+  }
+  
+  public function saveRequestCache($e)
+  {
+    $request    = $e->getRequest();
+    $controller = $e->getTarget();
+    if($controller instanceof Controller\CacheControllerInterface){
+      if($controller->isCacheable()){
+        $adapter  = $controller->getCacheAdapter();
+        $reposito = $controller->getService()->getClassname();
+        $key      = $e->getRequest()->getUri()->getPath() . ($e->getRequest()->getQuery()->count() > 0 ? urlencode(json_encode($e->getRequest()->getQuery()->toArray())) : '');
+        $listaCa  = [];
+        if($adapter->hasItem($reposito))
+          $listaCa = $adapter->getItem($reposito);
+        if($adapter && $request->getMethod() === 'GET'){
+          $sharedEvents = $e->getApplication()->getEventManager()->getSharedManager();
+          $sharedEvents->attach(\Zend\View\View::class, 'response', function($e) use ($adapter, $listaCa, $key, $reposito){
+            $content  = $e->getResult();
+            $adapter->addItem($key, $content);
+            $listaCa[$key] = true;
+            if(!$adapter->hasItem($reposito))
+              $adapter->addItem($reposito, $listaCa);
+            else
+              $adapter->replaceItem($reposito, $listaCa);
+          });
+        }elseif($adapter && $e->getRequest()->getMethod() !== 'GET'
+                  && $controller->getService() instanceof Service\EntityService){
+          if(count($listaCa) > 0){
+            foreach($listaCa as $k => $v)
+              $adapter->removeItem($k);
+          }
+        }
+      }
+    }
   }
   
   public function onDispatchError($e) 

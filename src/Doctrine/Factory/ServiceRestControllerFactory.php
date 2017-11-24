@@ -3,6 +3,7 @@
 namespace Solutio\Doctrine\Factory;
 
 use Zend\ServiceManager\Factory\FactoryInterface,
+    Zend\Cache\StorageFactory,
     Interop\Container\ContainerInterface,
     Solutio\Utils\Data\StringManipulator,
     Solutio\Controller\ServiceRestController;
@@ -21,6 +22,14 @@ class ServiceRestControllerFactory implements FactoryInterface
       $controller = new $requestedName($service);
     else
       $controller = new ServiceRestController($service);
+      
+    $config   = $container->get('application')->getConfig()['solutio']['cache']['controller'];
+    $options  = $config['default'];
+    if(isset($config[$requestedName]))
+      $options = array_replace_recursive($options, $config[$requestedName]);
+      
+    $controller->setCacheable($options['enabled']);
+    $controller->setCacheAdapter(StorageFactory::factory(['adapter' => $options['adapter']]));
     return $controller;
   }
   

@@ -12,12 +12,26 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
 {
   private	$conditions							= [];
   private $disabledefaultFilters	= false;
+  private $queryCache             = [];
 
   protected function save(AbstractEntity $entity)
   {
     try{
       $this->getEntityManager()->persist($entity);
       $this->getEntityManager()->flush();
+      
+      $isCacheable  = $this->getEntityManager()->getCache() !== null;
+      if($isCacheable){
+        $cacheRegion  = $this->getEntityManager()->getCache()->getEntityCacheRegion($this->getClassname());
+        $ttl          = $this->getEntityManager()->getConfiguration()->getSecondLevelCacheConfiguration()->getRegionsConfiguration()->getLifetime($cacheRegion->getName());
+        $adapter      = $cacheRegion->getCache();
+        if($adapter->contains($this->getClassname())){
+          $this->queryCache[$this->getClassname()] = $adapter->fetch($this->getClassname());
+          foreach($this->queryCache[$this->getClassname()] as $k => $v)
+            $this->queryCache[$this->getClassname()][$k]['sequence']++;
+          $adapter->save($this->getClassname(), $this->queryCache[$this->getClassname()], $ttl);
+        }
+      }
       return $entity;
     }catch(\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e){
       throw new \InvalidArgumentException('Content already exists.');
@@ -52,10 +66,38 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
   
   public function delete(EntityInterface $entity) : EntityInterface
   {
-    $entity = $this->find($entity->getKeys());
-    $this->getEntityManager()->remove($entity);
+    $metaData = $this->getClassMetadata();
+    $keys     = $entity->getKeys();
+    $data     = $entity->toArray();
+    foreach($keys as $key => $value)
+      unset($data[$key]);
+    try{
+      if(!$this->getEntityManager()->contains($entity)){
+        $findedEntity   = $this->getEntityManager()->getReference(get_class($entity), $keys);
+        if(!$findedEntity) throw new \InvalidArgumentException('Content not found.');
+        $findedEntity->fromArray($data);
+      }else
+        $findedEntity = $entity;
+    }catch(\Exception $e){
+      if(isset($data['id']))
+        $findedEntity   = $this->find($data['id']);
+    }
+    $this->getEntityManager()->remove($findedEntity);
     $this->getEntityManager()->flush();
-    return $entity;
+    
+    $isCacheable  = $this->getEntityManager()->getCache() !== null;
+    if($isCacheable){
+      $cacheRegion  = $this->getEntityManager()->getCache()->getEntityCacheRegion($this->getClassname());
+      $ttl          = $this->getEntityManager()->getConfiguration()->getSecondLevelCacheConfiguration()->getRegionsConfiguration()->getLifetime($cacheRegion->getName());
+      $adapter      = $cacheRegion->getCache();
+      if($adapter->contains($this->getClassname())){
+        $this->queryCache[$this->getClassname()] = $adapter->fetch($this->getClassname());
+        foreach($this->queryCache[$this->getClassname()] as $k => $v)
+          $this->queryCache[$this->getClassname()][$k]['sequence']++;
+        $adapter->save($this->getClassname(), $this->queryCache[$this->getClassname()], $ttl);
+      }
+    }
+    return $findedEntity;
   }
   
   public function find($id) : EntityInterface
@@ -452,16 +494,62 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
       $query = $query->setFirstResult($offset);
     }
     
-    if(count($fields) <= 0){
-      $rs = [
-        'total' => count(new Paginator($query))
+    $query        = $query->getQuery();
+    
+    //Config Query Cache
+    $query->setCacheable(false)
+            ->useResultCache(false);
+    $isCacheable  = $this->getEntityManager()->getCache() !== null;
+    if($isCacheable){
+      $cacheRegion  = $this->getEntityManager()->getCache()->getEntityCacheRegion($this->getClassname());
+      $ttl          = $this->getEntityManager()->getConfiguration()->getSecondLevelCacheConfiguration()->getRegionsConfiguration()->getLifetime($cacheRegion->getName());
+      $adapter      = $cacheRegion->getCache();
+      $arrayCacheId = [
+        'sql'     => $query->getSQL(),
+        'obj'     => $obj,
+        'filters' => $filters
       ];
+      $cacheId      = md5(json_encode($arrayCacheId));
+      $this->queryCache[$this->getClassname()] = [];
+      if($adapter->contains($this->getClassname()))
+          $this->queryCache[$this->getClassname()] = $adapter->fetch($this->getClassname());
+      if(!isset($this->queryCache[$this->getClassname()][$cacheId])){
+        $this->queryCache[$this->getClassname()][$cacheId] = [
+          'sequence'  => 1
+        ];
+        $adapter->save($this->getClassname(), $this->queryCache[$this->getClassname()], $ttl);
+      }
+      $sequenceCacheId = $this->queryCache[$this->getClassname()][$cacheId]['sequence'];
+    }
+    //
+    
+    if(count($fields) <= 0){
+      if($isCacheable && $cacheId 
+          && isset($this->queryCache[$this->getClassname()]) 
+          && isset($this->queryCache[$this->getClassname()][$cacheId]['total' . $sequenceCacheId])){
+        $rs = [
+          'total' => $this->queryCache[$this->getClassname()][$cacheId]['total' . $sequenceCacheId]
+        ];
+      }else{
+        $rs = [
+          'total' => count(new Paginator($query))
+        ];
+        if($isCacheable){
+          $this->queryCache[$this->getClassname()][$cacheId]['total' . $sequenceCacheId] = $rs['total'];
+          $adapter->save($this->getClassname(), $this->queryCache[$this->getClassname()], $ttl);
+        }
+      }
     }
     
     if($type === self::RESULT_OBJECT){
-      $rs['result'] = $query->getQuery()->getResult(\Doctrine\ORM\AbstractQuery::HYDRATE_OBJECT);
+      if($isCacheable)
+        $query->setCacheable(true)
+                ->setLifetime($ttl);
+      $rs['result'] = $query->getResult(\Doctrine\ORM\AbstractQuery::HYDRATE_OBJECT);
     }elseif($type === self::RESULT_ARRAY){
-      $rs['result'] = $query->getQuery()->getResult('SolutioArrayHydrator');
+      if($isCacheable)
+        $query->useResultCache(true, $ttl, $cacheId . $sequenceCacheId);
+      $rs['result'] = $query->getResult('SolutioArrayHydrator');
     }
     
     return $rs;
