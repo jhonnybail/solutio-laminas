@@ -16,7 +16,8 @@ class RemoveChildrenPendingListener extends AbstractServiceListener
   {
     $entity       = $event->getParams()[0];
     foreach($entity->getChildrenPendingRemovation() as $className => $list){
-      $service = null;
+      $service    = null;
+      $hasRemove  = false;
       try{
         $service  = $this->getContainer()->build($className);
       }catch(\Exception $e){
@@ -34,8 +35,9 @@ class RemoveChildrenPendingListener extends AbstractServiceListener
         }catch(\Exception $e){continue;}
       }
       foreach($list as $child){
-        if($service instanceof \Solutio\Service\EntityService)
+        if($service instanceof \Solutio\Service\EntityService){
           $service->delete($child);
+        }
       }
     }
   }

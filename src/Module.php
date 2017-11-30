@@ -10,7 +10,7 @@ use Zend\Mvc\MvcEvent,
 
 class Module
 {
-  const VERSION = '2.2.0';
+  const VERSION = '2.2.1';
   
   public function onBootstrap(MvcEvent $e)
   {
@@ -145,6 +145,7 @@ class Module
     $data       = ['success' => false];
     if(!empty($exception)){
       $data['message'] = $exception->getMessage();
+      $data['trace'] = $exception->getTrace();
       $e->getResponse()->setStatusCode(\Zend\Http\PhpEnvironment\Response::STATUS_CODE_400);
       if($exception instanceof \Zend\Json\Exception\RuntimeException){
         $data['message'] = 'Invalid Request JSON';

@@ -5,7 +5,8 @@ namespace Solutio\Service;
 use Zend\EventManager\EventManagerAwareInterface,
     Zend\EventManager\EventManagerInterface,
     Zend\EventManager\EventManager,
-    Zend\EventManager\EventManagerAwareTrait;
+    Zend\EventManager\EventManagerAwareTrait,
+    Solutio\Utils\Data\ArrayObject;
 
 abstract class AbstractService implements EventManagerAwareInterface
 {
@@ -41,10 +42,12 @@ abstract class AbstractService implements EventManagerAwareInterface
       $this->getEventManager()->trigger("before.*", $this, $arguments);
       $this->getEventManager()->trigger("before." . $name, $this, $arguments);
       $result = call_user_func_array(array(&$this, $name), $arguments);
+      if(is_array($result))
+        $result = new ArrayObject($result);
       array_push($arguments, $result);
       $this->getEventManager()->trigger("after." . $name, $this, $arguments);
       $this->getEventManager()->trigger("after.*", $this, $arguments);
-      return $result;
+      return $result instanceof ArrayObject ? (array) $result : $result;
     }
   }
 }

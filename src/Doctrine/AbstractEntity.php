@@ -81,17 +81,35 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
       
       if(property_exists($this, $propertyName) && empty($this->{$propertyName}))
         $this->{$propertyName} = new \Doctrine\Common\Collections\ArrayCollection;
-        
+      
+      
+      $setDependencyName  = 'set' . StringManipulator::GetInstance(get_class($this))
+                                                              ->split('\\')
+                                                              ->end();
+      $getDependencyName  = 'get' . StringManipulator::GetInstance(get_class($this))
+                                                              ->split('\\')
+                                                              ->end();
+      
       if($entity = $this->findEntityInList($this->{$propertyName}, $arguments[0])){
-        $entity->fromArray($arguments[0]->toArray());
+        /*if(!empty($arguments[0]->{$getDependencyName}())){
+          if($arguments[0]->{$getDependencyName}()->getKeys() ===
+              $this->getKeys())
+            $arguments[0]->{$setDependencyName}(null);
+        }*/
+        $className  = get_class($arguments[0]);
+        if(is_subclass_of($className, \Doctrine\ORM\Proxy\Proxy::class))
+          $className = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
+        $reflection = \Zend\Server\Reflection::reflectClass($className);
+        $obj        = [];
+        foreach($reflection->getProperties() as $property){
+          $method = 'get' . ucfirst($property->getName());
+          if ($arguments[0]->{$method}() !== null) {
+            $obj[$property->getName()] = $arguments[0]->{$method}();
+          }
+        }
+        $entity->fromArray($obj);
       }else{
         $this->{$propertyName}[]  = $arguments[0];
-        $setDependencyName           = 'set' . StringManipulator::GetInstance(get_class($this))
-                                                                ->split('\\')
-                                                                ->end();
-        $getDependencyName           = 'get' . StringManipulator::GetInstance(get_class($this))
-                                                                ->split('\\')
-                                                                ->end();
         if(empty($arguments[0]->{$getDependencyName}()))
           $arguments[0]->{$setDependencyName}($this);
       }
@@ -122,11 +140,17 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
             $className  = preg_match('/\\\/', $propertyAnnotation->targetEntity) ? $propertyAnnotation->targetEntity : $reflection->getNamespaceName() . '\\' . $propertyAnnotation->targetEntity;
             $className = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
             if(isset($data[$name]) && !($data[$name] instanceof $className)){
-              if($this->{$name} instanceof $className){
+              $newEntity = new $className(($data[$name] instanceof \Traversable || is_array($data[$name])) ? (array) $data[$name] : $data[$name]);
+              if($this->{$name} instanceof $className
+                  && $newEntity->getKeys() === $this->{$name}->getKeys()
+                  && ! $data[$name] instanceof \Doctrine\ORM\Proxy\Proxy){
+                foreach($data[$name] as $k => $v)
+                  if($v === $this)
+                    unset($data[$name][$k]);
                 $this->{$name}->fromArray($data[$name]);
                 unset($data[$name]);
               }else
-                $data[$name] = new $className(($data[$name] instanceof \Traversable || is_array($data[$name])) ? (array) $data[$name] : $data[$name]);
+                $data[$name] = $newEntity;
             }
           }
         }
@@ -144,8 +168,8 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
       else
         $method = $method->substr(0, -1)->toString();
       $methodRemove = StringManipulator::GetInstance($method)->replace('add', 'remove')->toString();
-      $className  = preg_match('/\\\/', $propertyAnnotation->targetEntity) ? $propertyAnnotation->targetEntity : $reflection->getNamespaceName() . '\\' . $propertyAnnotation->targetEntity;
-      $className = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
+      $className    = preg_match('/\\\/', $propertyAnnotation->targetEntity) ? $propertyAnnotation->targetEntity : $reflection->getNamespaceName() . '\\' . $propertyAnnotation->targetEntity;
+      $className    = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
       foreach($data as $index => $occ){
         $occEntity  = ($occ instanceof $className) ? $occ : new $className((array) $occ);
         $this->{$method}($occEntity);
@@ -167,7 +191,7 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
     foreach($reflection->getProperties() as $property){
       $method = 'get' . ucfirst($property->getName());
       if ($this->{$method}() !== null) {
-        $obj[$property->getName()] = $this->{$method}();
+        $obj[$property->getName()]      = $this->{$method}();
       }
     }
     

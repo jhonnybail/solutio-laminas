@@ -23,14 +23,20 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
       $isCacheable  = $this->getEntityManager()->getCache() !== null;
       if($isCacheable){
         $cacheRegion  = $this->getEntityManager()->getCache()->getEntityCacheRegion($this->getClassname());
-        $ttl          = $this->getEntityManager()->getConfiguration()->getSecondLevelCacheConfiguration()->getRegionsConfiguration()->getLifetime($cacheRegion->getName());
-        $adapter      = $cacheRegion->getCache();
-        if($adapter->contains($this->getClassname())){
-          $this->queryCache[$this->getClassname()] = $adapter->fetch($this->getClassname());
-          foreach($this->queryCache[$this->getClassname()] as $k => $v)
-            $this->queryCache[$this->getClassname()][$k]['sequence']++;
-          $adapter->save($this->getClassname(), $this->queryCache[$this->getClassname()], $ttl);
-        }
+        if($cacheRegion){
+          $ttl          = $this->getEntityManager()->getConfiguration()->getSecondLevelCacheConfiguration()->getRegionsConfiguration()->getLifetime($cacheRegion->getName());
+          if(method_exists($cacheRegion, 'getCache'))
+            $adapter = $cacheRegion->getCache();
+          else
+            $adapter = $this->getEntityManager()->getConfiguration()->getSecondLevelCacheConfiguration()->getCacheFactory()->getRegion([])->getCache();
+          if($adapter->contains($this->getClassname())){
+            $this->queryCache[$this->getClassname()] = $adapter->fetch($this->getClassname());
+            foreach($this->queryCache[$this->getClassname()] as $k => $v)
+              $this->queryCache[$this->getClassname()][$k]['sequence']++;
+            $adapter->save($this->getClassname(), $this->queryCache[$this->getClassname()], $ttl);
+          }
+        }else
+          $isCacheable = false;
       }
       return $entity;
     }catch(\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e){
@@ -66,9 +72,12 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
   
   public function delete(EntityInterface $entity) : EntityInterface
   {
-    $metaData = $this->getClassMetadata();
-    $keys     = $entity->getKeys();
-    $data     = $entity->toArray();
+    $isCacheable  = $this->getEntityManager()->getCache() !== null;
+    $metaData     = $this->getClassMetadata();
+    $keys         = $entity->getKeys();
+    if($isCacheable)
+      $this->getEntityManager()->getCache()->evictEntity($this->getClassname(), $keys);
+    $data         = $entity->toArray();
     foreach($keys as $key => $value)
       unset($data[$key]);
     try{
@@ -85,17 +94,22 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
     $this->getEntityManager()->remove($findedEntity);
     $this->getEntityManager()->flush();
     
-    $isCacheable  = $this->getEntityManager()->getCache() !== null;
     if($isCacheable){
       $cacheRegion  = $this->getEntityManager()->getCache()->getEntityCacheRegion($this->getClassname());
-      $ttl          = $this->getEntityManager()->getConfiguration()->getSecondLevelCacheConfiguration()->getRegionsConfiguration()->getLifetime($cacheRegion->getName());
-      $adapter      = $cacheRegion->getCache();
-      if($adapter->contains($this->getClassname())){
-        $this->queryCache[$this->getClassname()] = $adapter->fetch($this->getClassname());
-        foreach($this->queryCache[$this->getClassname()] as $k => $v)
-          $this->queryCache[$this->getClassname()][$k]['sequence']++;
-        $adapter->save($this->getClassname(), $this->queryCache[$this->getClassname()], $ttl);
-      }
+      if($cacheRegion){
+        $ttl          = $this->getEntityManager()->getConfiguration()->getSecondLevelCacheConfiguration()->getRegionsConfiguration()->getLifetime($cacheRegion->getName());
+        if(method_exists($cacheRegion, 'getCache'))
+          $adapter = $cacheRegion->getCache();
+        else
+          $adapter = $this->getEntityManager()->getConfiguration()->getSecondLevelCacheConfiguration()->getCacheFactory()->getRegion([])->getCache();
+        if($adapter->contains($this->getClassname())){
+          $this->queryCache[$this->getClassname()] = $adapter->fetch($this->getClassname());
+          foreach($this->queryCache[$this->getClassname()] as $k => $v)
+            $this->queryCache[$this->getClassname()][$k]['sequence']++;
+          $adapter->save($this->getClassname(), $this->queryCache[$this->getClassname()], $ttl);
+        }
+      }else
+        $isCacheable = false;
     }
     return $findedEntity;
   }
@@ -116,12 +130,13 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
 
   public function getCollection(EntityInterface $entity, array $filters = [], array $params = [], array $fields = [], $type = self::RESULT_ARRAY) : array
   {
-    $metaData 	= $this->getClassMetadata();
-    $alias			= $metaData->getTableName();
-    $query			= $this->createQueryBuilder($alias);
-    $maps 			= $metaData->getAssociationMappings();
-    $attrs 			= $metaData->getFieldNames();
-    $obj			  = $entity->toArray();
+    $metaData 	  = $this->getClassMetadata();
+    $alias			  = $metaData->getTableName();
+    $query			  = $this->createQueryBuilder($alias);
+    $maps 			  = $metaData->getAssociationMappings();
+    $attrs 			  = $metaData->getFieldNames();
+    $obj			    = $entity->toArray();
+    $isCacheable  = $this->getEntityManager()->getCache() !== null;
     
     if(count($fields) > 0){
       $f = '';
@@ -187,7 +202,8 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
                 try{
                   if($subMetaData->getAssociationMapping($key)){
                     $query->leftJoin("{$nick}.{$key}", "sub".$nick.$key);
-                    $query->addSelect("sub".$nick.$key);
+                    if(!$isCacheable || $type !== self::RESULT_OBJECT)
+                      $query->addSelect("sub".$nick.$key);
                   }
                 }catch(\Exception $e){}
               }
@@ -201,7 +217,13 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
                 foreach($obj2 as $k => $v){
                   if(is_string($v) || is_numeric($v))
                     $query->andWhere($nick.".".$k." = '".$v."'");
-                  elseif($v instanceof AbstractEntity){
+                  elseif($v instanceof \Solutio\Utils\Data\ArrayObject || is_array($v)){
+                    $id = $v;
+                    while(is_array($id)){
+                      $id = current($id);
+                    }
+                    $query->andWhere($nick.".".$k." = ".$id);
+                  }elseif($v instanceof AbstractEntity){
                     $class  = get_class($v);
                     $vIds   = $class::NameOfPrimaryKeys();
                     $va     = $v->toArray();
@@ -459,7 +481,8 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
                 try{
                   if($subMetaData->getAssociationMapping($key)){
                     $query->leftJoin("{$nick}.{$key}", "sub".$nick.$key);
-                    $query->addSelect("sub".$nick.$key);
+                    if(!$isCacheable || $type !== self::RESULT_OBJECT)
+                      $query->addSelect("sub".$nick.$key);
                   }
                 }catch(\Exception $e){}
               }
@@ -499,27 +522,29 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
     //Config Query Cache
     $query->setCacheable(false)
             ->useResultCache(false);
-    $isCacheable  = $this->getEntityManager()->getCache() !== null;
     if($isCacheable){
       $cacheRegion  = $this->getEntityManager()->getCache()->getEntityCacheRegion($this->getClassname());
-      $ttl          = $this->getEntityManager()->getConfiguration()->getSecondLevelCacheConfiguration()->getRegionsConfiguration()->getLifetime($cacheRegion->getName());
-      $adapter      = $cacheRegion->getCache();
-      $arrayCacheId = [
-        'sql'     => $query->getSQL(),
-        'obj'     => $obj,
-        'filters' => $filters
-      ];
-      $cacheId      = md5(json_encode($arrayCacheId));
-      $this->queryCache[$this->getClassname()] = [];
-      if($adapter->contains($this->getClassname()))
-          $this->queryCache[$this->getClassname()] = $adapter->fetch($this->getClassname());
-      if(!isset($this->queryCache[$this->getClassname()][$cacheId])){
-        $this->queryCache[$this->getClassname()][$cacheId] = [
-          'sequence'  => 1
+      if($cacheRegion){
+        $ttl          = $this->getEntityManager()->getConfiguration()->getSecondLevelCacheConfiguration()->getRegionsConfiguration()->getLifetime($cacheRegion->getName());
+        $adapter      = $cacheRegion->getCache();
+        $arrayCacheId = [
+          'sql'     => $query->getSQL(),
+          'obj'     => $obj,
+          'filters' => $filters
         ];
-        $adapter->save($this->getClassname(), $this->queryCache[$this->getClassname()], $ttl);
-      }
-      $sequenceCacheId = $this->queryCache[$this->getClassname()][$cacheId]['sequence'];
+        $cacheId      = md5(json_encode($arrayCacheId));
+        $this->queryCache[$this->getClassname()] = [];
+        if($adapter->contains($this->getClassname()))
+            $this->queryCache[$this->getClassname()] = $adapter->fetch($this->getClassname());
+        if(!isset($this->queryCache[$this->getClassname()][$cacheId])){
+          $this->queryCache[$this->getClassname()][$cacheId] = [
+            'sequence'  => 1
+          ];
+          $adapter->save($this->getClassname(), $this->queryCache[$this->getClassname()], $ttl);
+        }
+        $sequenceCacheId = $this->queryCache[$this->getClassname()][$cacheId]['sequence'];
+      }else
+        $isCacheable = false;
     }
     //
     
