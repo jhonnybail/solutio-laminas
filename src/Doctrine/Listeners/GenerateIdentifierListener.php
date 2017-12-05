@@ -88,8 +88,11 @@ class GenerateIdentifierListener
   public function preFlushHandler(AbstractEntity $entity, PreFlushEventArgs $arguments)
   {
     $keys   = $entity->getKeys();
-    $field  = $this->generatorFieldName[get_class($entity)];
-    unset($keys[$field]);
+    $field  = null;
+    if(isset($this->generatorFieldName[get_class($entity)])){
+      $field  = $this->generatorFieldName[get_class($entity)];
+      unset($keys[$field]);
+    }
     $listIndex = get_class($entity) . (count($keys) === 0 ? '': new \Solutio\Utils\Data\ArrayObject($keys));
     if($field && !isset($this->listMaxCount[$listIndex])){
       $query  = $arguments->getEntityManager()
