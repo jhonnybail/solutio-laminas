@@ -8,7 +8,7 @@ class ArrayHydrator extends \Doctrine\ORM\Internal\Hydration\ArrayHydrator
   {
     $result = parent::gatherRowData($data, $id, $nonemptyComponents);
     foreach($result['data'] as $key => $obj){
-      if($parentAlias = $this->_rsm->getParentAlias($key)){
+      if($this->_rsm->hasParentAlias($key) && $parentAlias = $this->_rsm->getParentAlias($key)){
         unset($result['data'][$parentAlias][$key]);
       }
     }
