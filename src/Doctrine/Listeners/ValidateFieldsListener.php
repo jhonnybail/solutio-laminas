@@ -19,7 +19,7 @@ class ValidateFieldsListener
     $fields		  = $metaData->fieldMappings;
     if(count($fields) > 0){
       foreach($fields as $field){
-        if(isset($field['nullable'] && !$field['nullable'] && $field['nullable'] !== null && (!isset($field['id'] || !$field['id'])) $validators[$field['fieldName']] = 'required';
+        if(isset($field['nullable']) && !$field['nullable'] && $field['nullable'] !== null && (!isset($field['id']) || !$field['id'])) $validators[$field['fieldName']] = 'required';
       }
     }
     $maps 		= $metaData->getAssociationMappings();
