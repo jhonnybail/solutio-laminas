@@ -248,7 +248,7 @@ class ArrayObject extends \ArrayObject implements \JsonSerializable
    *
    * @return mixed
    */
-  public function &end()
+  public function end()
   {
     $aI = $this->getIterator();
     $aI->seek($aI->count()-1);
