@@ -10,7 +10,7 @@ class CheckAuthorizationListener extends AbstractServiceListener
 {
   public function makeListeners($priority = 1)
   {
-    $this->listeners[] = $this->getEventManager()->getSharedManager()->attach(\Solutio\Service\EntityService::class, 'before.*',        [$this, 'checkAllowMethods'], 50);
+    $this->listeners[] = $this->getEventManager()->getSharedManager()->attach(\Solutio\Service\EntityService::class, 'before.*', [$this, 'checkAllowMethods'], 50);
   }
   
   public function checkAllowMethods(EventInterface $e)
