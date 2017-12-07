@@ -4,7 +4,7 @@ namespace Solutio\Service\Listener;
 
 use Zend\EventManager\EventInterface,
     Solutio\Utils\Data\StringManipulator,
-    WebSystem\System\User\AuthException;
+    Solutio\Exception;
 
 class CheckAuthorizationListener extends AbstractServiceListener
 {
@@ -25,7 +25,7 @@ class CheckAuthorizationListener extends AbstractServiceListener
         $response->setStatusCode(
           \Zend\Http\PhpEnvironment\Response::STATUS_CODE_405
         );
-        throw new AuthException('Method Not Allowed');
+        throw new Exception('Method Not Allowed');
       }
   }
 }
