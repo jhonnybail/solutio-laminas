@@ -79,8 +79,8 @@ return [
     ]
   ],
   'service_listener'  => [
-    Doctrine\Service\Listener\CreateTransactionListener::class  => Factory\ServiceListenerFactory::class,
-    Service\Listener\RemoveChildrenPendingListener::class       => Factory\ServiceListenerFactory::class
+    Doctrine\Service\Listener\CreateTransactionListener::class      => Factory\ServiceListenerFactory::class,
+    Doctrine\Service\Listener\RemoveChildrenPendingListener::class  => Factory\ServiceListenerFactory::class
   ],
   'service_manager' => [
     'factories' => [

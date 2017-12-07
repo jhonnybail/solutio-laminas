@@ -26,6 +26,15 @@ class MappingsReferenceListener
             $obj->getKeys();
             $entity->{"set".ucfirst($fieldName)}($obj);
           }catch(\Exception $e){} 
+        }elseif($field['type'] === 8 && $list = $entity->{"get".ucfirst($fieldName)}()){
+          foreach($list as $k => $obj){
+            $keys = $obj->getKeys();
+            $obj  = $event->getEntityManager()->getReference($field['targetEntity'], $keys);
+            try{
+              $obj->getKeys();
+              $list[$k] = $obj;
+            }catch(\Exception $e){}
+          }
         }
       }
     }
@@ -48,6 +57,15 @@ class MappingsReferenceListener
             $obj->getKeys();
             $entity->{"set".ucfirst($fieldName)}($obj);
           }catch(\Exception $e){}  
+        }elseif($field['type'] === 8 && $list = $entity->{"get".ucfirst($fieldName)}()){
+          foreach($list as $k => $obj){
+            $keys = $obj->getKeys();
+            $obj  = $event->getEntityManager()->getReference($field['targetEntity'], $keys);
+            try{
+              $obj->getKeys();
+              $list[$k] = $obj;
+            }catch(\Exception $e){}
+          }
         }
       }
     }
