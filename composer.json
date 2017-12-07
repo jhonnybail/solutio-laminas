@@ -23,7 +23,7 @@
       }
   },
   "require": {
-    "php": "^7.0",
+    "php": "^7",
     "doctrine/doctrine-orm-module": "^1.1",
     "zendframework/zend-server": "^2.7",
     "zendframework/zend-mvc": "^3.1",
