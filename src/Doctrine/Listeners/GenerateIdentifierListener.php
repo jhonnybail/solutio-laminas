@@ -70,7 +70,14 @@ class GenerateIdentifierListener
       }else
         $id = $this->listMaxCount[$listIndex];
       
-      $entity->{"set".ucfirst($field)}(++$id);
+      $originalValue  = $entity->{"get".ucfirst($field)}();
+      if(!empty($originalValue) && $originalValue instanceof AbstractEntity){
+        $className  = get_class($originalValue);
+        $value      = new $className(++$id);
+        $value->fromArray($originalValue->toArray());
+        $entity->{"set".ucfirst($field)}($value);
+      }else
+        $entity->{"set".ucfirst($field)}(++$id);
       if($cont === 1)
         $this->listMaxCount[$listIndex] = $id;
     
@@ -104,10 +111,25 @@ class GenerateIdentifierListener
                 ->setParameter($k, $v);
       $id     = $query->getQuery()
                     ->getSingleScalarResult();
-      $entity->{"set".ucfirst($field)}(++$id);
+      $originalValue  = $entity->{"get".ucfirst($field)}();
+      if(!empty($originalValue) && $originalValue instanceof AbstractEntity){
+        $className  = get_class($originalValue);
+        $value      = new $className(++$id);
+        $value->fromArray($originalValue->toArray());
+        $entity->{"set".ucfirst($field)}($value);
+      }else
+        $entity->{"set".ucfirst($field)}(++$id);
       $this->listMaxCount[$listIndex]         = $id;
       $this->allowGeneratorFlush[$listIndex]  = true;
-    }elseif(isset($this->allowGeneratorFlush[$listIndex]))
-      $entity->{"set".ucfirst($field)}(++$this->listMaxCount[$listIndex]);
+    }elseif(isset($this->allowGeneratorFlush[$listIndex])){
+      $originalValue  = $entity->{"get".ucfirst($field)}();
+      if(!empty($originalValue) && $originalValue instanceof AbstractEntity){
+        $className  = get_class($originalValue);
+        $value      = new $className(++$this->listMaxCount[$listIndex]);
+        $value->fromArray($originalValue->toArray());
+        $entity->{"set".ucfirst($field)}($value);
+      }else
+        $entity->{"set".ucfirst($field)}(++$this->listMaxCount[$listIndex]);
+    }
   }
 }

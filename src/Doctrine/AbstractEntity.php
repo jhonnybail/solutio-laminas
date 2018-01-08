@@ -253,8 +253,15 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
         $propertyAnnotations = $annotationReader->getPropertyAnnotations($property);
         foreach($propertyAnnotations as $propertyAnnotation){
           if($propertyAnnotation instanceof ORM\Id)
-            self::$primaryKeys[$className] [] = $property->getName();
+            self::$primaryKeys[$className][] = $property->getName();
         }
+      }
+      $parentClassName  = get_parent_class($className);
+      if($parentClassName && is_subclass_of($parentClassName, \Solutio\Doctrine\AbstractEntity::class)){
+        $parentKeys = $parentClassName::NameOfPrimaryKeys();
+        foreach($parentKeys as $key)
+          if(!in_array($key, self::$primaryKeys[$className]))
+            self::$primaryKeys[$className][] = $key;
       }
     }
     return self::$primaryKeys[$className];

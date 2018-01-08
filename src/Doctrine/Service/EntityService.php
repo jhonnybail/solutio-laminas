@@ -49,6 +49,8 @@ class EntityService extends \Solutio\Service\EntityService
         $results    = $this->getRepository()->getCollection(new $className($id), [], [], [], EntityRepositoryInterface::RESULT_OBJECT);
         if($results['total'] > 1)
           throw new \Solutio\Exception('More than one reference was returned by the parameters reported.');
+        elseif($results['total'] === 0)
+          throw $e;
         return isset($results['result'][0]) ? $results['result'][0] : null;
       }
       throw $e;
