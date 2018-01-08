@@ -10,7 +10,7 @@ use Zend\Mvc\MvcEvent,
 
 class Module
 {
-  const VERSION = '2.2.6';
+  const VERSION = '2.3.0';
   
   public function onBootstrap(MvcEvent $e)
   {
@@ -210,7 +210,7 @@ class Module
     return [
       'factories' => [
         'Solutio\Utils\Net\Mail' => function($container) {
-          return new Utils\Net\Mail\Mail($container->get('acmailer.mailservice.default'));
+          return new Utils\Net\Mail\Mail($container->build('acmailer.mailservice.default'));
         }
       ]
     ];

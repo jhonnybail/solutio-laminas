@@ -135,35 +135,30 @@ class File implements IFileObject, \JsonSerializable
     if(!empty($urlRequest)){
       
       if(!$this->isOpen){
+          
+        $this->urlRequest = $urlRequest;
         
-        if($urlRequest->getType() == URLRequest::URLFILETYPE){
-          
-          $this->urlRequest = $urlRequest;
-          
-          if($this->urlRequest->requestHeaders[URLRequestHeader::CONTENTLENGTH] <= System::GetIni("memory_limit")){
-              
-            $data = $data = @file_get_contents($this->urlRequest->url);
+        if($this->urlRequest->requestHeaders[URLRequestHeader::CONTENTLENGTH] <= System::GetIni("memory_limit")){
             
-            if(!empty($data)){
-              $this->data = $data;
+          $data = $data = @file_get_contents($this->urlRequest->url);
+          
+          if(!empty($data)){
+            $this->data = $data;
+            $this->isOpen = true;
+            $this->whenLoaded();
+          }
+                    
+          if(empty($data)){
+            $curl = new CURL($this->urlRequest);
+            if($curl->load()){
               $this->isOpen = true;
+              $this->data = $curl->content;
               $this->whenLoaded();
             }
-                      
-            if(empty($data)){
-              $curl = new CURL($this->urlRequest);
-              if($curl->load()){
-                $this->isOpen = true;
-                $this->data = $curl->content;
-                $this->whenLoaded();
-              }
-            }
-            
-          }else
-            throw SystemException::FromCode(13);
-        
+          }
+          
         }else
-          throw NetException::FromCode(9);
+          throw SystemException::FromCode(13);
         
       }
     

@@ -22,8 +22,8 @@ class GenerateIdentifierListener
     $keys   = $entity->getKeys();
     if(!isset($this->generatorFieldName[get_class($entity)])){
       //Verifica algum id vazio e gera automaticamente o valor
-      $field  = '';
-      $cont   = 0;
+      $field      = '';
+      $cont       = 0;
       foreach($keys as $key => $value)
         if(empty($value)){
           $field = $key;
@@ -33,8 +33,8 @@ class GenerateIdentifierListener
       
       if(!empty($field)){
         if($cont > 1){
-          $reflection = \Zend\Server\Reflection::reflectClass($entity);
           $field      = '';
+          $reflection = \Zend\Server\Reflection::reflectClass($entity);
           foreach($reflection->getProperties() as $property){
               $propertyAnnotations = (new \Doctrine\Common\Annotations\AnnotationReader)->getPropertyAnnotations($property);
               foreach($propertyAnnotations as $propertyAnnotation){
@@ -47,7 +47,20 @@ class GenerateIdentifierListener
         }
       }
       
-      $this->generatorFieldName[get_class($entity)] = $field;
+      if(!empty($field)){
+        $property             = new \ReflectionProperty($entity, $field);
+        $propertyAnnotations  = (new \Doctrine\Common\Annotations\AnnotationReader)->getPropertyAnnotations($property);
+        foreach($propertyAnnotations as $propertyAnnotation){
+            if($propertyAnnotation instanceof ORM\OneToOne
+                || $propertyAnnotation instanceof ORM\ManyToOne){
+                $field  = '';
+                break;
+            }
+        }
+      }
+      
+      if(!empty($field))
+        $this->generatorFieldName[get_class($entity)] = $field;
     }else{
       $field  = $this->generatorFieldName[get_class($entity)];
       $cont   = 1;

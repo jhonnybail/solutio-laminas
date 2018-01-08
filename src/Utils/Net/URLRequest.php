@@ -81,12 +81,12 @@ class URLRequest
     $this->requestHeaders = URLRequestHeader::GetHeader();
     $this->url            = $url;
     $this->data           = null;
-    $headers              = $this->getHeaders();
+    $headers              = (array) $this->getHeaders();
     if(!$headers){
       if(!($this->getLocalFileHeaders()))
         throw new NetException("URL não existe: ".$url, 6);
     }else{
-      if(empty($headers['Content-Length']))
+      if(empty($headers[0] === "HTTP/1.1 200 OK"))
         throw new NetException("URL não existe: ".$url, 6);
       $this->requestHeaders = $this->requestHeaders->concat((array) $headers);
     }
@@ -180,7 +180,7 @@ class URLRequest
    */
   public function getType()
   {
-    $type = @filetype($this->url);
+    $type = filetype($this->url);
     
     $verifyExtension = function($value, $key, $array, $oB){
       if(!empty($value) && count($array) > 0){

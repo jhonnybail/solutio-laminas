@@ -16,7 +16,9 @@ trait EntityCandidateIdentifierTrait
   
   public function setId($id)
   {
-    $this->id = $id;
+    $this->id                  = $id;
+    if($this instanceof \Solutio\EntityInterface)
+      $this->setChangedValue('id', $id);
     return $this;
   }
 }

@@ -26,13 +26,14 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
 {
   private $annotationReader;
   private $childrenPendingRemovation  = [];
+  private $changedValues              = [];
   private static $primaryKeys         = [];
   
   public function __construct($options = [])
   {
     if(is_array($options))
       $this->fromArray((array) $options);
-    elseif(!empty($options)){
+    else{
       try{
         $propertyReflection = new \ReflectionProperty(StringManipulator::GetInstance(get_class($this))->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString(), 'id');
         if($propertyReflection)
@@ -49,16 +50,20 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
       if(property_exists($this, $propertyName))
         return $this->{$propertyName};
     }elseif($methodName->search('set')){
-      $propertyName         = $methodName->replace('set', '')->toLowerCaseFirstChars();
+      $propertyName         = $methodName->replace('set', '')->toLowerCaseFirstChars()->toString();
       try{
         if(is_string($arguments[0])){
           $propertyAnnotations  = $this->getAnnotationReader()->getPropertyAnnotations(new \ReflectionProperty(StringManipulator::GetInstance(get_class($this))->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString(), $propertyName));
           foreach($propertyAnnotations as $propertyAnnotation)
-            if($propertyAnnotation instanceof ORM\Column && ($propertyAnnotation->type === 'date' || $propertyAnnotation->type === 'datetime'))
+            if($propertyAnnotation instanceof ORM\Column && $propertyAnnotation->type === 'date')
               $arguments[0] = new \Solutio\Utils\Data\DateTime($arguments[0]);
+            elseif($propertyAnnotation instanceof ORM\Column && $propertyAnnotation->type === 'datetime')
+              $arguments[0] = new \Solutio\Utils\Data\DateTime($arguments[0], 'Y-m-d H:i:s');
         }
-        if(property_exists($this, $propertyName))
-          $this->{$propertyName} = $arguments[0];
+        if(property_exists($this, $propertyName)){
+          $this->{$propertyName}              = $arguments[0];
+          $this->changedValues[$propertyName] = $arguments[0] instanceof AbstractEntity ? $arguments[0]->getChangedValues() : $arguments[0];
+        }
       }catch(\Exception $e){}
       return $this;
     }elseif($methodName->search('remove')){
@@ -69,9 +74,18 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
         $propertyName = $propertyName . 'es';
       else
         $propertyName .= 's';
+     
+      if(!isset($this->changedValues[$propertyName]))
+        $this->changedValues[$propertyName] = [];
         
       $entity = $this->findEntityInList($this->{$propertyName}, $arguments[0]);
       $this->{$propertyName}->removeElement($entity);
+      
+      if(isset($this->changedValues[$propertyName]) && $this->{$propertyName}->count() > 0)
+        $this->changedValues[$propertyName] = $this->{$propertyName}->toArray();
+      else
+        $this->changedValues[$propertyName] = [];
+        
       return $this;
     }elseif($methodName->search('add')){
       $propertyName = $methodName->replace('add', '')->toLowerCaseFirstChars();
@@ -85,6 +99,8 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
       if(property_exists($this, $propertyName) && empty($this->{$propertyName}))
         $this->{$propertyName} = new \Doctrine\Common\Collections\ArrayCollection;
       
+      if(!isset($this->changedValues[$propertyName]))
+        $this->changedValues[$propertyName] = [];
       
       $setDependencyName  = 'set' . StringManipulator::GetInstance(get_class($this))
                                                               ->split('\\')
@@ -102,15 +118,28 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
         foreach($reflection->getProperties() as $property){
           $method = 'get' . ucfirst($property->getName());
           if ($arguments[0]->{$method}() !== null) {
-            $obj[$property->getName()] = $arguments[0]->{$method}();
+            $existsValue = $entity->{$method}();
+            if($existsValue instanceof AbstractEntity){
+              $propertyAnnotations  = $this->getAnnotationReader()->getPropertyAnnotations($property);
+              foreach($propertyAnnotations as $propertyAnnotation)
+                if($propertyAnnotation instanceof ORM\ManyToOne || $propertyAnnotation instanceof ORM\OneToOne){
+                  if(is_array($propertyAnnotation->cascade) && in_array('persist', $propertyAnnotation->cascade)){
+                    $valuesChanged        = $arguments[0]->{$method}()->getChangedValues();
+                    $existsValue->fromArray($valuesChanged);
+                  }
+                }
+            }else
+              $obj[$property->getName()] = $arguments[0]->{$method}();
           }
         }
         $entity->fromArray($obj);
       }else{
         $this->{$propertyName}[]  = $arguments[0];
-        if(empty($arguments[0]->{$getDependencyName}()))
-          $arguments[0]->{$setDependencyName}($this);
+        $arguments[0]->{$setDependencyName}($this);
       }
+      
+      $this->changedValues[$propertyName] = $this->{$propertyName}->toArray();
+      
       return $this;
     }
   }
@@ -123,22 +152,40 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
       $method = 'get' . ucfirst($property->getName());
       $name = $property->getName();
       $propertyAnnotations = $this->getAnnotationReader()->getPropertyAnnotations($property);
+      if(array_key_exists($name, $data) && is_null($data[$name])){
+        $method = str_replace('get', 'set', $method);
+        $this->{$method}(null); 
+      }
       foreach($propertyAnnotations as $propertyAnnotation)
         if($propertyAnnotation instanceof ORM\OneToMany || $propertyAnnotation instanceof ORM\ManyToMany){
-          if(isset($data[$name]) && $data[$name] !== null){
+          if(array_key_exists($name, $data) && !empty($data[$name])){
             $pending[$method] = [
               'name'                => $name,
               'propertyAnnotation'  => $propertyAnnotation,
               'data'                => $data[$name]
             ];
             unset($data[$name]);
+          }elseif(array_key_exists($name, $data) && empty($data[$name])){
+            unset($data[$name]);
           }
         }elseif($propertyAnnotation instanceof ORM\ManyToOne || $propertyAnnotation instanceof ORM\OneToOne){
-          if(isset($data[$name]) && $data[$name] !== null){
+          if(array_key_exists($name, $data)){
             $className  = preg_match('/\\\/', $propertyAnnotation->targetEntity) ? $propertyAnnotation->targetEntity : $reflection->getNamespaceName() . '\\' . $propertyAnnotation->targetEntity;
             $className = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
-            if(isset($data[$name]) && !($data[$name] instanceof $className)){
+            if(array_key_exists($name, $data) && !($data[$name] instanceof $className)){
               $newEntity = new $className(($data[$name] instanceof \Traversable || is_array($data[$name])) ? (array) $data[$name] : $data[$name]);
+              if(!(is_array($propertyAnnotation->cascade) && in_array('persist', $propertyAnnotation->cascade))){
+                $data[$name]  = $newEntity->getKeys();
+                foreach($data[$name] as $v){
+                  if(is_null($v) || $v === ""){
+                    $data[$name] = null;
+                    break;
+                  }
+                }
+                if(is_null($data[$name]))
+                  continue;
+                $newEntity    = new $className($data[$name]);
+              }
               if($this->{$name} instanceof $className
                   && $newEntity->getKeys() === $this->{$name}->getKeys()
                   && ! $data[$name] instanceof \Doctrine\ORM\Proxy\Proxy){
@@ -168,21 +215,23 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
       $methodRemove = StringManipulator::GetInstance($method)->replace('add', 'remove')->toString();
       $className    = preg_match('/\\\/', $propertyAnnotation->targetEntity) ? $propertyAnnotation->targetEntity : $reflection->getNamespaceName() . '\\' . $propertyAnnotation->targetEntity;
       $className    = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
-      foreach($data as $index => $occ){
-        $occEntity  = ($occ instanceof $className) ? $occ : ($occ instanceof \Traversable ? new $className((array) $occ) : new $className($occ));
-        $this->{$method}($occEntity);
-        if((is_array($occ) || $occ instanceof \Traversable) && isset($occ['remove']) && $occ['remove']){
-          $this->{$methodRemove}($occEntity);
-          if(!isset($this->childrenPendingRemovation[$className]))
-            $this->childrenPendingRemovation[$className] = [];
-          if(!isset($this->childrenPendingRemovation[$className][$name]))
-            $this->childrenPendingRemovation[$className][$name] = [
-              'options' => [
-                'propertyAnnotation' => $propertyAnnotation
-              ],
-              'entities' => []
-            ];
-          $this->childrenPendingRemovation[$className][$name]['entities'][] = $occEntity;
+      if(is_array($data) || $data instanceof \Traversable){
+        foreach($data as $index => $occ){
+          $occEntity  = ($occ instanceof $className) ? $occ : ($occ instanceof \Traversable ? new $className((array) $occ) : new $className($occ));
+          $this->{$method}($occEntity);
+          if((is_array($occ) || $occ instanceof \Traversable) && isset($occ['remove']) && $occ['remove']){
+            $this->{$methodRemove}($occEntity);
+            if(!isset($this->childrenPendingRemovation[$className]))
+              $this->childrenPendingRemovation[$className] = [];
+            if(!isset($this->childrenPendingRemovation[$className][$name]))
+              $this->childrenPendingRemovation[$className][$name] = [
+                'options' => [
+                  'propertyAnnotation' => $propertyAnnotation
+                ],
+                'entities' => []
+              ];
+            $this->childrenPendingRemovation[$className][$name]['entities'][] = $occEntity;
+          }
         }
       }
     }
@@ -190,15 +239,24 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
 
   public function toArray() : array
   {
-    $className  = get_class($this);
+    $className        = get_class($this);
     if(is_subclass_of($className, \Doctrine\ORM\Proxy\Proxy::class))
       $className = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
-    $reflection = \Zend\Server\Reflection::reflectClass($className);
+    $reflection       = \Zend\Server\Reflection::reflectClass($className);
+    $parentReflection = \Zend\Server\Reflection::reflectClass(get_parent_class($className));
     $obj      = [];
     foreach($reflection->getProperties() as $property){
       $method = 'get' . ucfirst($property->getName());
       if ($this->{$method}() !== null) {
         $obj[$property->getName()]      = $this->{$method}();
+      }
+    }
+    foreach($parentReflection->getProperties() as $property){
+      if(!isset($obj[$property->getName()])){
+        $method = 'get' . ucfirst($property->getName());
+        if ($this->{$method}() !== null) {
+          $obj[$property->getName()]      = $this->{$method}();
+        }
       }
     }
     
@@ -217,6 +275,17 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
         unset($obj[$k]);
         
     return $obj;
+  }
+  
+  public function getChangedValues() : array
+  {
+    return $this->changedValues;
+  }
+  
+  protected function setChangedValue($property, $value) : self
+  {
+    $this->changedValues[$property] = $value;
+    return $this;
   }
   
   public function getChildrenPendingRemovation() : array
@@ -269,15 +338,24 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
 
   public function jsonSerialize() : array
   {
-    $className  = get_class($this);
+    $className        = get_class($this);
     if(is_subclass_of($className, \Doctrine\ORM\Proxy\Proxy::class))
       $className = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
-    $reflection = \Zend\Server\Reflection::reflectClass($className);
+    $reflection       = \Zend\Server\Reflection::reflectClass($className);
+    $parentReflection = \Zend\Server\Reflection::reflectClass(get_parent_class($className));
     $obj      = [];
     foreach($reflection->getProperties() as $property){
       $method = 'get' . ucfirst($property->getName());
       if ($this->{$method}() !== null) {
-        $obj[$property->getName()] = $this->{$method}();
+        $obj[$property->getName()]      = $this->{$method}();
+      }
+    }
+    foreach($parentReflection->getProperties() as $property){
+      if(!isset($obj[$property->getName()])){
+        $method = 'get' . ucfirst($property->getName());
+        if ($this->{$method}() !== null) {
+          $obj[$property->getName()]      = $this->{$method}();
+        }
       }
     }
     
@@ -296,7 +374,7 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
     return $obj;
   }
   
-  private function getAnnotationReader() : AnnotationReader
+  protected function getAnnotationReader() : AnnotationReader
   {
     if(empty($this->annotationReader))
       $this->annotationReader = new AnnotationReader;

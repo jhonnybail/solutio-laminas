@@ -15,6 +15,8 @@ interface EntityInterface extends \JsonSerializable
 
   public function toArray() : array;
   
+  public function getChangedValues() : array;
+  
   public function getChildrenPendingRemovation() : array;
 
   public function getKeys() : array;

@@ -86,13 +86,13 @@ return [
   'service_manager' => [
     'factories' => [
       \Solutio\View\Renderer\JsonStringRenderer::class => \Zend\ServiceManager\Factory\InvokableFactory::class,
-      'ViewJsonStringStrategy' => Mvc\Service\ViewJsonStringStrategyFactory::class,
+      'ViewJsonStringStrategy' => Mvc\Service\ViewJsonStringStrategyFactory::class
     ],
   ],
   'view_manager' => [
     'strategies' => [
       'ViewJsonStrategy',
-      'ViewJsonStringStrategy',
+      'ViewJsonStringStrategy'
     ]
   ]
 ];

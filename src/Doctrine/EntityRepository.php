@@ -53,7 +53,7 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
   {
     $metaData = $this->getClassMetadata();
     $keys     = $entity->getKeys();
-    $data     = $entity->toArray();
+    $data     = $entity->getChangedValues();
     foreach($keys as $key => $value)
       unset($data[$key]);
     try{
@@ -92,7 +92,7 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
         $findedEntity   = $this->find($data['id']);
     }
     $this->getEntityManager()->remove($findedEntity);
-    $this->getEntityManager()->flush();
+    $this->getEntityManager()->flush($findedEntity);
     
     if($isCacheable){
       $cacheRegion  = $this->getEntityManager()->getCache()->getEntityCacheRegion($this->getClassname());
@@ -135,7 +135,7 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
     $query			  = $this->createQueryBuilder($alias);
     $maps 			  = $metaData->getAssociationMappings();
     $attrs 			  = $metaData->getFieldNames();
-    $obj			    = $entity->toArray();
+    $obj			    = $entity->getChangedValues();
     $isCacheable  = $this->getEntityManager()->getCache() !== null;
     
     if(count($fields) > 0){
@@ -402,7 +402,7 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
               $expression = null;
               $value      = null;
               
-              if(is_array($filter)){
+              if(is_array($filter) || $filter instanceof \Traversable){
                 if(isset($filter['field']))
                   $field      = $filter['field'];
                 if(isset($filter['condition']))
@@ -425,7 +425,7 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
                 }
                 $expression = makeExpression($em, $metaData, $query, $listValues, $filter, $childOr);
               }elseif(!empty($field) && fieldExists($em, $metaData, $field)){
-                if(is_array($value) && !isset($value[0])){
+                if((is_array($value) || $value instanceof \Traversable) && !isset($value[0])){
                   foreach($value as $subField => $subValue){
                     $fieldName = str_replace(".", "", $field.$subField . rand());
                     $expression = getCondition($query, $field.".".$subField, ':'.$fieldName, $condition);
@@ -435,11 +435,10 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
                       $expr->add($expression);
                   }
                   $expression = null;
-                }else{
+                }elseif($value || $value === false || $value === 0){
                   $fieldName = str_replace(".", "", $field . rand());
                   $expression = getCondition($query, (!preg_match('/\./', $field) ? $query->getRootAliases()[0]."." : "").$field, ':'.$fieldName, $condition);
-                  if($value || $value === false)
-                    $listValues[$fieldName] = $value;
+                  $listValues[$fieldName] = $value;
                 }
               }
               
@@ -501,13 +500,14 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
     if(isset($params['order'])){
       $order	= $params['order'];
       if(is_array($order))
-        if(current($order)){
-          $fieldName = preg_match("/\./", key($order)) ? key($order) : $alias.".".key($order);
-          $query = $query->orderBy($fieldName, current($order));
-        }
+        foreach($order as $field => $dir)
+          if(!empty($dir)){
+            $fieldName  = preg_match("/\./", $field) ? $field : $alias . "." . $field;
+            $query      = $query->addOrderBy($fieldName, $dir);
+          }
     }
     
-    if(isset($params['limit'])){
+    if(isset($params['limit']) && $params['limit'] > 0){
       $limit	= $params['limit'];
       $query = $query->setMaxResults($limit);
     }

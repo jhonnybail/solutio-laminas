@@ -104,7 +104,7 @@ class ServiceRestController extends AbstractRestfulController
     }elseif(is_array($data) && count($data) > 0){
       $data = new \Solutio\Utils\Data\ArrayObject((array) $data);
     }
-    $data = (array) $data->concat($values);
+    $data = (array) $values->concat($data);
     $obj  = $this->service->update($this->getEntity($data));
     if($obj){
       return new JsonModel([
@@ -118,8 +118,15 @@ class ServiceRestController extends AbstractRestfulController
   // delete - DELETE
   public function delete($id)
   {
-    $values   = (array) $this->getDataEntity();
-    $res = $this->service->delete($this->getEntity($values));
+    $values   = new \Solutio\Utils\Data\ArrayObject((array) $this->getDataEntity());
+    $content  = $this->getRequest()->getContent();
+    if(!empty($content)){
+      $json = Json\Decoder::decode($content, Json\Json::TYPE_ARRAY);
+      $data = new \Solutio\Utils\Data\ArrayObject($json ? $json : []);
+      $data = (array) $values->concat($data);
+    }else
+      $data = (array) $values;
+    $res  = $this->service->delete($this->getEntity($data));
     if($res){
       return new JsonModel(['success' => true]);
     }else
@@ -179,7 +186,8 @@ class ServiceRestController extends AbstractRestfulController
     
     foreach($data as $k => $v){
       if(!empty($v)){
-        $data[$k] = json_decode($v, true);
+        if(is_string($v))
+          $data[$k] = json_decode($v, true);
         if(empty($data[$k]))
           $data[$k] = $v;
       }

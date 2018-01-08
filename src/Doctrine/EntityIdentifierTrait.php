@@ -20,7 +20,9 @@ trait EntityIdentifierTrait
   
   public function setId($id)
   {
-    $this->id = (int) $id;
+    $this->id = is_numeric($id) ? (int) $id : $id;
+    if($this instanceof \Solutio\EntityInterface)
+      $this->setChangedValue('id', $this->id);
     return $this;
   }
 }
