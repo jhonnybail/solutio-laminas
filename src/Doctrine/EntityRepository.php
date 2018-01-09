@@ -114,11 +114,11 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
     return $findedEntity;
   }
   
-  public function find($id) : EntityInterface
+  public function findById($id) : EntityInterface
   {
     $metaData 	= $this->getClassMetadata();
     if(count($metaData->getIdentifier()) > 1 && !is_array($id)){
-      $entities = $this->findById($id);
+      $entities = parent::findById($id);
       if(count($entities) === 1)
         $entity = current($entities);
     }else
