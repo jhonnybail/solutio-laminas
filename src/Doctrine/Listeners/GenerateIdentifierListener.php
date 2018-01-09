@@ -48,7 +48,17 @@ class GenerateIdentifierListener
       }
       
       if(!empty($field)){
-        $property             = new \ReflectionProperty($entity, $field);
+        $className = get_class($entity);
+        while(true){
+          try{
+            $property   = new \ReflectionProperty($className, $field);
+            break;
+          }catch(\ReflectionException $e){
+            $reflection = \Zend\Server\Reflection::reflectClass($className);
+            if($reflection = $reflection->getParentClass())
+              $className = $reflection->getName();
+          }
+        }
         $propertyAnnotations  = (new \Doctrine\Common\Annotations\AnnotationReader)->getPropertyAnnotations($property);
         foreach($propertyAnnotations as $propertyAnnotation){
             if($propertyAnnotation instanceof ORM\OneToOne
