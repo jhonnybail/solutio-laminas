@@ -65,7 +65,7 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
         $findedEntity = $entity;
     }catch(\Exception $e){
       if(isset($data['id']))
-        $findedEntity   = $this->find($data['id']);
+        $findedEntity   = $this->findById($data['id']);
     }
     return $this->save($findedEntity);
   }
@@ -89,7 +89,7 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
         $findedEntity = $entity;
     }catch(\Exception $e){
       if(isset($data['id']))
-        $findedEntity   = $this->find($data['id']);
+        $findedEntity   = $this->findById($data['id']);
     }
     $this->getEntityManager()->remove($findedEntity);
     $this->getEntityManager()->flush($findedEntity);
@@ -122,7 +122,7 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
       if(count($entities) === 1)
         $entity = current($entities);
     }else
-      $entity = parent::find($id);
+      $entity = $this->find($id);
     if(!$entity)
       throw new \InvalidArgumentException('Content not found.');
     return $entity;

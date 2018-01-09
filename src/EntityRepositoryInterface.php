@@ -13,7 +13,7 @@ interface EntityRepositoryInterface
   
   public function delete(EntityInterface $entity) : EntityInterface;
   
-  public function find($id) : EntityInterface;
+  public function findById($id) : EntityInterface;
 
   public function getCollection(EntityInterface $entity, array $filters = [], array $params = [], array $fields = [], $type = self::RESULT_ARRAY) : array;
 }

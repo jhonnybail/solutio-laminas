@@ -46,7 +46,7 @@ class RemoveChildrenPendingListener extends AbstractServiceListener
             }
           }
         }elseif($property['options']['propertyAnnotation'] instanceof ORM\ManyToMany){
-          $findedEntity = $event->getTarget()->getRepository()->find($entity->getKeys());
+          $findedEntity = $event->getTarget()->getRepository()->findById($entity->getKeys());
           $method = StringManipulator::GetInstance('remove' . ucfirst($name));
           if($method->substr($method->length()-3, 3)->toString() === 'ies')
             $method = $method->substr(0, -3)->concat('y')->toString();

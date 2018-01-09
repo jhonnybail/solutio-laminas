@@ -42,7 +42,7 @@ class EntityService extends AbstractService
   
   protected function getById($id)
   {
-    return $this->getRepository()->find($id);
+    return $this->getRepository()->findById($id);
   }
 
   protected function find(EntityInterface $entity, $filters = [], $params = [], $fields = [], $type = EntityRepositoryInterface::RESULT_ARRAY) : array

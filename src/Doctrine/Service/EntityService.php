@@ -42,7 +42,7 @@ class EntityService extends \Solutio\Service\EntityService
   protected function getById($id)
   {
     try{
-      return $this->getRepository()->find($id);
+      return $this->getRepository()->findById($id);
     }catch(\Exception $e){
       if(!is_array($id)){
         $className  = $this->getClassName();
