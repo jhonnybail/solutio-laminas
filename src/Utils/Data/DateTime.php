@@ -220,6 +220,7 @@ class DateTime extends \DateTime
   }
 
   /**
+
    * Retorna o nome da classe.
    *
    * @param  null

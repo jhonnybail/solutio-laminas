@@ -35,4 +35,5 @@ abstract class AbstractService implements EventManagerAwareInterface
     }
     return $this->events;
   }
+
 }
