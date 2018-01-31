@@ -13,7 +13,7 @@ use Zend\Mvc\MvcEvent,
 
 class Module
 {
-  const VERSION = '2.5.2';
+  const VERSION = '2.5.3';
   
   public function onBootstrap(MvcEvent $e)
   {
@@ -74,26 +74,27 @@ class Module
     //
     
     //Error PHP dispatch Exception
+    $module = $this;
     ini_set('display_errors', false);
-    error_reporting(-1);
-    set_error_handler(function($code, $string, $file, $line){
+    /*set_error_handler(function($code, $string, $file, $line) use ($module, $e){
       $exception = new \ErrorException($string, null, $code, $file, $line);
       $data       = $module->getDataException($e, $exception);
       $data['success']  = false;
       header('Content-Type: application/json; charset=utf-8');
       header((isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0') . " {$data['status']}");
       echo json_encode($data);
-    });
-    $module = $this;
+      exit;
+    });*/
     register_shutdown_function(function() use ($module, $e){
       $error = error_get_last();
-      if(!is_null($error)){
+      if(!is_null($error) && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR])){
         $exception = new \ErrorException($error['message'], null, isset($error['code']) ? $error['code'] : null, $error['file'], $error['line']);
         $data       = $module->getDataException($e, $exception);
         $data['success']  = false;
         header('Content-Type: application/json; charset=utf-8');
         header((isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0') . " {$data['status']}");
         echo json_encode($data);
+        exit;
       }
     });
   }
@@ -178,7 +179,7 @@ class Module
     }
   }
   
-  private function getDataException(Event $e, \Exception $exception) : array
+  private function getDataException(Event $e, \Throwable $exception) : array
   {
     $logConf          = $e->getApplication()->getServiceManager()->get('config')['solutio']['logs']['system'];
     $errorConf        = $e->getApplication()->getServiceManager()->get('config')['solutio']['errors'];
@@ -273,13 +274,13 @@ class Module
 
     $exception  = $e->getParam('exception');
     if(!empty($exception)){
-      $data = $this->getDataException($exception);
+      $data = $this->getDataException($e, $exception);
     }elseif(!empty($e->getParam('controller-class')))
       $data['message']  = $e->getParam('controller-class');
     elseif($error === 'error-router-no-match')
       $data['message']  = 'Route don\'t exists.';
     
-    $data       = ['success' => false];
+    $data['success'] = false;
     
     $model = new JsonModel($data); 
     
