@@ -5,7 +5,7 @@ namespace Solutio;
 return [
   'solutio' => [
     'errors' => [
-      'hidden'        => true,
+      'hidden'        => false,
       'hidden_trace'  => true
     ],
     'logs'  => [
@@ -30,7 +30,7 @@ return [
         'default' => [
           'enabled' => true,
           'adapter' => [
-            'name'    => 'apcu',
+            'name'    => 'array',
             'options' => [
               'ttl' => 180
             ]
@@ -43,10 +43,10 @@ return [
     'driver' => [
       'configuration' => [
         'orm_default' => [
-          'metadata_cache'        => 'apcu',
-          'query_cache'           => 'apcu',
-          'result_cache'          => 'apcu',
-          'hydration_cache'       => 'apcu'
+          'metadata_cache'        => 'array',
+          'query_cache'           => 'array',
+          'result_cache'          => 'array',
+          'hydration_cache'       => 'array'
         ]
       ],
       'SolutioConfig_driver' => [
@@ -67,10 +67,10 @@ return [
         'customHydrationModes'  => [
            'SolutioArrayHydrator' => Doctrine\Hydrators\ArrayHydrator::class,
         ],
-        'metadata_cache'        => 'apcu',
-        'query_cache'           => 'apcu',
-        'result_cache'          => 'apcu',
-        'hydration_cache'       => 'apcu',
+        'metadata_cache'        => 'array',
+        'query_cache'           => 'array',
+        'result_cache'          => 'array',
+        'hydration_cache'       => 'array',
         'second_level_cache'    => [
           'enabled'               => true,
           'default_lifetime'      => 300,

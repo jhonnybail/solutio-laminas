@@ -3,6 +3,7 @@
 namespace Solutio;
 
 use Zend\Mvc\MvcEvent,
+    Zend\EventManager\Event,
     Zend\View\Model\JsonModel,
     Doctrine\DBAL\Logging\LoggerChain,
     Solutio\Doctrine\SqlLogger,
@@ -12,7 +13,7 @@ use Zend\Mvc\MvcEvent,
 
 class Module
 {
-  const VERSION = '2.5.0';
+  const VERSION = '2.5.2';
   
   public function onBootstrap(MvcEvent $e)
   {
@@ -71,6 +72,30 @@ class Module
       }catch(\Exception $e){}
     }
     //
+    
+    //Error PHP dispatch Exception
+    ini_set('display_errors', false);
+    error_reporting(-1);
+    set_error_handler(function($code, $string, $file, $line){
+      $exception = new \ErrorException($string, null, $code, $file, $line);
+      $data       = $module->getDataException($e, $exception);
+      $data['success']  = false;
+      header('Content-Type: application/json; charset=utf-8');
+      header((isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0') . " {$data['status']}");
+      echo json_encode($data);
+    });
+    $module = $this;
+    register_shutdown_function(function() use ($module, $e){
+      $error = error_get_last();
+      if(!is_null($error)){
+        $exception = new \ErrorException($error['message'], null, isset($error['code']) ? $error['code'] : null, $error['file'], $error['line']);
+        $data       = $module->getDataException($e, $exception);
+        $data['success']  = false;
+        header('Content-Type: application/json; charset=utf-8');
+        header((isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0') . " {$data['status']}");
+        echo json_encode($data);
+      }
+    });
   }
 
   public function getConfig()
@@ -153,11 +178,81 @@ class Module
     }
   }
   
+  private function getDataException(Event $e, \Exception $exception) : array
+  {
+    $logConf          = $e->getApplication()->getServiceManager()->get('config')['solutio']['logs']['system'];
+    $errorConf        = $e->getApplication()->getServiceManager()->get('config')['solutio']['errors'];
+    $data             = [];
+    $data['message']  = $exception->getMessage();
+    if(!$errorConf['hidden'] && !$errorConf['hidden_trace'])
+      $data['trace'] = $exception->getTrace();
+    $e->getResponse()->setStatusCode(\Zend\Http\PhpEnvironment\Response::STATUS_CODE_400);
+    if($exception instanceof \Zend\Json\Exception\RuntimeException){
+      if($logConf['active']){;
+        try{
+          $writer = new \Zend\Log\Writer\Stream($logConf['path'] . 'EXRUT-' . (new DateTime)->format("YmdHis") . '-' . rand(1, 100) . '.log');
+          $logger = new \Zend\Log\Logger();
+          $logger->addWriter($writer);
+          $logger->info('--- Initial Run Time Exception ---');
+          $logger->info("URI: {$e->getTarget()->getRequest()->getUri()->getPath()}");
+          $logger->info("Content: {$e->getTarget()->getRequest()->getContent()}");
+          $logger->err("Message: {$exception->getMessage()}");
+          $logger->err("Trace: {$exception->getTraceAsString()}");
+          $logger->info('--- End Run Time Exception ---');
+        }catch(\Exception $e){}
+      }
+      if($errorConf['hidden'])
+        $data['message'] = 'Invalid Request JSON';
+    }elseif($exception instanceof \InvalidArgumentException)
+      $e->getResponse()->setStatusCode(
+        \Zend\Http\PhpEnvironment\Response::STATUS_CODE_400,
+        'Bad Request'
+      );
+    elseif($exception instanceof \Solutio\NotFoundException)
+      $e->getResponse()->setStatusCode(
+        \Zend\Http\PhpEnvironment\Response::STATUS_CODE_404,
+        'Not Found'
+      );
+    elseif(StringManipulator::GetInstance(get_class($exception))->search('Doctrine')){
+      if($logConf['active']){;
+        try{
+          $writer = new \Zend\Log\Writer\Stream($logConf['path'] . 'EXSQL-' . (new DateTime)->format("YmdHis") . '-' . rand(1, 100) . '.log');
+          $logger = new \Zend\Log\Logger();
+          $logger->addWriter($writer);
+          $logger->info('--- Initial DB Exception ---');
+          $logger->info("URI: {$e->getTarget()->getRequest()->getUri()->getPath()}");
+          $logger->info("Content: {$e->getTarget()->getRequest()->getContent()}");
+          $logger->err("Message: {$exception->getMessage()}");
+          $logger->err("Trace: {$exception->getTraceAsString()}");
+          $logger->info('--- End DB Exception ---');
+        }catch(\Exception $e){}
+      }
+      if($errorConf['hidden'])
+        $data['message'] = 'Error processing information on server. Our support team has already been notified.';
+    }else{
+      if($logConf['active']){;
+        try{
+          $writer = new \Zend\Log\Writer\Stream($logConf['path'] . 'EXSER-' . (new DateTime)->format("YmdHis") . '-' . rand(1, 100) . '.log');
+          $logger = new \Zend\Log\Logger();
+          $logger->addWriter($writer);
+          $logger->info('--- Initial Server Exception ---');
+          $logger->info("URI: {$e->getTarget()->getRequest()->getUri()->getPath()}");
+          $logger->info("Content: {$e->getTarget()->getRequest()->getContent()}");
+          $logger->err("Message: {$exception->getMessage()}");
+          $logger->err("Trace: {$exception->getTraceAsString()}");
+          $logger->info('--- End Server Exception ---');
+        }catch(\Exception $e){}
+      }
+      if($errorConf['hidden'])
+        $data['message'] = 'Someone error running on the server happened. Our support team has already been notified.';
+    }
+    $data['status']   = $e->getResponse()->getStatusCode();
+    return $data;
+  }
+  
   public function onDispatchError($e) 
   { 
-    $logConf    = $e->getApplication()->getServiceManager()->get('config')['solutio']['logs']['system'];
-    $errorConf  = $e->getApplication()->getServiceManager()->get('config')['solutio']['errors'];
-    $error    = $e->getError(); 
+    $error      = $e->getError(); 
     if (!$error || !($e->getTarget() instanceof \Solutio\Controller\ServiceRestController)) { 
       // No error? nothing to do. 
       return; 
@@ -177,77 +272,15 @@ class Module
     } 
 
     $exception  = $e->getParam('exception');
-    
-    $data       = ['success' => false];
     if(!empty($exception)){
-      $data['message'] = $exception->getMessage();
-      if(!$errorConf['hidden'] && !$errorConf['hidden_trace'])
-        $data['trace'] = $exception->getTrace();
-      $e->getResponse()->setStatusCode(\Zend\Http\PhpEnvironment\Response::STATUS_CODE_400);
-      if($exception instanceof \Zend\Json\Exception\RuntimeException){
-        if($logConf['active']){;
-          try{
-            $writer = new \Zend\Log\Writer\Stream($logConf['path'] . 'EXRUT-' . (new DateTime)->format("YmdHis") . '-' . rand(1, 100) . '.log');
-            $logger = new \Zend\Log\Logger();
-            $logger->addWriter($writer);
-            $logger->info('--- Initial Run Time Exception ---');
-            $logger->info("URI: {$e->getTarget()->getRequest()->getUri()->getPath()}");
-            $logger->info("Content: {$e->getTarget()->getRequest()->getContent()}");
-            $logger->err("Message: {$exception->getMessage()}");
-            $logger->err("Trace: {$exception->getTraceAsString()}");
-            $logger->info('--- End Run Time Exception ---');
-          }catch(\Exception $e){}
-        }
-        if($errorConf['hidden'])
-          $data['message'] = 'Invalid Request JSON';
-      }elseif($exception instanceof \InvalidArgumentException)
-        $e->getResponse()->setStatusCode(
-          \Zend\Http\PhpEnvironment\Response::STATUS_CODE_400,
-          'Bad Request'
-        );
-      elseif($exception instanceof \Solutio\NotFoundException)
-        $e->getResponse()->setStatusCode(
-          \Zend\Http\PhpEnvironment\Response::STATUS_CODE_404,
-          'Not Found'
-        );
-      elseif(StringManipulator::GetInstance(get_class($exception))->search('Doctrine')){
-        if($logConf['active']){;
-          try{
-            $writer = new \Zend\Log\Writer\Stream($logConf['path'] . 'EXSQL-' . (new DateTime)->format("YmdHis") . '-' . rand(1, 100) . '.log');
-            $logger = new \Zend\Log\Logger();
-            $logger->addWriter($writer);
-            $logger->info('--- Initial DB Exception ---');
-            $logger->info("URI: {$e->getTarget()->getRequest()->getUri()->getPath()}");
-            $logger->info("Content: {$e->getTarget()->getRequest()->getContent()}");
-            $logger->err("Message: {$exception->getMessage()}");
-            $logger->err("Trace: {$exception->getTraceAsString()}");
-            $logger->info('--- End DB Exception ---');
-          }catch(\Exception $e){}
-        }
-        if($errorConf['hidden'])
-          $data['message'] = 'Error processing information on server. Our support team has already been notified.';
-      }else{
-        if($logConf['active']){;
-          try{
-            $writer = new \Zend\Log\Writer\Stream($logConf['path'] . 'EXSER-' . (new DateTime)->format("YmdHis") . '-' . rand(1, 100) . '.log');
-            $logger = new \Zend\Log\Logger();
-            $logger->addWriter($writer);
-            $logger->info('--- Initial Server Exception ---');
-            $logger->info("URI: {$e->getTarget()->getRequest()->getUri()->getPath()}");
-            $logger->info("Content: {$e->getTarget()->getRequest()->getContent()}");
-            $logger->err("Message: {$exception->getMessage()}");
-            $logger->err("Trace: {$exception->getTraceAsString()}");
-            $logger->info('--- End Server Exception ---');
-          }catch(\Exception $e){}
-        }
-        if($errorConf['hidden'])
-          $data['message'] = 'Someone error running on the server happened. Our support team has already been notified.';
-      }
+      $data = $this->getDataException($exception);
     }elseif(!empty($e->getParam('controller-class')))
       $data['message']  = $e->getParam('controller-class');
     elseif($error === 'error-router-no-match')
       $data['message']  = 'Route don\'t exists.';
-      
+    
+    $data       = ['success' => false];
+    
     $model = new JsonModel($data); 
     
     $e->setViewModel($model); 
