@@ -4,10 +4,18 @@ namespace Solutio;
 
 return [
   'solutio' => [
+    'errors' => [
+      'hidden'        => true,
+      'hidden_trace'  => true
+    ],
     'logs'  => [
       'doctrine'  => [
         'active'  => false,
-        'path'    => null
+        'path'    => $_SERVER['DOCUMENT_ROOT'] . '/../data/log/doctrine/'
+      ],
+      'system' => [
+        'active'  => false,
+        'path'    => $_SERVER['DOCUMENT_ROOT'] . '/../data/log/'
       ]
     ],
     'cors'  => [

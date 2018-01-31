@@ -16,14 +16,10 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
 
   protected function save(AbstractEntity $entity)
   {
-    try{
-      $this->getEntityManager()->persist($entity);
-      $this->getEntityManager()->flush();
-      $this->clearCache();
-      return $entity;
-    }catch(\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e){
-      throw new \InvalidArgumentException('Content already exists.');
-    }
+    $this->getEntityManager()->persist($entity);
+    $this->getEntityManager()->flush();
+    $this->clearCache();
+    return $entity;
   }
   
   public function insert(EntityInterface $entity) : EntityInterface

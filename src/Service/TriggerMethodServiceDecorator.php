@@ -2,7 +2,7 @@
 
 namespace Solutio\Service;
 
-use Doctrine\Utils\Data\ArrayObject;
+use Solutio\Utils\Data\ArrayObject;
 
 class TriggerMethodServiceDecorator extends AbstractService
 {
