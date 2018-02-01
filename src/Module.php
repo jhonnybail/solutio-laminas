@@ -73,6 +73,12 @@ class Module
     }
     //
     
+    //load class Log
+    $stream = new \Zend\Log\Writer\Stream('php://output');
+    $logger = new \Zend\Log\Logger;
+    $logger->addWriter($stream);
+    //
+    
     //Error PHP dispatch Exception
     $module = $this;
     ini_set('display_errors', false);
@@ -185,8 +191,7 @@ class Module
     //Get remainder memory
     $memUsage   = memory_get_usage(true);
     $memLimit   = preg_replace("![^0-9]!", "", ini_get("memory_limit")) * 1024 * 1024;
-    if($memLimit - ($memLimit*0.1*0.1) <= $memUsage)
-      $textLimit = ceil($memLimit*0.005*0.1);
+    $textLimit = ceil($memLimit*0.0025*0.1);
     //
       
     $e->getResponse()->setStatusCode(\Zend\Http\PhpEnvironment\Response::STATUS_CODE_400);
