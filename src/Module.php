@@ -13,7 +13,7 @@ use Zend\Mvc\MvcEvent,
 
 class Module
 {
-  const VERSION = '2.5.3';
+  const VERSION = '2.5.4';
   
   public function onBootstrap(MvcEvent $e)
   {
@@ -76,21 +76,15 @@ class Module
     //Error PHP dispatch Exception
     $module = $this;
     ini_set('display_errors', false);
-    /*set_error_handler(function($code, $string, $file, $line) use ($module, $e){
-      $exception = new \ErrorException($string, null, $code, $file, $line);
-      $data       = $module->getDataException($e, $exception);
-      $data['success']  = false;
-      header('Content-Type: application/json; charset=utf-8');
-      header((isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0') . " {$data['status']}");
-      echo json_encode($data);
-      exit;
-    });*/
     register_shutdown_function(function() use ($module, $e){
       $error = error_get_last();
       if(!is_null($error) && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR])){
+        ob_clean();
+        $number = gc_collect_cycles();
         $exception = new \ErrorException($error['message'], null, isset($error['code']) ? $error['code'] : null, $error['file'], $error['line']);
         $data       = $module->getDataException($e, $exception);
         $data['success']  = false;
+        
         header('Content-Type: application/json; charset=utf-8');
         header((isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0') . " {$data['status']}");
         echo json_encode($data);
@@ -179,7 +173,7 @@ class Module
     }
   }
   
-  private function getDataException(Event $e, \Throwable $exception) : array
+  private function getDataException(Event $e, \Throwable $exception, $log = true) : array
   {
     $logConf          = $e->getApplication()->getServiceManager()->get('config')['solutio']['logs']['system'];
     $errorConf        = $e->getApplication()->getServiceManager()->get('config')['solutio']['errors'];
@@ -187,9 +181,17 @@ class Module
     $data['message']  = $exception->getMessage();
     if(!$errorConf['hidden'] && !$errorConf['hidden_trace'])
       $data['trace'] = $exception->getTrace();
+    
+    //Get remainder memory
+    $memUsage   = memory_get_usage(true);
+    $memLimit   = preg_replace("![^0-9]!", "", ini_get("memory_limit")) * 1024 * 1024;
+    if($memLimit - ($memLimit*0.1*0.1) <= $memUsage)
+      $textLimit = ceil($memLimit*0.005*0.1);
+    //
+      
     $e->getResponse()->setStatusCode(\Zend\Http\PhpEnvironment\Response::STATUS_CODE_400);
     if($exception instanceof \Zend\Json\Exception\RuntimeException){
-      if($logConf['active']){;
+      if($logConf['active'] && $log){
         try{
           $writer = new \Zend\Log\Writer\Stream($logConf['path'] . 'EXRUT-' . (new DateTime)->format("YmdHis") . '-' . rand(1, 100) . '.log');
           $logger = new \Zend\Log\Logger();
@@ -215,7 +217,7 @@ class Module
         'Not Found'
       );
     elseif(StringManipulator::GetInstance(get_class($exception))->search('Doctrine')){
-      if($logConf['active']){;
+      if($logConf['active'] && $log){
         try{
           $writer = new \Zend\Log\Writer\Stream($logConf['path'] . 'EXSQL-' . (new DateTime)->format("YmdHis") . '-' . rand(1, 100) . '.log');
           $logger = new \Zend\Log\Logger();
@@ -231,14 +233,17 @@ class Module
       if($errorConf['hidden'])
         $data['message'] = 'Error processing information on server. Our support team has already been notified.';
     }else{
-      if($logConf['active']){;
+      if($logConf['active'] && $log){
         try{
           $writer = new \Zend\Log\Writer\Stream($logConf['path'] . 'EXSER-' . (new DateTime)->format("YmdHis") . '-' . rand(1, 100) . '.log');
           $logger = new \Zend\Log\Logger();
           $logger->addWriter($writer);
           $logger->info('--- Initial Server Exception ---');
           $logger->info("URI: {$e->getTarget()->getRequest()->getUri()->getPath()}");
-          $logger->info("Content: {$e->getTarget()->getRequest()->getContent()}");
+          if(strlen($e->getTarget()->getRequest()->getContent()) <= $textLimit)
+            $logger->info("Content: {$e->getTarget()->getRequest()->getContent()}");
+          else
+            $logger->info("Content: ".substr($e->getTarget()->getRequest()->getContent(), 0, $textLimit) . "...");
           $logger->err("Message: {$exception->getMessage()}");
           $logger->err("Trace: {$exception->getTraceAsString()}");
           $logger->info('--- End Server Exception ---');
