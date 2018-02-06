@@ -13,7 +13,7 @@ use Zend\Mvc\MvcEvent,
 
 class Module
 {
-  const VERSION = '2.5.4';
+  const VERSION = '2.5.5';
   
   public function onBootstrap(MvcEvent $e)
   {
@@ -211,17 +211,7 @@ class Module
       }
       if($errorConf['hidden'])
         $data['message'] = 'Invalid Request JSON';
-    }elseif($exception instanceof \InvalidArgumentException)
-      $e->getResponse()->setStatusCode(
-        \Zend\Http\PhpEnvironment\Response::STATUS_CODE_400,
-        'Bad Request'
-      );
-    elseif($exception instanceof \Solutio\NotFoundException)
-      $e->getResponse()->setStatusCode(
-        \Zend\Http\PhpEnvironment\Response::STATUS_CODE_404,
-        'Not Found'
-      );
-    elseif(StringManipulator::GetInstance(get_class($exception))->search('Doctrine')){
+    }elseif(StringManipulator::GetInstance(get_class($exception))->search('Doctrine')){
       if($logConf['active'] && $log){
         try{
           $writer = new \Zend\Log\Writer\Stream($logConf['path'] . 'EXSQL-' . (new DateTime)->format("YmdHis") . '-' . rand(1, 100) . '.log');
@@ -237,7 +227,17 @@ class Module
       }
       if($errorConf['hidden'])
         $data['message'] = 'Error processing information on server. Our support team has already been notified.';
-    }else{
+    }elseif($exception instanceof \InvalidArgumentException)
+      $e->getResponse()->setStatusCode(
+        \Zend\Http\PhpEnvironment\Response::STATUS_CODE_409,
+        'Conflict'
+      );
+    elseif($exception instanceof \Solutio\NotFoundException)
+      $e->getResponse()->setStatusCode(
+        \Zend\Http\PhpEnvironment\Response::STATUS_CODE_404,
+        'Not Found'
+      );
+    else{
       if($logConf['active'] && $log){
         try{
           $writer = new \Zend\Log\Writer\Stream($logConf['path'] . 'EXSER-' . (new DateTime)->format("YmdHis") . '-' . rand(1, 100) . '.log');

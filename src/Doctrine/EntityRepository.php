@@ -568,6 +568,22 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
           foreach($this->queryCache[$this->getClassname()] as $k => $v)
             $this->queryCache[$this->getClassname()][$k]['sequence']++;
           $adapter->save($this->getClassname(), $this->queryCache[$this->getClassname()]);
+          $metaData 	  = $this->getClassMetadata();
+          $maps 			  = $metaData->getAssociationMappings();
+          foreach($maps as $assoc){
+            $className  = $assoc['targetEntity'];
+            $cacheRegion  = $this->getEntityManager()->getCache()->getEntityCacheRegion($className);
+            if(method_exists($cacheRegion, 'getCache'))
+              $adapter = $cacheRegion->getCache();
+            else
+              $adapter = $this->getEntityManager()->getConfiguration()->getSecondLevelCacheConfiguration()->getCacheFactory()->getRegion([])->getCache();
+            if($adapter->contains($className)){
+              $this->queryCache[$className] = $adapter->fetch($className);
+              foreach($this->queryCache[$className] as $k => $v)
+                $this->queryCache[$className][$k]['sequence']++;
+              $adapter->save($className, $this->queryCache[$className]);
+            }
+          }
         }
       }else
         $isCacheable = false;
