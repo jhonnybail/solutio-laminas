@@ -362,6 +362,7 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
               
               $expression = null;
               $value      = null;
+              $condition  = null;
               
               if(is_array($filter) || $filter instanceof \Traversable){
                 if(isset($filter['field']))
@@ -400,6 +401,8 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
                   $fieldName = str_replace(".", "", $field . rand());
                   $expression = getCondition($query, (!preg_match('/\./', $field) ? $query->getRootAliases()[0]."." : "").$field, ':'.$fieldName, $condition);
                   $listValues[$fieldName] = $value;
+                }elseif($value === null){
+                  $expression = getCondition($query, (!preg_match('/\./', $field) ? $query->getRootAliases()[0]."." : "").$field, null, $condition);
                 }
               }
               
