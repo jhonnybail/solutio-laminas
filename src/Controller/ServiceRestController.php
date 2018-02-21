@@ -47,7 +47,7 @@ class ServiceRestController extends AbstractRestfulController
   // Listar - GET
   public function getList()
   {
-    $filters  = new ArrayObject($this->getRequest()->getQuery()->get('filters') ? Json\Decoder::decode($this->getRequest()->getQuery()->get('filters'), Json\Json::TYPE_ARRAY) : []);
+    $filters  = $this->getFilters();
     $data		  = $this->service->find($this->getEntity(), $filters, $this->getParams(), $this->getFields());
     return new JsonModel([
       'data'		=> $data,
@@ -193,6 +193,11 @@ class ServiceRestController extends AbstractRestfulController
       }
     }
     return $data;
+  }
+
+  protected function getFilters() : array
+  {
+    return $this->getRequest()->getQuery()->get('filters') ? Json\Decoder::decode($this->getRequest()->getQuery()->get('filters'), Json\Json::TYPE_ARRAY) : [];
   }
 
   protected function getParams() : array
