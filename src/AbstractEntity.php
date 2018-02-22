@@ -82,7 +82,7 @@ abstract class AbstractEntity implements \JsonSerializable
         unset($obj[$k]);
       elseif($v instanceof \Doctrine\Common\Collections\ArrayCollection)
         $obj[$k] = $v->toArray();
-      elseif($v === null)
+      elseif($v === null || $k === 'keys')
         unset($obj[$k]);
     return $obj;
   }
