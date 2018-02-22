@@ -45,7 +45,7 @@ class EntityRepository extends ORM\EntityRepository
     if(!$this->disabledefaultFilters){
       
       if(count($filters) <= 0){
-    
+        
         foreach($attrs as $field){
           if(isset($obj[$field]) && $obj[$field] != null && $obj[$field] != ''){
             if(preg_match("/int/", $metaData->getTypeOfField($field))){
@@ -170,9 +170,9 @@ class EntityRepository extends ORM\EntityRepository
             }
           }
         }
-        foreach($maps as $fieldName => $field){
+        foreach($maps as $fieldName => $field){ 
           if(isset($obj[$fieldName])){
-            $am = $metaData->getAssociationMapping($fieldName);
+          $am = $metaData->getAssociationMapping($fieldName);
             if(($am['type'] == 2 || $am['type'] == 1) && $obj[$fieldName] != null){
               $id 	= null;
               if($obj[$fieldName] instanceof \Solutio\AbstractEntity){
@@ -337,12 +337,14 @@ class EntityRepository extends ORM\EntityRepository
     if(!empty($this->conditions)){
       $query = $this->conditions[0]($alias, $query);
     }
-        
+    
     if(isset($params['order'])){
       $order	= $params['order'];
       if(is_array($order))
-        if(current($order))
-          $query = $query->orderBy($alias.".".key($order), current($order));
+        if(current($order)){
+          $fieldName = preg_match("/\./", key($order)) ? key($order) : $alias.".".key($order);
+          $query = $query->orderBy($fieldName, current($order));
+        }
     }
     
     if(isset($params['limit'])){
