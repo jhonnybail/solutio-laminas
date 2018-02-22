@@ -265,9 +265,11 @@ class EntityRepository extends ORM\EntityRepository
             
             foreach($filters as $index => $filter){
               
-              $value = null;
+              $expression = null;
+              $value      = null;
+              $condition  = null;
               
-              if(is_array($filter)){
+              if(is_array($filter) || $filter instanceof \Traversable){
                 if(isset($filter['field']))
                   $field      = $filter['field'];
                 if(isset($filter['condition']))
@@ -290,10 +292,23 @@ class EntityRepository extends ORM\EntityRepository
                 }
                 $expression = makeExpression($em, $metaData, $query, $listValues, $filter, $childOr);
               }elseif(!empty($field) && fieldExists($em, $metaData, $field)){
-                $fieldName = str_replace(".", "", $field . rand());
-                $expression = getCondition($query, (!preg_match('/\./', $field) ? $query->getRootAliases()[0]."." : "").$field, ':'.$fieldName, $condition);
-                if($value || $value === false)
+                if((is_array($value) || $value instanceof \Traversable) && !isset($value[0])){
+                  foreach($value as $subField => $subValue){
+                    $fieldName = str_replace(".", "", $field.$subField . rand());
+                    $expression = getCondition($query, $field.".".$subField, ':'.$fieldName, $condition);
+                    if($subValue || $subValue === false)
+                      $listValues[$fieldName] = $subValue;
+                    if(!empty($expression))
+                      $expr->add($expression);
+                  }
+                  $expression = null;
+                }elseif($value || $value === false || $value === 0){
+                  $fieldName = str_replace(".", "", $field . rand());
+                  $expression = getCondition($query, (!preg_match('/\./', $field) ? $query->getRootAliases()[0]."." : "").$field, ':'.$fieldName, $condition);
                   $listValues[$fieldName] = $value;
+                }elseif($value === null){
+                  $expression = getCondition($query, (!preg_match('/\./', $field) ? $query->getRootAliases()[0]."." : "").$field, null, $condition);
+                }
               }
               
               if(!empty($expression))

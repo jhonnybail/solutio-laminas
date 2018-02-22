@@ -8,7 +8,7 @@ use Zend\Mvc\MvcEvent,
 class Module
 {
     
-  const VERSION = '1.3.3';
+  const VERSION = '1.3.4';
   
   public function onBootstrap(MvcEvent $e)
   {
