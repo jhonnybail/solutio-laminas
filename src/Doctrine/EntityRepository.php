@@ -17,7 +17,19 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
   protected function save(AbstractEntity $entity)
   {
     $this->getEntityManager()->persist($entity);
-    $this->getEntityManager()->flush();
+    $this->getEntityManager()->flush($entity);
+    $metaData = $this->getEntityManager()->getClassMetadata(get_class($entity));
+    $maps     = $metaData->getAssociationMappings();
+    foreach($maps as $fieldName => $field){
+      if($field['isCascadePersist'] || $field['isCascadeRefresh'] || $field['isCascadeDetach'] || $field['isCascadeMerge'] || $field['isCascadeRemove']){
+        $method = 'get' . ucfirst($fieldName);
+        if($entity->{$method}() instanceof \Traversable && count($entity->{$method}()) > 0)
+          foreach($entity->{$method}() as $child)
+            self::save($child);
+        elseif($entity->{$method}() && !($entity->{$method}() instanceof \Traversable))
+          $this->getEntityManager()->flush($entity->{$method}());
+      }
+    }
     $this->clearCache();
     return $entity;
   }
