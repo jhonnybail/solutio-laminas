@@ -46,8 +46,10 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
     $methodName = StringManipulator::GetInstance($name);
     if($methodName->search('get')){
       $propertyName = $methodName->replace('get', '')->toLowerCaseFirstChars();
-      if(property_exists($this, $propertyName))
-        return $this->{$propertyName};
+      if(property_exists($this, $propertyName)){
+        $reflection = new \ReflectionProperty($this, $propertyName);
+        return ($reflection->isProtected() || $reflection->isPublic()) ? $this->{$propertyName} : null;
+      }
     }elseif($methodName->search('set')){
       $propertyName         = $methodName->replace('set', '')->toLowerCaseFirstChars()->toString();
       try{

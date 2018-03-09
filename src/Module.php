@@ -13,7 +13,7 @@ use Zend\Mvc\MvcEvent,
 
 class Module
 {
-  const VERSION = '2.5.8';
+  const VERSION = '2.5.9';
   
   public function onBootstrap(MvcEvent $e)
   {
@@ -40,9 +40,7 @@ class Module
     $e->getTarget()->getEventManager()->getSharedManager()
                                         ->attach(\Zend\Mvc\Controller\AbstractController::class,
                                                 'dispatch', [$this, 'saveRequestCache'], 0);
-    $e->getTarget()->getEventManager()->getSharedManager()
-                                        ->attach(\Zend\Mvc\Controller\AbstractController::class,
-                                                'dispatch', [$this, 'commitTransaction'], 0);
+    $e->getTarget()->getEventManager()->attach('finish',          [$this, 'commitTransaction'], 0);
     $e->getTarget()->getEventManager()->attach('dispatch.error',  [$this, 'onDispatchError'], 0);
     $e->getTarget()->getEventManager()->attach('dispatch.error',  [$this, 'rollbackTransaction'], 1);
     $e->getTarget()->getEventManager()->attach('finish',          [$this, 'applyCors'], 0);
