@@ -19,8 +19,8 @@ return [
       ]
     ],
     'cors'  => [
-      "origin"          => ["*"],
-      "methods"         => ["*"],
+      "origin"          => [],
+      "methods"         => [],
       "headers.allow"   => [],
       "credentials"     => false,
       "cache"           => -1,

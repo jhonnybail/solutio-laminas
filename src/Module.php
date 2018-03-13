@@ -13,7 +13,7 @@ use Zend\Mvc\MvcEvent,
 
 class Module
 {
-  const VERSION = '2.5.9';
+  const VERSION = '2.5.10';
   
   public function onBootstrap(MvcEvent $e)
   {
@@ -305,11 +305,11 @@ class Module
     if(!$e->getResponse()->getHeaders()->has("Access-Control-Allow-Origin")){
       $origin = System::GetVariable('HTTP_HOST');
       if(in_array('*', $cors['origin']) || in_array($origin, $cors['origin']))
-        $e->getResponse()->getHeaders()->addHeaderLine("Access-Control-Allow-Origin", $origin);
+        $e->getResponse()->getHeaders()->addHeaderLine("Access-Control-Allow-Origin", in_array('*', $cors['origin']) ? '*' : $origin);
     }
     
     //Allow-Methods
-    if(!$e->getResponse()->getHeaders()->has("Access-Control-Allow-Methods")){
+    if(!$e->getResponse()->getHeaders()->has("Access-Control-Allow-Methods") && count($cors['methods']) > 0){
       $methods = '';
       foreach($cors['methods'] as $method) $methods .= $method . ', ';
       $methods = substr($methods, 0, -2);
@@ -317,7 +317,7 @@ class Module
     }
     
     //Allow-Headers
-    if(!$e->getResponse()->getHeaders()->has("Access-Control-Allow-Headers")){
+    if(!$e->getResponse()->getHeaders()->has("Access-Control-Allow-Headers") && count($cors['headers.allow']) > 0){
       $headers = '';
       foreach($cors['headers.allow'] as $header) $headers .= $header . ', ';
       $headers = substr($headers, 0, -2);
