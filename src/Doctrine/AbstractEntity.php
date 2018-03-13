@@ -28,6 +28,7 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
   private $childrenPendingRemovation  = [];
   private $changedValues              = [];
   private static $primaryKeys         = [];
+  private static $toArrayObjs         = [];
   
   public function __construct($options = [])
   {
@@ -265,7 +266,12 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
       if(preg_match('/^__(.*)__$/', $k))
         unset($obj[$k]);
       elseif($v instanceof AbstractEntity){
-        $obj[$k] = $v->toArray();
+        if(isset(self::$toArrayObjs[spl_object_hash($v)]) && !empty(self::$toArrayObjs[spl_object_hash($v)])){
+          $obj[$k] = self::$toArrayObjs[spl_object_hash($v)];
+        }else{
+          self::$toArrayObjs[spl_object_hash($v)] = $v;
+          self::$toArrayObjs[spl_object_hash($v)] = $obj[$k] = $v->toArray();
+        }
       }elseif($v instanceof \Doctrine\Common\Collections\ArrayCollection
               || $v instanceof \Doctrine\ORM\PersistentCollection){
         $array = [];
