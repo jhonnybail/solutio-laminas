@@ -137,7 +137,7 @@ class File implements IFileObject, \JsonSerializable
       
       if(!$this->isOpen){
         
-        if($urlRequest->getType() == URLRequest::URLFILETYPE){
+        if($urlRequest->getType() == URLRequest::URLFILETYPE || $urlRequest->getType() == URLRequest::URLUNKNOWNTYPE){
           
           $this->urlRequest = $urlRequest;
           
