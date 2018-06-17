@@ -10,8 +10,7 @@
 namespace Solutio;
 
 use Solutio\Utils\Data\ArrayObject,
-    Solutio\Utils\Data\StringManipulator,
-    Zend\Session\Container;
+    Solutio\Utils\Data\StringManipulator;
   
 /**
  *  Trata e resgata variáveis do sistema.
@@ -42,9 +41,9 @@ class System
   public static function SetSystem(array $variables)
   {
     if(empty(self::$variablesSystem))
-      self::$variablesSystem = new Container("system");
+      self::$variablesSystem = [];
     foreach($variables as $k => $v)
-      self::$variablesSystem->offsetSet($k, $v);
+      self::$variablesSystem[$k] = $v;
   }
   
   /**
@@ -56,8 +55,8 @@ class System
   public static function GetVariable($data)
   {
     $value = new StringManipulator;
-    if(self::$variablesSystem->offsetGet((string) $data) != "")
-      $value = self::$variablesSystem->offsetGet((string) $data);
+    if(self::$variablesSystem[(string) $data] != "")
+      $value = self::$variablesSystem[(string) $data];
     elseif(!empty($_SERVER[(string) $data]))
       $value = $_SERVER[(string) $data];
     return $value;
