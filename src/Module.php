@@ -13,7 +13,7 @@ use Zend\Mvc\MvcEvent,
 
 class Module
 {
-  const VERSION = '2.5.11';
+  const VERSION = '2.5.12';
   
   public function onBootstrap(MvcEvent $e)
   {
@@ -82,7 +82,7 @@ class Module
     ini_set('display_errors', false);
     register_shutdown_function(function() use ($module, $e){
       $error = error_get_last();
-      if(!is_null($error) && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR])){
+      if(!is_null($error) && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR])){
         ob_clean();
         $number = gc_collect_cycles();
         $exception = new \ErrorException($error['message'], null, isset($error['code']) ? $error['code'] : null, $error['file'], $error['line']);
