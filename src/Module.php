@@ -13,7 +13,7 @@ use Zend\Mvc\MvcEvent,
 
 class Module
 {
-  const VERSION = '2.5.12';
+  const VERSION = '2.5.13';
   
   public function onBootstrap(MvcEvent $e)
   {
@@ -139,7 +139,8 @@ class Module
     $em = $e->getApplication()->getServiceManager()->get(\Doctrine\ORM\EntityManager::class);
     if($em->getConnection()->isTransactionActive()){
       $em->rollback();
-      $em->getCache()->evictEntityRegions();
+      if(!empty($em->getCache()))
+        $em->getCache()->evictEntityRegions();
     }
   }
   
