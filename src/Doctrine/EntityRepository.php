@@ -65,7 +65,7 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
     $isCacheable  = $this->getEntityManager()->getCache() !== null;
     $metaData     = $this->getClassMetadata();
     $keys         = $entity->getKeys();
-    if($isCacheable)
+    if($isCacheable && !empty($this->getEntityManager()->getCache()))
       $this->getEntityManager()->getCache()->evictEntity($this->getClassname(), $keys);
     $data         = $entity->toArray();
     foreach($keys as $key => $value)
