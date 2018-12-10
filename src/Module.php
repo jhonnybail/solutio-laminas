@@ -13,7 +13,7 @@ use Zend\Mvc\MvcEvent,
 
 class Module
 {
-  const VERSION = '2.5.15';
+  const VERSION = '2.5.16';
   
   public function onBootstrap(MvcEvent $e)
   {

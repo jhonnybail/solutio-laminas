@@ -49,7 +49,7 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
     try{
       if(!$this->getEntityManager()->contains($entity)){
         $findedEntity   = $this->getEntityManager()->getReference(get_class($entity), $keys);
-        if(!$findedEntity) throw new \InvalidArgumentException('Content not found.');
+        if(!$findedEntity) throw new \Solutio\NotFoundException('Content not found.');
         $findedEntity->fromArray($data);
       }else
         $findedEntity = $entity;
@@ -73,7 +73,7 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
     try{
       if(!$this->getEntityManager()->contains($entity)){
         $findedEntity   = $this->getEntityManager()->getReference(get_class($entity), $keys);
-        if(!$findedEntity) throw new \InvalidArgumentException('Content not found.');
+        if(!$findedEntity) throw new \Solutio\NotFoundException('Content not found.');
         $findedEntity->fromArray($data);
       }else
         $findedEntity = $entity;
@@ -97,7 +97,7 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
     }else
       $entity = $this->find($id);
     if(!$entity)
-      throw new \InvalidArgumentException('Content not found.');
+      throw new \Solutio\NotFoundException('Content not found.');
     return $entity;
   }
 
