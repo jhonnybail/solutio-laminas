@@ -13,7 +13,7 @@ use Zend\Mvc\MvcEvent,
 
 class Module
 {
-  const VERSION = '2.5.14';
+  const VERSION = '2.5.15';
   
   public function onBootstrap(MvcEvent $e)
   {
@@ -226,15 +226,15 @@ class Module
       }
       if($errorConf['hidden'])
         $data['message'] = 'Error processing information on server. Our support team has already been notified.';
-    }elseif($exception instanceof \InvalidArgumentException)
-      $e->getResponse()->setStatusCode(
-        \Zend\Http\PhpEnvironment\Response::STATUS_CODE_409,
-        'Conflict'
-      );
-    elseif($exception instanceof \Solutio\NotFoundException)
+    }elseif($exception instanceof \Solutio\NotFoundException)
       $e->getResponse()->setStatusCode(
         \Zend\Http\PhpEnvironment\Response::STATUS_CODE_404,
         'Not Found'
+      );
+    elseif($exception instanceof \InvalidArgumentException)
+      $e->getResponse()->setStatusCode(
+        \Zend\Http\PhpEnvironment\Response::STATUS_CODE_409,
+        'Conflict'
       );
     else{
       if($logConf['active'] && $log){
