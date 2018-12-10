@@ -377,6 +377,10 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
         if(count($obj[$k]) <= 0) unset($obj[$k]);
       }elseif($v === null)
         unset($obj[$k]);
+    
+    unset($obj['annotationReader']);
+    unset($obj['childrenPendingRemovation']);
+    unset($obj['changedValues']);
         
     return $obj;
   }
