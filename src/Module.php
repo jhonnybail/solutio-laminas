@@ -109,9 +109,9 @@ class Module
     if($e->getRequest() instanceof \Zend\Console\Request){
       $path = json_encode($e->getRequest()->getContent());
     }else{
-      $path = $e->getRequest()->getUri()->getPath();
+      $path = $e->getRequest()->getUri()->getPath() . ($e->getRequest()->getQuery()->count() > 0 ? urlencode(json_encode($e->getRequest()->getQuery()->toArray())) : '');
     }
-    $key        = $path . ($e->getRequest()->getQuery()->count() > 0 ? urlencode(json_encode($e->getRequest()->getQuery()->toArray())) : '');
+    $key        = $path;
     $controller = $e->getTarget();
     if($controller instanceof Controller\CacheControllerInterface){
       $adapter    = $controller->getCacheAdapter();
@@ -162,9 +162,9 @@ class Module
         if($e->getRequest() instanceof \Zend\Console\Request){
           $path = json_encode($e->getRequest()->getContent());
         }else{
-          $path = $e->getRequest()->getUri()->getPath();
+          $path = $e->getRequest()->getUri()->getPath() . ($e->getRequest()->getQuery()->count() > 0 ? urlencode(json_encode($e->getRequest()->getQuery()->toArray())) : '');
         }
-        $key      = $path . ($e->getRequest()->getQuery()->count() > 0 ? urlencode(json_encode($e->getRequest()->getQuery()->toArray())) : '');
+        $key      = $path;
         $listaCa  = [];
         if($adapter->hasItem($reposito))
           $listaCa = $adapter->getItem($reposito);
