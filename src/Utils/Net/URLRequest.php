@@ -86,7 +86,7 @@ class URLRequest
       if(!($this->getLocalFileHeaders()))
         throw new NetException("URL não existe: ".$url, 6);
     }else{
-      if(empty($headers[0] === "HTTP/1.1 200 OK"))
+      if(empty($headers) || $headers[0] === "HTTP/1.1 404 Not Found")
         throw new NetException("URL não existe: ".$url, 6);
       $this->requestHeaders = $this->requestHeaders->concat((array) $headers);
     }
