@@ -13,7 +13,7 @@ use Zend\Mvc\MvcEvent,
 
 class Module
 {
-  const VERSION = '2.5.18';
+  const VERSION = '2.5.19';
   
   public function onBootstrap(MvcEvent $e)
   {
@@ -43,7 +43,9 @@ class Module
     $e->getTarget()->getEventManager()->attach('finish',          [$this, 'commitTransaction'], 0);
     $e->getTarget()->getEventManager()->attach('dispatch.error',  [$this, 'onDispatchError'], 0);
     $e->getTarget()->getEventManager()->attach('dispatch.error',  [$this, 'rollbackTransaction'], 1);
-    $e->getTarget()->getEventManager()->attach('finish',          [$this, 'applyCors'], 0);
+    
+    if(!($e->getRequest() instanceof \Zend\Console\Request))
+      $e->getTarget()->getEventManager()->attach('finish',          [$this, 'applyCors'], 0);
     
     //Register Listeners Aggregate
     $serviceListeners = $e->getTarget()->getConfig()['service_listener'];
