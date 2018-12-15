@@ -13,7 +13,7 @@ use Zend\Mvc\MvcEvent,
 
 class Module
 {
-  const VERSION = '2.5.19';
+  const VERSION = '2.5.20';
   
   public function onBootstrap(MvcEvent $e)
   {
@@ -106,7 +106,12 @@ class Module
   
   public function loadRequestCache($e)
   {
-    $key        = $e->getRequest()->getUri()->getPath() . ($e->getRequest()->getQuery()->count() > 0 ? urlencode(json_encode($e->getRequest()->getQuery()->toArray())) : '');
+    if($e->getRequest() instanceof \Zend\Console\Request){
+      $path = json_encode($e->getRequest()->getContent());
+    }else{
+      $path = $e->getRequest()->getUri()->getPath();
+    }
+    $key        = $path . ($e->getRequest()->getQuery()->count() > 0 ? urlencode(json_encode($e->getRequest()->getQuery()->toArray())) : '');
     $controller = $e->getTarget();
     if($controller instanceof Controller\CacheControllerInterface){
       $adapter    = $controller->getCacheAdapter();
@@ -154,7 +159,12 @@ class Module
       if($controller->isCacheable()){
         $adapter  = $controller->getCacheAdapter();
         $reposito = $controller->getService()->getClassname();
-        $key      = $e->getRequest()->getUri()->getPath() . ($e->getRequest()->getQuery()->count() > 0 ? urlencode(json_encode($e->getRequest()->getQuery()->toArray())) : '');
+        if($e->getRequest() instanceof \Zend\Console\Request){
+          $path = json_encode($e->getRequest()->getContent());
+        }else{
+          $path = $e->getRequest()->getUri()->getPath();
+        }
+        $key      = $path . ($e->getRequest()->getQuery()->count() > 0 ? urlencode(json_encode($e->getRequest()->getQuery()->toArray())) : '');
         $listaCa  = [];
         if($adapter->hasItem($reposito))
           $listaCa = $adapter->getItem($reposito);
@@ -195,6 +205,12 @@ class Module
     $textLimit = ceil($memLimit*0.0025*0.1);
     //
       
+    if($e->getRequest() instanceof \Zend\Console\Request){
+      $path = json_encode($e->getRequest()->getContent());
+    }else{
+      $path = $e->getRequest()->getUri()->getPath();
+    }
+      
     $e->getResponse()->setStatusCode(\Zend\Http\PhpEnvironment\Response::STATUS_CODE_400);
     if($exception instanceof \Zend\Json\Exception\RuntimeException){
       if($logConf['active'] && $log){
@@ -203,7 +219,7 @@ class Module
           $logger = new \Zend\Log\Logger();
           $logger->addWriter($writer);
           $logger->info('--- Initial Run Time Exception ---');
-          $logger->info("URI: {$e->getTarget()->getRequest()->getUri()->getPath()}");
+          $logger->info("URI: {$path}");
           $logger->info("Content: {$e->getTarget()->getRequest()->getContent()}");
           $logger->err("Message: {$exception->getMessage()}");
           $logger->err("Trace: {$exception->getTraceAsString()}");
@@ -219,7 +235,7 @@ class Module
           $logger = new \Zend\Log\Logger();
           $logger->addWriter($writer);
           $logger->info('--- Initial DB Exception ---');
-          $logger->info("URI: {$e->getTarget()->getRequest()->getUri()->getPath()}");
+          $logger->info("URI: {$path}");
           $logger->info("Content: {$e->getTarget()->getRequest()->getContent()}");
           $logger->err("Message: {$exception->getMessage()}");
           $logger->err("Trace: {$exception->getTraceAsString()}");
@@ -245,7 +261,7 @@ class Module
           $logger = new \Zend\Log\Logger();
           $logger->addWriter($writer);
           $logger->info('--- Initial Server Exception ---');
-          $logger->info("URI: {$e->getTarget()->getRequest()->getUri()->getPath()}");
+          $logger->info("URI: {$path}");
           if(strlen($e->getTarget()->getRequest()->getContent()) <= $textLimit)
             $logger->info("Content: {$e->getTarget()->getRequest()->getContent()}");
           else
