@@ -19,13 +19,15 @@ class CheckAuthorizationListener extends AbstractServiceListener
     $controller   = $application->getMvcEvent()->getTarget();
     $request      = $application->getRequest();
     $response     = $application->getResponse();
-    $method       = $request->getMethod();
-    if($controller instanceof \Solutio\Controller\ServiceRestController)
-      if (!in_array($method, $controller->getAllowedCollectionMethods()) && !in_array('*', $controller->getAllowedCollectionMethods())) {
-        $response->setStatusCode(
-          \Zend\Http\PhpEnvironment\Response::STATUS_CODE_405
-        );
-        throw new Exception('Method Not Allowed');
-      }
+    if(!($request instanceof \Zend\Console\Request)){
+      $method       = $request->getMethod();
+      if($controller instanceof \Solutio\Controller\ServiceRestController)
+        if (!in_array($method, $controller->getAllowedCollectionMethods()) && !in_array('*', $controller->getAllowedCollectionMethods())) {
+          $response->setStatusCode(
+            \Zend\Http\PhpEnvironment\Response::STATUS_CODE_405
+          );
+          throw new Exception('Method Not Allowed');
+        }
+    }
   }
 }
