@@ -89,7 +89,7 @@ class CURL
       $process = \curl_init();
       \curl_setopt($process, CURLOPT_URL, $this->urlRequest->url);
       \curl_setopt($process, CURLOPT_POST, true);
-      \curl_setopt($process, CURLOPT_POSTFIELDS, $this->urlRequest->data->toArrayObject());
+      \curl_setopt($process, CURLOPT_POSTFIELDS, $this->urlRequest->data);
       \curl_setopt($process, CURLOPT_FOLLOWLOCATION  ,true);
       \curl_setopt($process, CURLOPT_RETURNTRANSFER, true);
       //\curl_setopt($process, CURLOPT_HTTPHEADER, $this->urlRequest->requestHeaders);

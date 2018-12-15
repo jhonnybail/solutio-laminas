@@ -41,7 +41,7 @@ class URLRequest
   
   /**
    * Um objeto que contém dados a serem transmitidos com a solicitação de URL.
-   * @var \Solutio\Utils\Net\URLVariables
+   * @var array
    */
   protected $data;
   
@@ -113,10 +113,7 @@ class URLRequest
   public function __set($property, $value)
   {
     if($property == 'data'){
-      if(!($value instanceof URLVariables))
-        throw InvalidArgumentException::FromCode(5);
-      else
-        $this->data = $value;
+      $this->data = $value;
     }else
       $this->{$property} = $value;
   }
