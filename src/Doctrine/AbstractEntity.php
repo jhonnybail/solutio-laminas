@@ -389,6 +389,11 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
     return $obj;
   }
   
+  public function __toString() : string
+  {
+    return \json_encode($this->getKeys());
+  }
+  
   protected function getAnnotationReader() : AnnotationReader
   {
     if(empty($this->annotationReader))
