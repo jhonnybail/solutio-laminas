@@ -100,6 +100,26 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
       throw new \Solutio\NotFoundException('Content not found.');
     return $entity;
   }
+  
+  private function makeSelectFieds(array $fields, $aliasRoot, $operator = ',') : string
+  {
+    $result = '';
+    foreach($fields as $v) {
+      if(is_array($v)){
+        $f = isset($v['function']) ? $v['function'] : '';
+        $f .= '(';
+        $f .= is_array($v['field']) ? $this->makeSelectFieds($v['field'], $aliasRoot, isset($v['operator']) ? $v['operator'] : ',') : $this->makeSelectFieds([$v['field']], $aliasRoot, isset($v['operator']) ? $v['operator'] : ',');
+        $f .= ')';
+        if(isset($v['as']))
+          $f .= ' as '.$v['as'];
+        $f .= " {$operator} ";
+        $result .= $f;
+      }elseif(is_string($v))
+        $result .= "{$aliasRoot}.{$v} {$operator} ";
+    }
+    $result = substr($result, 0, (-2)-strlen($operator));
+    return $result;
+  }
 
   public function getCollection(EntityInterface $entity, array $filters = [], array $params = [], array $fields = [], $type = self::RESULT_ARRAY) : array
   {
@@ -112,12 +132,7 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
     $isCacheable  = $this->getEntityManager()->getCache() !== null;
     
     if(count($fields) > 0){
-      $f = '';
-      foreach($fields as $v){
-        $f .= $alias.".{$v}, ";
-      }
-      $f = substr($f, 0, -2);
-      $query->select($f);
+      $query->select($this->makeSelectFieds($fields, $alias));
     }
     
     if(!$this->disabledefaultFilters){
