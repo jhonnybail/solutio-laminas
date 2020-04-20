@@ -5,8 +5,9 @@ namespace Solutio\Controller;
 use Zend\Mvc\Controller\AbstractRestfulController,
     Zend\View\Model\JsonModel,
     Zend\Json,
+    Zend\Stdlib\RequestInterface as Request,
+    Zend\Stdlib\ResponseInterface as Response,
     Solutio\Utils\Data\StringManipulator,
-    Solutio\Utils\Data\ArrayObject,
     Solutio\Service\EntityService,
     Solutio\EntityInterface;
 
@@ -36,12 +37,23 @@ class ServiceRestController extends AbstractRestfulController
   
   public function setAllowedCollectionMethods($methods = [])
   {
-    $this->allowedCollectionMethods = $methods;
+    $alloweds = [];
+    foreach($methods as $method)
+      $alloweds[] = strtoupper($method);
+    $this->allowedCollectionMethods = $alloweds;
   }
   
   public function getAllowedCollectionMethods()
   {
     return $this->allowedCollectionMethods;
+  }
+
+  public function dispatch(Request $request, Response $response = null)
+  {
+    if(!in_array(strtoupper($request->getMethod()), $this->allowedCollectionMethods) && !in_array('*', $this->allowedCollectionMethods))
+      throw new NotFoundException('Service not found');
+
+    return parent::dispatch($request, $response);
   }
 
   // Listar - GET
