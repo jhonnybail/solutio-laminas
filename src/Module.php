@@ -307,7 +307,7 @@ class Module
   public function onDispatchError($e)
   {
     $error      = $e->getError();
-    if (!$error || !($e->getTarget() instanceof \Solutio\Controller\ServiceRestController)) {
+    if (!$error) {
       // No error? nothing to do. 
       return;
     }
