@@ -4,4 +4,3 @@ phpunit.xml
 composer.lock
 .idea
 error_log
-.vscode
