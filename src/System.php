@@ -26,14 +26,6 @@ class System
   private static	$variablesSystem;
   
   /**
-   * Constructor
-   */
-  public function __construct()
-  {
-    parent::__construct();
-  }
-  
-  /**
    * Registra variáveis do sistema.
    *
    * @param  array	$variables
