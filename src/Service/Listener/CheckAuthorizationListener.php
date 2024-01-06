@@ -2,7 +2,7 @@
 
 namespace Solutio\Service\Listener;
 
-use Zend\EventManager\EventInterface,
+use Laminas\EventManager\EventInterface,
     Solutio\Utils\Data\StringManipulator,
     Solutio\Exception;
 
@@ -19,12 +19,12 @@ class CheckAuthorizationListener extends AbstractServiceListener
     $controller   = $application->getMvcEvent()->getTarget();
     $request      = $application->getRequest();
     $response     = $application->getResponse();
-    if(!($request instanceof \Zend\Console\Request)){
+    if(!($request instanceof \Laminas\Console\Request)){
       $method       = $request->getMethod();
       if($controller instanceof \Solutio\Controller\ServiceRestController)
         if (!in_array($method, $controller->getAllowedCollectionMethods()) && !in_array('*', $controller->getAllowedCollectionMethods())) {
           $response->setStatusCode(
-            \Zend\Http\PhpEnvironment\Response::STATUS_CODE_405
+            \Laminas\Http\PhpEnvironment\Response::STATUS_CODE_405
           );
           throw new Exception('Method Not Allowed');
         }

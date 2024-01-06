@@ -2,9 +2,9 @@
 
 namespace Solutio;
 
-use Zend\Mvc\MvcEvent,
-  Zend\EventManager\Event,
-  Zend\View\Model\JsonModel,
+use Laminas\Mvc\MvcEvent,
+  Laminas\EventManager\Event,
+  Laminas\View\Model\JsonModel,
   Doctrine\DBAL\Logging\LoggerChain,
   Solutio\Doctrine\SqlLogger,
   Solutio\Utils\Data\ArrayObject,
@@ -33,21 +33,21 @@ class Module
 
     $e->getTarget()->getEventManager()->getSharedManager()
       ->attach(
-        \Zend\Mvc\Controller\AbstractController::class,
+        \Laminas\Mvc\Controller\AbstractController::class,
         'dispatch',
         [$this, 'loadRequestCache'],
         201
       );
     $e->getTarget()->getEventManager()->getSharedManager()
       ->attach(
-        \Zend\Mvc\Controller\AbstractController::class,
+        \Laminas\Mvc\Controller\AbstractController::class,
         'dispatch',
         [$this, 'beginTransaction'],
         201
       );
     $e->getTarget()->getEventManager()->getSharedManager()
       ->attach(
-        \Zend\Mvc\Controller\AbstractController::class,
+        \Laminas\Mvc\Controller\AbstractController::class,
         'dispatch',
         [$this, 'saveRequestCache'],
         0
@@ -56,7 +56,7 @@ class Module
     $e->getTarget()->getEventManager()->attach('dispatch.error',  [$this, 'onDispatchError'], 0);
     $e->getTarget()->getEventManager()->attach('dispatch.error',  [$this, 'rollbackTransaction'], 1);
 
-    if (!($e->getRequest() instanceof \Zend\Console\Request))
+    if (!($e->getRequest() instanceof \Laminas\Console\Request))
       $e->getTarget()->getEventManager()->attach('finish',          [$this, 'applyCors'], 0);
 
     //Register Listeners Aggregate
@@ -87,8 +87,8 @@ class Module
     //
 
     //load class Log
-    $stream = new \Zend\Log\Writer\Stream('php://output');
-    $logger = new \Zend\Log\Logger;
+    $stream = new \Laminas\Log\Writer\Stream('php://output');
+    $logger = new \Laminas\Log\Logger;
     $logger->addWriter($stream);
     //
 
@@ -119,7 +119,7 @@ class Module
 
   public function loadRequestCache($e)
   {
-    if ($e->getRequest() instanceof \Zend\Console\Request) {
+    if ($e->getRequest() instanceof \Laminas\Console\Request) {
       $path = json_encode($e->getRequest()->getContent());
     } else {
       $path = $e->getRequest()->getUri()->getPath() . ($e->getRequest()->getQuery()->count() > 0 ? urlencode(json_encode($e->getRequest()->getQuery()->toArray())) : '');
@@ -172,7 +172,7 @@ class Module
       if ($controller->isCacheable()) {
         $adapter  = $controller->getCacheAdapter();
         $reposito = $controller->getService()->getClassname();
-        if ($e->getRequest() instanceof \Zend\Console\Request) {
+        if ($e->getRequest() instanceof \Laminas\Console\Request) {
           $path = json_encode($e->getRequest()->getContent());
         } else {
           $path = $e->getRequest()->getUri()->getPath() . ($e->getRequest()->getQuery()->count() > 0 ? urlencode(json_encode($e->getRequest()->getQuery()->toArray())) : '');
@@ -183,7 +183,7 @@ class Module
           $listaCa = $adapter->getItem($reposito);
         if ($adapter && $request->getMethod() === 'GET') {
           $sharedEvents = $e->getApplication()->getEventManager()->getSharedManager();
-          $sharedEvents->attach(\Zend\View\View::class, 'response', function ($e) use ($adapter, $listaCa, $key, $reposito) {
+          $sharedEvents->attach(\Laminas\View\View::class, 'response', function ($e) use ($adapter, $listaCa, $key, $reposito) {
             $content  = $e->getResult();
             $adapter->addItem($key, $content);
             $listaCa[$key] = true;
@@ -215,7 +215,7 @@ class Module
       $data['trace'] = $exception->getTrace();
 
     $statusCode = $e->getResponse()->getStatusCode();
-    $statusCode = $statusCode === \Zend\Http\PhpEnvironment\Response::STATUS_CODE_500 ? \Zend\Http\PhpEnvironment\Response::STATUS_CODE_400 : $statusCode;
+    $statusCode = $statusCode === \Laminas\Http\PhpEnvironment\Response::STATUS_CODE_500 ? \Laminas\Http\PhpEnvironment\Response::STATUS_CODE_400 : $statusCode;
 
     //Get remainder memory
     $memUsage   = memory_get_usage(true);
@@ -224,7 +224,7 @@ class Module
     //
     
     
-    if ($e->getRequest() instanceof \Zend\Console\Request) {
+    if ($e->getRequest() instanceof \Laminas\Console\Request) {
       $path = json_encode($e->getRequest()->getContent());
     } else {
       $path = $e->getRequest()->getUri()->getPath();
@@ -232,11 +232,11 @@ class Module
     
     $e->getResponse()->setStatusCode($statusCode);
     
-    if ($exception instanceof \Zend\Json\Exception\RuntimeException) {
+    if ($exception instanceof \Laminas\Json\Exception\RuntimeException) {
       if ($logConf['active'] && $log) {
         try {
-          $writer = new \Zend\Log\Writer\Stream($logConf['path'] . 'EXRUT-' . (new DateTime)->format("YmdHis") . '-' . rand(1, 100) . '.log');
-          $logger = new \Zend\Log\Logger();
+          $writer = new \Laminas\Log\Writer\Stream($logConf['path'] . 'EXRUT-' . (new DateTime)->format("YmdHis") . '-' . rand(1, 100) . '.log');
+          $logger = new \Laminas\Log\Logger();
           $logger->addWriter($writer);
           $logger->info('--- Initial Run Time Exception ---');
           $logger->info("URI: {$path}");
@@ -252,8 +252,8 @@ class Module
     } elseif (StringManipulator::GetInstance(get_class($exception))->search('Doctrine')) {
       if ($logConf['active'] && $log) {
         try {
-          $writer = new \Zend\Log\Writer\Stream($logConf['path'] . 'EXSQL-' . (new DateTime)->format("YmdHis") . '-' . rand(1, 100) . '.log');
-          $logger = new \Zend\Log\Logger();
+          $writer = new \Laminas\Log\Writer\Stream($logConf['path'] . 'EXSQL-' . (new DateTime)->format("YmdHis") . '-' . rand(1, 100) . '.log');
+          $logger = new \Laminas\Log\Logger();
           $logger->addWriter($writer);
           $logger->info('--- Initial DB Exception ---');
           $logger->info("URI: {$path}");
@@ -269,20 +269,20 @@ class Module
     } elseif ($exception instanceof \Solutio\NotFoundException)
       if($statusCode !== 400)
         $e->getResponse()->setStatusCode(
-          \Zend\Http\PhpEnvironment\Response::STATUS_CODE_404,
+          \Laminas\Http\PhpEnvironment\Response::STATUS_CODE_404,
           'Not Found'
         );
     elseif ($exception instanceof \InvalidArgumentException)
       if($statusCode !== 400)
         $e->getResponse()->setStatusCode(
-          \Zend\Http\PhpEnvironment\Response::STATUS_CODE_409,
+          \Laminas\Http\PhpEnvironment\Response::STATUS_CODE_409,
           'Conflict'
         );
     else {
       if ($logConf['active'] && $log) {
         try {
-          $writer = new \Zend\Log\Writer\Stream($logConf['path'] . 'EXSER-' . (new DateTime)->format("YmdHis") . '-' . rand(1, 100) . '.log');
-          $logger = new \Zend\Log\Logger();
+          $writer = new \Laminas\Log\Writer\Stream($logConf['path'] . 'EXSER-' . (new DateTime)->format("YmdHis") . '-' . rand(1, 100) . '.log');
+          $logger = new \Laminas\Log\Logger();
           $logger->addWriter($writer);
           $logger->info('--- Initial Server Exception ---');
           $logger->info("URI: {$path}");

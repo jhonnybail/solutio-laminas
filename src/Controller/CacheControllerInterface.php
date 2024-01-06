@@ -2,7 +2,7 @@
 
 namespace Solutio\Controller;
 
-use Zend\Cache\Storage\StorageInterface;
+use Laminas\Cache\Storage\StorageInterface;
 
 interface CacheControllerInterface
 {

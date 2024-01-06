@@ -2,8 +2,8 @@
 
 namespace Solutio\Doctrine\Factory;
 
-use Zend\ServiceManager\Factory\FactoryInterface,
-    Zend\Cache\StorageFactory,
+use Laminas\ServiceManager\Factory\FactoryInterface,
+    Laminas\Cache\StorageFactory,
     Interop\Container\ContainerInterface,
     Solutio\Utils\Data\StringManipulator,
     Solutio\Controller\ServiceRestController;

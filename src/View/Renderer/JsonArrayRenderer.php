@@ -4,13 +4,13 @@ namespace Solutio\View\Renderer;
 
 use JsonSerializable;
 use Traversable;
-use Zend\Stdlib\ArrayUtils;
-use Zend\View\Exception;
+use Laminas\Stdlib\ArrayUtils;
+use Laminas\View\Exception;
 use Solutio\View\Model\JsonStringModel;
-use Zend\View\Model\ModelInterface as Model;
-use Zend\View\Renderer\JsonRenderer;
-use Zend\View\Renderer\RendererInterface as Renderer;
-use Zend\View\Resolver\ResolverInterface as Resolver;
+use Laminas\View\Model\ModelInterface as Model;
+use Laminas\View\Renderer\JsonRenderer;
+use Laminas\View\Renderer\RendererInterface as Renderer;
+use Laminas\View\Resolver\ResolverInterface as Resolver;
 
 class JsonArrayRenderer extends JsonRenderer
 {

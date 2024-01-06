@@ -3,7 +3,7 @@
 namespace Solutio\Mvc\Service;
 
 use Interop\Container\ContainerInterface;
-use Zend\ServiceManager\Factory\FactoryInterface;
+use Laminas\ServiceManager\Factory\FactoryInterface;
 use Solutio\View\Strategy\JsonArrayStrategy;
 
 class ViewJsonArrayStrategyFactory implements FactoryInterface

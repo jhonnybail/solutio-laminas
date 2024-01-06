@@ -92,7 +92,7 @@ return [
   ],
   'service_manager' => [
     'factories' => [
-      \Solutio\View\Renderer\JsonStringRenderer::class => \Zend\ServiceManager\Factory\InvokableFactory::class,
+      \Solutio\View\Renderer\JsonStringRenderer::class => \Laminas\ServiceManager\Factory\InvokableFactory::class,
       'ViewJsonStringStrategy' => Mvc\Service\ViewJsonStringStrategyFactory::class
     ],
   ],

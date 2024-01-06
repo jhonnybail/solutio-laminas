@@ -2,11 +2,11 @@
 
 namespace Solutio\Controller;
 
-use Zend\Mvc\Controller\AbstractRestfulController,
-    Zend\View\Model\JsonModel,
-    Zend\Json,
-    Zend\Stdlib\RequestInterface as Request,
-    Zend\Stdlib\ResponseInterface as Response,
+use Laminas\Mvc\Controller\AbstractRestfulController,
+    Laminas\View\Model\JsonModel,
+    Laminas\Json,
+    Laminas\Stdlib\RequestInterface as Request,
+    Laminas\Stdlib\ResponseInterface as Response,
     Solutio\Utils\Data\StringManipulator,
     Solutio\Service\EntityService,
     Solutio\EntityInterface;

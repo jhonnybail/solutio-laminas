@@ -2,7 +2,7 @@
 
 namespace Solutio\Factory;
 
-use Zend\ServiceManager\Factory\FactoryInterface,
+use Laminas\ServiceManager\Factory\FactoryInterface,
     Interop\Container\ContainerInterface,
     Solutio\Utils\Data\StringManipulator,
     Solutio\Controller\ServiceRestController;

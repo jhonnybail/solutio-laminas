@@ -3,7 +3,7 @@
 namespace Solutio\Utils\Net\Mail;
 
 use AcMailer\Service\MailService;
-use Zend\View\Model\ViewModel;
+use Laminas\View\Model\ViewModel;
 
 class Mail
 {

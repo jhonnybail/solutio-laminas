@@ -51,7 +51,7 @@ class GenerateIdentifierListener
       if(!empty($field)){
         if($cont > 1){
           $field      = '';
-          $reflection = \Zend\Server\Reflection::reflectClass($entity);
+          $reflection = \Laminas\Server\Reflection::reflectClass($entity);
           foreach($reflection->getProperties() as $property){
               $propertyAnnotations = (new \Doctrine\Common\Annotations\AnnotationReader)->getPropertyAnnotations($property);
               foreach($propertyAnnotations as $propertyAnnotation){

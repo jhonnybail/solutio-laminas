@@ -2,10 +2,10 @@
 
 namespace Solutio\Service;
 
-use Zend\EventManager\EventManagerAwareInterface,
-    Zend\EventManager\EventManagerInterface,
-    Zend\EventManager\EventManager,
-    Zend\EventManager\EventManagerAwareTrait,
+use Laminas\EventManager\EventManagerAwareInterface,
+    Laminas\EventManager\EventManagerInterface,
+    Laminas\EventManager\EventManager,
+    Laminas\EventManager\EventManagerAwareTrait,
     Solutio\Utils\Data\ArrayObject;
 
 abstract class AbstractService implements EventManagerAwareInterface

@@ -2,11 +2,11 @@
 
 namespace Solutio\View\Strategy;
 
-use Zend\EventManager\AbstractListenerAggregate;
-use Zend\EventManager\EventManagerInterface;
+use Laminas\EventManager\AbstractListenerAggregate;
+use Laminas\EventManager\EventManagerInterface;
 use Solutio\View\Model;
-use Zend\View\Renderer\RendererInterface;
-use Zend\View\ViewEvent;
+use Laminas\View\Renderer\RendererInterface;
+use Laminas\View\ViewEvent;
 
 class JsonStringStrategy extends AbstractListenerAggregate
 {

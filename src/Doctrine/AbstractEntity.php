@@ -4,12 +4,12 @@
  * Solutio.Me
  *
  * @package     Solutio
- * @link        http://github.com/jhonnybail/solutio-zf2
+ * @link        http://github.com/jhonnybail/solutio-laminas
  * @copyright   Copyright (c) 2017 Solutio.Me. (http://solutio.me)
  */
 namespace Solutio\Doctrine;
 
-use Zend\Hydrator,
+use Laminas\Hydrator,
     Doctrine\ORM\Mapping as ORM,
     Doctrine\Common\Annotations\AnnotationReader,
     Solutio\Utils\Data\StringManipulator;
@@ -115,7 +115,7 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
         $className  = get_class($arguments[0]);
         if(is_subclass_of($className, \Doctrine\ORM\Proxy\Proxy::class))
           $className = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
-        $reflection = \Zend\Server\Reflection::reflectClass($className);
+        $reflection = \Laminas\Server\Reflection::reflectClass($className);
         $obj        = [];
         foreach($reflection->getProperties() as $property){
           $method = 'get' . ucfirst($property->getName());
@@ -148,7 +148,7 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
 
   public function fromArray(array $data)
   {
-    $reflection = \Zend\Server\Reflection::reflectClass($this);
+    $reflection = \Laminas\Server\Reflection::reflectClass($this);
     $pending    = [];
     foreach($reflection->getProperties() as $property){
       $method = 'get' . ucfirst($property->getName());
@@ -244,8 +244,8 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
     $className        = get_class($this);
     if(is_subclass_of($className, \Doctrine\ORM\Proxy\Proxy::class))
       $className = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
-    $reflection       = \Zend\Server\Reflection::reflectClass($className);
-    $parentReflection = \Zend\Server\Reflection::reflectClass(get_parent_class($className));
+    $reflection       = \Laminas\Server\Reflection::reflectClass($className);
+    $parentReflection = \Laminas\Server\Reflection::reflectClass(get_parent_class($className));
     $obj      = [];
     foreach($reflection->getProperties() as $property){
       $method = 'get' . ucfirst($property->getName());
@@ -326,7 +326,7 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
     if(is_subclass_of($className, \Doctrine\ORM\Proxy\Proxy::class))
       $className = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
     if(empty(self::$primaryKeys[$className])){
-      $reflection       = \Zend\Server\Reflection::reflectClass($className);
+      $reflection       = \Laminas\Server\Reflection::reflectClass($className);
       $annotationReader = new AnnotationReader;
       self::$primaryKeys[$className]  = [];
       foreach($reflection->getProperties() as $property){
@@ -352,8 +352,8 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
     $className        = get_class($this);
     if(is_subclass_of($className, \Doctrine\ORM\Proxy\Proxy::class))
       $className = StringManipulator::GetInstance($className)->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
-    $reflection       = \Zend\Server\Reflection::reflectClass($className);
-    $parentReflection = \Zend\Server\Reflection::reflectClass(get_parent_class($className));
+    $reflection       = \Laminas\Server\Reflection::reflectClass($className);
+    $parentReflection = \Laminas\Server\Reflection::reflectClass(get_parent_class($className));
     $obj      = [];
     foreach($reflection->getProperties() as $property){
       $method = 'get' . ucfirst($property->getName());
