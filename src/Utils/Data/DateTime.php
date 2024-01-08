@@ -4,7 +4,7 @@
  * Solutio.Me
  *
  * @package     Solutio\Utils\Data
- * @link        http://github.com/jhonnybail/solutio-zf2
+ * @link        http://github.com/jhonnybail/solutio-laminas
  * @copyright   Copyright (c) 2017 Solutio.Me. (http://solutio.me)
  */
 namespace Solutio\Utils\Data;
@@ -63,7 +63,7 @@ class DateTime extends \DateTime
    * @param   string              $format
    * @param   string              $time
    * @param   \DateTimeZone|null  $timezone
-   * @return  \TemTudoAqui\Utils\Data\DateTime
+   * @return  \Solutio\Utils\Data\DateTime
    */
   public static function parse($format, $time = "", \DateTimeZone $timezone = null)
   {
@@ -223,7 +223,6 @@ class DateTime extends \DateTime
 
    * Retorna o nome da classe.
    *
-   * @param  null
    * @return string
    */
   public function __toString()

@@ -2,8 +2,8 @@
 
 namespace Solutio\Doctrine\Factory;
 
-use Zend\ServiceManager\Factory\FactoryInterface,
-    Zend\EventManager\EventManager,
+use Laminas\ServiceManager\Factory\FactoryInterface,
+    Laminas\EventManager\EventManager,
     Interop\Container\ContainerInterface,
     Solutio\Utils\Data\StringManipulator,
     Solutio\Doctrine\Service\TriggerMethodServiceDecorator,
@@ -19,7 +19,7 @@ class EntityServiceFactory implements FactoryInterface
       $service = new TriggerMethodServiceDecorator(new $requestedName($em->getRepository($className)));
     else
       $service = new TriggerMethodServiceDecorator(new EntityService($em->getRepository($className)));
-    $service->setEventManager(new EventManager($container->get('Zend\EventManager\SharedEventManager')));
+    $service->setEventManager(new EventManager($container->get('Laminas\EventManager\SharedEventManager')));
     $service->getEventManager()->addIdentifiers([$requestedName]);
     return $service;
   }

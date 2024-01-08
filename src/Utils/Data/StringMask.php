@@ -4,7 +4,7 @@
  * Solutio.Me
  *
  * @package     Solutio\Utils\Data
- * @link        http://github.com/jhonnybail/solutio-zf2
+ * @link        http://github.com/jhonnybail/solutio-laminas
  * @copyright   Copyright (c) 2017 Solutio.Me. (http://solutio.me)
  */
 namespace Solutio\Utils\Data;
@@ -32,7 +32,7 @@ class StringMask
     if($mask->match("!{$charMask}!")->count() > $value->length())
       $value = new StringManipulator(sprintf('%-'.$mask->match("!{$charMask}!")->count().'s', $value));
       
-    return vsprintf($mask->replace('\?'.$charMask, $charMask)->replace($charMask, '%s'), $value->split());
+    return new StringManipulator(vsprintf($mask->replace('\?'.$charMask, $charMask)->replace($charMask, '%s'), $value->split()->getArrayCopy()));
       
   }
 }

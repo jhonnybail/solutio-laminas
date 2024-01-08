@@ -4,7 +4,7 @@
  * Solutio.Me
  *
  * @package     Solutio\Utils\Data
- * @link        http://github.com/jhonnybail/solutio-zf2
+ * @link        http://github.com/jhonnybail/solutio-laminas
  * @copyright   Copyright (c) 2017 Solutio.Me. (http://solutio.me)
  */
 namespace Solutio\Utils\Data;
@@ -132,6 +132,6 @@ final class HTMLFile extends DOMFile
   public function getData()
   {
     $data = parent::getData();
-    return new StringManipulator(trim((string) $data->replace("<\?xml(.*)\"\?>", "")));
+    return new StringManipulator(trim((new StringManipulator((string) $data))->replace("<\?xml(.*)\"\?>", "")));
   }
 }

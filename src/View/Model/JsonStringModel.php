@@ -3,8 +3,8 @@
 namespace Solutio\View\Model;
 
 use Traversable;
-use Zend\Stdlib\ArrayUtils;
-use Zend\View\Model\ViewModel;
+use Laminas\Stdlib\ArrayUtils;
+use Laminas\View\Model\ViewModel;
 
 class JsonStringModel extends ViewModel
 {

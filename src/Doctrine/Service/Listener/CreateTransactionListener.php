@@ -2,7 +2,7 @@
 
 namespace Solutio\Doctrine\Service\Listener;
 
-use Zend\EventManager\EventInterface;
+use Laminas\EventManager\EventInterface;
 
 class CreateTransactionListener extends \Solutio\Service\Listener\AbstractServiceListener
 {

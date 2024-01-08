@@ -3,8 +3,8 @@
 namespace Solutio\Service\Listener;
 
 use Interop\Container\ContainerInterface;
-use Zend\EventManager\EventManagerInterface,
-    Zend\EventManager\ListenerAggregateInterface;
+use Laminas\EventManager\EventManagerInterface,
+    Laminas\EventManager\ListenerAggregateInterface;
 
 abstract class AbstractServiceListener implements ListenerAggregateInterface
 {

@@ -2,7 +2,7 @@
 
 namespace Solutio\Doctrine\Service\Listener;
 
-use Zend\EventManager\EventInterface;
+use Laminas\EventManager\EventInterface;
 use Solutio\Service\Listener\AbstractServiceListener;
 use Solutio\Utils\Data\StringManipulator;
 use Doctrine\ORM\Mapping as ORM;
@@ -17,7 +17,7 @@ class RemoveChildrenPendingListener extends AbstractServiceListener
   public function remove(EventInterface $event)
   {
     $entity       = $event->getParams()[0];
-    $reflection   = \Zend\Server\Reflection::reflectClass($entity);
+    $reflection   = \Laminas\Server\Reflection::reflectClass($entity);
     $annotation   = new \Doctrine\Common\Annotations\AnnotationReader;
     foreach($entity->getChildrenPendingRemovation() as $className => $properties){
       foreach($properties as $name => $property){
@@ -25,7 +25,7 @@ class RemoveChildrenPendingListener extends AbstractServiceListener
           $service    = null;
           $hasRemove  = false;
           try{
-            $service  = $this->getContainer()->build($className);
+            $service  = $this->getContainer()->get($className);
           }catch(\Exception $e){
             $div            = (new StringManipulator($className))->split('\\');
             $total          = $div->count();
@@ -37,7 +37,7 @@ class RemoveChildrenPendingListener extends AbstractServiceListener
               return true;
             });
             try{
-              $service        = $this->getContainer()->build($service->substr(0, -1)->toString());
+              $service        = $this->getContainer()->get($service->substr(0, -1)->toString());
             }catch(\Exception $e){continue;}
           }
           foreach($property['entities'] as $child){

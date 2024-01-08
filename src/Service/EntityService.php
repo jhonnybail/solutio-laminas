@@ -4,7 +4,7 @@ namespace Solutio\Service;
 
 use Solutio\EntityInterface;
 use Solutio\EntityRepositoryInterface;
-use Zend\EventManager\EventManagerInterface;
+use Laminas\EventManager\EventManagerInterface;
 
 class EntityService extends AbstractService
 {

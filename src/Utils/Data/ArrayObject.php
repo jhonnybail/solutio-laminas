@@ -4,7 +4,7 @@
  * Solutio.Me
  *
  * @package     Solutio\Utils\Data
- * @link        http://github.com/jhonnybail/solutio-zf2
+ * @link        http://github.com/jhonnybail/solutio-laminas
  * @copyright   Copyright (c) 2017 Solutio.Me. (http://solutio.me)
  */
 namespace Solutio\Utils\Data;
@@ -310,7 +310,7 @@ class ArrayObject extends \ArrayObject implements \JsonSerializable
   {
   }
   
-  public function jsonSerialize()
+  public function jsonSerialize(): mixed
   {
     return (array) $this;
   }

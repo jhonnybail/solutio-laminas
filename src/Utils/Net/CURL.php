@@ -4,7 +4,7 @@
  * Solutio.Me
  *
  * @package     Solutio\Utils\Net
- * @link        http://github.com/jhonnybail/solutio-zf2
+ * @link        http://github.com/jhonnybail/solutio-laminas
  * @copyright   Copyright (c) 2017 Solutio.Me. (http://solutio.me)
  */
 namespace Solutio\Utils\Net;
@@ -128,9 +128,9 @@ class CURL
   /**
    * Usada para serialização do objeto.
    *
-   * @return \Solutio\Utils\Data\ArrayObject
+   * @return array
    */
   public function __sleep(){
-    return parent::__sleep()->concat(array('urlRequest', 'userAgent', 'proxy', 'content'));
+    return array('urlRequest', 'userAgent', 'proxy', 'content');
   }
 }

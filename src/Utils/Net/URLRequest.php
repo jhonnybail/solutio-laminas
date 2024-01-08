@@ -4,7 +4,7 @@
  * Solutio.Me
  *
  * @package     Solutio\Utils\Net
- * @link        http://github.com/jhonnybail/solutio-zf2
+ * @link        http://github.com/jhonnybail/solutio-laminas
  * @copyright   Copyright (c) 2017 Solutio.Me. (http://solutio.me)
  */
 namespace Solutio\Utils\Net;
@@ -181,7 +181,7 @@ class URLRequest
     
     $verifyExtension = function($value, $key, $array, $oB){
       if(!empty($value) && count($array) > 0){
-        if(\Solutio\Utils\Data\StringManipulator::GetInstance($oB->url)->search('\.'.$value))
+        if(StringManipulator::GetInstance($oB->url)->search('\.'.$value))
             return false;
         if(StringManipulator::GetInstance($oB->requestHeaders['Content-Type'][1])->search($value))
             return false;
@@ -224,7 +224,7 @@ class URLRequest
   /**
    * Função mágica para serialização do objeto.
    *
-   * @return \Solutio\Utils\Data\ArrayObject
+   * @return array
    */
   public function __sleep()
   {

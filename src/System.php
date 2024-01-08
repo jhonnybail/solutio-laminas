@@ -4,14 +4,14 @@
  * Solutio.Me
  *
  * @package     Solutio
- * @link        http://github.com/jhonnybail/solutio-zf2
+ * @link        http://github.com/jhonnybail/solutio-laminas
  * @copyright   Copyright (c) 2017 Solutio.Me. (http://solutio.me)
  */
 namespace Solutio;
 
 use Solutio\Utils\Data\ArrayObject,
     Solutio\Utils\Data\StringManipulator,
-    Zend\Session\Container;
+    Laminas\Session\Container;
   
 /**
  *  Trata e resgata variáveis do sistema.
@@ -21,17 +21,9 @@ class System
   
   /**
    * Array com as variáveis do sistema
-   * @var \Zend\Session\Container
+   * @var \Laminas\Session\Container
    */
   private static	$variablesSystem;
-  
-  /**
-   * Constructor
-   */
-  public function __construct()
-  {
-    parent::__construct();
-  }
   
   /**
    * Registra variáveis do sistema.

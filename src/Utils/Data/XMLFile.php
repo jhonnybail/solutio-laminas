@@ -4,7 +4,7 @@
  * Solutio.Me
  *
  * @package     Solutio\Utils\Data
- * @link        http://github.com/jhonnybail/solutio-zf2
+ * @link        http://github.com/jhonnybail/solutio-laminas
  * @copyright   Copyright (c) 2017 Solutio.Me. (http://solutio.me)
  */
 namespace Solutio\Utils\Data;
@@ -60,7 +60,7 @@ final class XMLFile extends DOMFile
    */
   public function __toString()
   {
-    return $this->toString();
+    return $this->toString()->toString();
   }
   
 
@@ -71,6 +71,6 @@ final class XMLFile extends DOMFile
    */
   public function toString()
   {
-    return $this->getData();
+    return new StringManipulator($this->getData());
   }
 }

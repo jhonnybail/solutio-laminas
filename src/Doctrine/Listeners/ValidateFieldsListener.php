@@ -5,7 +5,7 @@ namespace Solutio\Doctrine\Listeners;
 use Doctrine\ORM\Mapping as ORM;
 use Solutio\Doctrine\AbstractEntity;
 use Solutio\Utils\Data\StringManipulator;
-use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
+use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 
 class ValidateFieldsListener
@@ -17,7 +17,7 @@ class ValidateFieldsListener
   {
     $validators = [];
     $className  = StringManipulator::GetInstance(get_class($entity))->replace('DoctrineORMModule\\\Proxy\\\__CG__\\\\', '')->toString();
-    $metaData   = $event->getEntityManager()->getClassMetadata($className);
+    $metaData   = $event->getObjectManager()->getClassMetadata($className);
     $fields		  = $metaData->fieldMappings;
     if(count($fields) > 0){
       foreach($fields as $field){
@@ -57,7 +57,7 @@ class ValidateFieldsListener
     if(count($maps) > 0){
       $assocs   = [];
       foreach($maps as $fieldName => $field){
-        if(($field['type'] == 1 || $field['type'] == 2) && isset($field['joinColumns'][0]) && isset($field['joinColumns'][0]['nullable']) && !$field['joinColumns'][0]['nullable'] && $field['joinColumns'][0]['nullable'] !== null) $validators[$fieldName] = 'required';
+        if(($field->type == 1 || $field->type == 2) && isset($field->joinColumns[0]) && isset($field->joinColumns[0]['nullable']) && !$field->joinColumns[0]['nullable'] && $field->joinColumns[0]['nullable'] !== null) $validators[$fieldName] = 'required';
       }
     }
     if(count($validators) > 0){

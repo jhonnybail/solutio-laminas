@@ -4,7 +4,7 @@
  * Solutio.Me
  *
  * @package     Solutio\Utils\Data
- * @link        http://github.com/jhonnybail/solutio-zf2
+ * @link        http://github.com/jhonnybail/solutio-laminas
  * @copyright   Copyright (c) 2017 Solutio.Me. (http://solutio.me)
  */
 namespace Solutio\Utils\Data;
@@ -172,7 +172,7 @@ class ImageFile extends File
   /**
    * Retorna o objeto Image redimensionado de acordo com os parâmetros passado.
    * 
-   * @param   int $width
+   * @param   int|null $width
    * @param   int|null $height
    * @param   bool $perspective
    * @throws  \Solutio\InvalidArgumentException

@@ -4,8 +4,9 @@ namespace Solutio\Doctrine\Listeners;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\EntityManager;
+use Doctrine\Persistence\ObjectManager;
 use Solutio\Doctrine\AbstractEntity;
-use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
+use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Ramsey\Uuid\Uuid;
 
@@ -51,7 +52,7 @@ class GenerateIdentifierListener
       if(!empty($field)){
         if($cont > 1){
           $field      = '';
-          $reflection = \Zend\Server\Reflection::reflectClass($entity);
+          $reflection = \Laminas\Server\Reflection::reflectClass($entity);
           foreach($reflection->getProperties() as $property){
               $propertyAnnotations = (new \Doctrine\Common\Annotations\AnnotationReader)->getPropertyAnnotations($property);
               foreach($propertyAnnotations as $propertyAnnotation){
@@ -144,7 +145,7 @@ class GenerateIdentifierListener
     
     if(!empty($field)){
     
-      $this->generateIdToKey($entity, $field, $event->getEntityManager());
+      $this->generateIdToKey($entity, $field, $event->getObjectManager());
       
       //Verifica se o attributo Id existir e estiver vazio, gera hash automaticamente
       if(method_exists($entity, 'getId') && empty($entity->getId())){
@@ -162,6 +163,6 @@ class GenerateIdentifierListener
     $field = $this->getField($entity);
     
     if(!empty($field) && ! $entity instanceof \Doctrine\ORM\Proxy\Proxy)
-      $this->generateIdToKey($entity, $field, $arguments->getEntityManager());
+      $this->generateIdToKey($entity, $field, $arguments->getObjectManager());
   }
 }

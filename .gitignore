@@ -1,7 +1,6 @@
 .vagrant/
 vendor/
 phpunit.xml
-composer.lock
 .idea
 error_log
-.vscode
+src/index.php

@@ -2,8 +2,8 @@
 
 namespace Solutio\Log;
 
-use Zend\Log\Writer\Stream;
-use Zend\Log\Logger;
+use Laminas\Log\Writer\Stream;
+use Laminas\Log\Logger;
 
 abstract class AbstractLogger extends Logger
 {

@@ -4,7 +4,7 @@
  * Solutio.Me
  *
  * @package     Solutio\Utils\Data
- * @link        http://github.com/jhonnybail/solutio-zf2
+ * @link        http://github.com/jhonnybail/solutio-laminas
  * @copyright   Copyright (c) 2017 Solutio.Me. (http://solutio.me)
  */
 namespace Solutio\Utils\Data;
@@ -229,10 +229,10 @@ class File implements IFileObject, \JsonSerializable
    */
   public function __sleep()
   {
-    return array('urlRequest', 'url');
+    return new ArrayObject(array('urlRequest', 'url'));
   }
   
-  public function jsonSerialize()
+  public function jsonSerialize(): mixed
   {
     return $this->urlRequest->url;
   }

@@ -4,7 +4,7 @@
  * Solutio.Me
  *
  * @package     Solutio\Utils\Data
- * @link        http://github.com/jhonnybail/solutio-zf2
+ * @link        http://github.com/jhonnybail/solutio-laminas
  * @copyright   Copyright (c) 2017 Solutio.Me. (http://solutio.me)
  */
 namespace Solutio\Utils\Data;
@@ -330,7 +330,7 @@ class DOMFile extends ArrayObject implements IFileObject, \JsonSerializable
     
     if($prefix){
       $str = $this->getData();
-      return $str->search("<".$prefix.":");
+      return (new StringManipulator($str))->search("<".$prefix.":");
     }else
       return false;
   }
@@ -803,7 +803,7 @@ class DOMFile extends ArrayObject implements IFileObject, \JsonSerializable
     return new StringManipulator((string) $this);
   }
   
-  public function jsonSerialize()
+  public function jsonSerialize(): mixed
   {
     return (string) $this;
   }
