@@ -172,7 +172,7 @@ class ImageFile extends File
   /**
    * Retorna o objeto Image redimensionado de acordo com os parâmetros passado.
    * 
-   * @param   int $width
+   * @param   int|null $width
    * @param   int|null $height
    * @param   bool $perspective
    * @throws  \Solutio\InvalidArgumentException

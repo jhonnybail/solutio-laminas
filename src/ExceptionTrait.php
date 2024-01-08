@@ -37,8 +37,6 @@ trait ExceptionTrait
       $code = "00".$code;
     elseif((int) $code->length() == 4)
       $code = "0".$code;
-    else
-      $code = $code;
       
     return $code;
     

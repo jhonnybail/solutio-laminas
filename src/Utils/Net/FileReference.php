@@ -54,7 +54,7 @@ class FileReference
 
     if($newPath->search("http:\/\/") || $newPath->search("https:\/\/"))
       throw NetException::FromCode(8);
-    elseif($file->getData()->toString() == '')
+    elseif((string) $file->getData() == '')
       throw NetException::FromCode(15);
     elseif($file->urlRequest != null){
 

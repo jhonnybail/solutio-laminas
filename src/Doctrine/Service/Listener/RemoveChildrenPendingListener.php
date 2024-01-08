@@ -25,7 +25,7 @@ class RemoveChildrenPendingListener extends AbstractServiceListener
           $service    = null;
           $hasRemove  = false;
           try{
-            $service  = $this->getContainer()->build($className);
+            $service  = $this->getContainer()->get($className);
           }catch(\Exception $e){
             $div            = (new StringManipulator($className))->split('\\');
             $total          = $div->count();
@@ -37,7 +37,7 @@ class RemoveChildrenPendingListener extends AbstractServiceListener
               return true;
             });
             try{
-              $service        = $this->getContainer()->build($service->substr(0, -1)->toString());
+              $service        = $this->getContainer()->get($service->substr(0, -1)->toString());
             }catch(\Exception $e){continue;}
           }
           foreach($property['entities'] as $child){

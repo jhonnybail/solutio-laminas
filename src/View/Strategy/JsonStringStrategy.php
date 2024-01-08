@@ -62,6 +62,7 @@ class JsonStringStrategy extends AbstractListenerAggregate
       return;
     }
 
+    $this->renderer = $renderer;
     $result   = $e->getResult();
 
     // Populate response

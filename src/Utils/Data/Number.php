@@ -70,7 +70,7 @@ class Number
   /**
    * Verifica se realmente é um objeto Number ou é um número válido e retorna o número.
    * 
-   * @param   \TemTudoAqui\Utils\Data\Number|float|int    $num
+   * @param   \Solutio\Utils\Data\Number|float|int    $num
    * @return  mixed
    */
   public static function VerifyNumber($num)
@@ -91,7 +91,7 @@ class Number
   /**
    * Usada para serialização do objeto.
    *
-   * @return \TemTudoAqui\Utils\Data\ArrayObject
+   * @return \Solutio\Utils\Data\ArrayObject
    */
   public function __sleep()
   {
@@ -119,7 +119,7 @@ class Number
    * Cria uma instancia estáticamente.
    *
    * @param  float|int    $num
-   * @return \TemTudoAqui\Utils\Data\Number
+   * @return \Solutio\Utils\Data\Number
    */
   public static function GetInstance($num = 0)
   {

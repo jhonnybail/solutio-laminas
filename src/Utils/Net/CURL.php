@@ -128,9 +128,9 @@ class CURL
   /**
    * Usada para serialização do objeto.
    *
-   * @return \Solutio\Utils\Data\ArrayObject
+   * @return array
    */
   public function __sleep(){
-    return parent::__sleep()->concat(array('urlRequest', 'userAgent', 'proxy', 'content'));
+    return array('urlRequest', 'userAgent', 'proxy', 'content');
   }
 }

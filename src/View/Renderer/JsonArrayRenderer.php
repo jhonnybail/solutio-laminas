@@ -19,13 +19,13 @@ class JsonArrayRenderer extends JsonRenderer
     // use case 1: View Models
     // Serialize variables in view model
     if ($nameOrModel instanceof Model) {
-      if ($nameOrModel instanceof JsonModel) {
+      if ($nameOrModel instanceof JsonStringModel) {
         $children = $this->recurseModel($nameOrModel, false);
         $this->injectChildren($nameOrModel, $children);
         $values = $nameOrModel->serialize();
       } else {
         $values = $this->recurseModel($nameOrModel);
-        $values = Json::encode($values);
+        $values = json_encode($values);
       }
 
       if ($this->hasJsonpCallback()) {
@@ -38,12 +38,12 @@ class JsonArrayRenderer extends JsonRenderer
     // Serialize $nameOrModel
     if (null === $values) {
       if (! is_object($nameOrModel) || $nameOrModel instanceof JsonSerializable) {
-        $return = Json::encode($nameOrModel);
+        $return = json_encode($nameOrModel);
       } elseif ($nameOrModel instanceof Traversable) {
         $nameOrModel = ArrayUtils::iteratorToArray($nameOrModel);
-        $return = Json::encode($nameOrModel);
+        $return = json_encode($nameOrModel);
       } else {
-        $return = Json::encode(get_object_vars($nameOrModel));
+        $return = json_encode(get_object_vars($nameOrModel));
       }
 
       if ($this->hasJsonpCallback()) {

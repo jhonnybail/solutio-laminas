@@ -34,7 +34,7 @@ class Directory
   
   /**
    * Ponteiro para o diretório informado.
-   * @var Dir
+   * @var \Directory
    */
   protected $dir;
   
@@ -45,9 +45,7 @@ class Directory
    * @throws  \Solutio\Utils\Net\NetException
    */
   public function __construct(URLRequest $rootPath)
-  {
-    parent::__construct();
-    
+  {    
     if(URLRequest::URLDIRECTORYTYPE == $rootPath->getType()){
       $this->urlRequest = $rootPath;
       $this->url 			  = $rootPath->url;
@@ -90,7 +88,7 @@ class Directory
   /**
    * Abre e percorre o diretório.
    *
-   * @return \Solutio\Utils\Data\File|\Solutio\Utils\Net\Directory
+   * @return \Solutio\Utils\Data\IFileObject | \Solutio\Utils\Net\Directory
    */
   public function read()
   {
@@ -122,7 +120,7 @@ class Directory
 
     }
 
-    return null;
+    return $this;
   }
   
   /**
@@ -144,11 +142,11 @@ class Directory
   /**
    * Usada para serialização do objeto.
    *
-   * @return \Solutio\Utils\Data\ArrayObject
+   * @return array
    */
   public function __sleep()
   {
-    return parent::__sleep()->concat(array('urlRequest', 'url', 'dir'));
+    return array('urlRequest', 'url', 'dir');
   }
   
   /**

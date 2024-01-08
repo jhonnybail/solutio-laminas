@@ -347,7 +347,7 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
     return self::$primaryKeys[$className];
   }
 
-  public function jsonSerialize() : array
+  public function jsonSerialize() : mixed
   {
     $className        = get_class($this);
     if(is_subclass_of($className, \Doctrine\ORM\Proxy\Proxy::class))
@@ -401,7 +401,7 @@ abstract class AbstractEntity implements \JsonSerializable, \Solutio\EntityInter
     return $this->annotationReader;
   }
   
-  protected function findEntityInList(\Traversable $list, AbstractEntity $entity)
+  protected function findEntityInList(\ArrayIterator $list, AbstractEntity $entity)
   {
     $keys = $entity->getKeys();
     if($list->count() > 0){

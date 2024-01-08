@@ -60,7 +60,7 @@ final class XMLFile extends DOMFile
    */
   public function __toString()
   {
-    return $this->toString();
+    return $this->toString()->toString();
   }
   
 
@@ -71,6 +71,6 @@ final class XMLFile extends DOMFile
    */
   public function toString()
   {
-    return $this->getData();
+    return new StringManipulator($this->getData());
   }
 }

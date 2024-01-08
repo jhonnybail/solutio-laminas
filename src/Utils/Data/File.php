@@ -229,10 +229,10 @@ class File implements IFileObject, \JsonSerializable
    */
   public function __sleep()
   {
-    return array('urlRequest', 'url');
+    return new ArrayObject(array('urlRequest', 'url'));
   }
   
-  public function jsonSerialize()
+  public function jsonSerialize(): mixed
   {
     return $this->urlRequest->url;
   }

@@ -32,7 +32,7 @@ class StringMask
     if($mask->match("!{$charMask}!")->count() > $value->length())
       $value = new StringManipulator(sprintf('%-'.$mask->match("!{$charMask}!")->count().'s', $value));
       
-    return vsprintf($mask->replace('\?'.$charMask, $charMask)->replace($charMask, '%s'), $value->split());
+    return new StringManipulator(vsprintf($mask->replace('\?'.$charMask, $charMask)->replace($charMask, '%s'), $value->split()->getArrayCopy()));
       
   }
 }

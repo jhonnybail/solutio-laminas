@@ -3,7 +3,6 @@
 namespace Solutio;
 
 use Laminas\Mvc\MvcEvent,
-  Laminas\EventManager\Event,
   Laminas\View\Model\JsonModel,
   Doctrine\DBAL\Logging\LoggerChain,
   Solutio\Doctrine\SqlLogger,
@@ -13,7 +12,7 @@ use Laminas\Mvc\MvcEvent,
 
 class Module
 {
-  const VERSION = '2.5.29';
+  const VERSION = '3.0.0';
 
   public function onBootstrap(MvcEvent $e)
   {
@@ -74,9 +73,7 @@ class Module
       try {
         $log    = new SqlLogger((new \DateTime)->format("YmdHis") . ".log", $config['path']);
         if (null !== $em->getConfiguration()->getSQLLogger()) {
-          $logger = new LoggerChain();
-          $logger->addLogger($log);
-          $logger->addLogger($em->getConfiguration()->getSQLLogger());
+          $logger = new LoggerChain([$log, $em->getConfiguration()->getSQLLogger()]);
           $em->getConfiguration()->setSQLLogger($logger);
         } else {
           $em->getConfiguration()->setSQLLogger($log);
@@ -99,7 +96,7 @@ class Module
       $error = error_get_last();
       if (!is_null($error) && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR])) {
         ob_clean();
-        $number = gc_collect_cycles();
+        gc_collect_cycles();
         $exception = new \ErrorException($error['message'], null, isset($error['code']) ? $error['code'] : null, $error['file'], $error['line']);
         $data       = $module->getDataException($e, $exception);
         $data['success']  = false;
@@ -205,7 +202,7 @@ class Module
     }
   }
 
-  private function getDataException(Event $e, \Throwable $exception, $log = true): array
+  private function getDataException(MvcEvent $e, \Throwable $exception, $log = true): array
   {
     $logConf          = $e->getApplication()->getServiceManager()->get('config')['solutio']['logs']['system'];
     $errorConf        = $e->getApplication()->getServiceManager()->get('config')['solutio']['errors'];
@@ -269,14 +266,12 @@ class Module
     } elseif ($exception instanceof \Solutio\NotFoundException)
       if($statusCode !== 400)
         $e->getResponse()->setStatusCode(
-          \Laminas\Http\PhpEnvironment\Response::STATUS_CODE_404,
-          'Not Found'
+          \Laminas\Http\PhpEnvironment\Response::STATUS_CODE_404
         );
     elseif ($exception instanceof \InvalidArgumentException)
       if($statusCode !== 400)
         $e->getResponse()->setStatusCode(
-          \Laminas\Http\PhpEnvironment\Response::STATUS_CODE_409,
-          'Conflict'
+          \Laminas\Http\PhpEnvironment\Response::STATUS_CODE_409
         );
     else {
       if ($logConf['active'] && $log) {

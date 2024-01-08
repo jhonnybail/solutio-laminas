@@ -51,7 +51,7 @@ class ServiceRestController extends AbstractRestfulController
   public function dispatch(Request $request, Response $response = null)
   {
     if(!in_array(strtoupper($request->getMethod()), $this->allowedCollectionMethods) && !in_array('*', $this->allowedCollectionMethods))
-      throw new NotFoundException('Service not found');
+      throw new \Solutio\NotFoundException('Service not found');
 
     return parent::dispatch($request, $response);
   }
@@ -132,17 +132,19 @@ class ServiceRestController extends AbstractRestfulController
   {
     $values   = new \Solutio\Utils\Data\ArrayObject((array) $this->getDataEntity());
     $content  = $this->getRequest()->getContent();
+    
     if(!empty($content)){
       $json = Json\Decoder::decode($content, Json\Json::TYPE_ARRAY);
       $data = new \Solutio\Utils\Data\ArrayObject($json ? $json : []);
-      $data = (array) $values->concat($data);
+      $data = (array) $values->concat($data->getArrayCopy());
     }else
       $data = (array) $values;
     $res  = $this->service->delete($this->getEntity($data));
+
     if($res){
       return new JsonModel(['success' => true]);
-    }else
-      return new JsonModel(['success' => false]);
+    }
+
     return new JsonModel(['success' => false]);
   }
   

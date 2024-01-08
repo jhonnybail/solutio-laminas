@@ -2,7 +2,8 @@
 
 namespace Solutio\Controller;
 
-use Laminas\Cache\Storage\StorageInterface;
+use Laminas\Cache\Storage\StorageInterface,
+    Solutio\Service\EntityService;
 
 interface CacheControllerInterface
 {
@@ -17,4 +18,6 @@ interface CacheControllerInterface
   public function setLifetime(int $ttl) : CacheControllerInterface;
   
   public function getLifetime() : int;
+
+  public function getService() : EntityService;
 }

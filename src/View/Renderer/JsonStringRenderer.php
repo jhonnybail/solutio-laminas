@@ -23,7 +23,6 @@ class JsonStringRenderer extends JsonRenderer
         $values = $nameOrModel->serialize();
       } else {
         $values = $this->recurseModel($nameOrModel);
-        $values = $values;
       }
 
       if ($this->hasJsonpCallback()) {
@@ -34,12 +33,12 @@ class JsonStringRenderer extends JsonRenderer
 
     if (null === $values) {
       if (! is_object($nameOrModel) || $nameOrModel instanceof JsonSerializable) {
-        $return = Json::encode($nameOrModel);
+        $return = json_encode($nameOrModel);
       } elseif ($nameOrModel instanceof Traversable) {
         $nameOrModel = ArrayUtils::iteratorToArray($nameOrModel);
-        $return = Json::encode($nameOrModel);
+        $return = json_encode($nameOrModel);
       } else {
-        $return = Json::encode(get_object_vars($nameOrModel));
+        $return = json_encode(get_object_vars($nameOrModel));
       }
 
       if ($this->hasJsonpCallback()) {

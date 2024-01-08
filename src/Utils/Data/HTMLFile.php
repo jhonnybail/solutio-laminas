@@ -132,6 +132,6 @@ final class HTMLFile extends DOMFile
   public function getData()
   {
     $data = parent::getData();
-    return new StringManipulator(trim((string) $data->replace("<\?xml(.*)\"\?>", "")));
+    return new StringManipulator(trim((new StringManipulator((string) $data))->replace("<\?xml(.*)\"\?>", "")));
   }
 }

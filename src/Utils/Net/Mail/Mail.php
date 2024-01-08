@@ -3,6 +3,7 @@
 namespace Solutio\Utils\Net\Mail;
 
 use AcMailer\Service\MailService;
+use AcMailer\Model\Email;
 use Laminas\View\Model\ViewModel;
 
 class Mail
@@ -11,26 +12,29 @@ class Mail
   private $charset  = 'utf-8';
   private $template;
   private $data     = [];
+  private Email $message;
   
   public function __construct(MailService $mailService)
   {
-    $this->mailService = $mailService;  
+    $this->mailService = $mailService;
+    $this->message = new Email();
   }
   
   public function addTo(array $emails)
   {
-    $this->mailService->getMessage()->addTo($emails);
+    $this->message->setTo($emails);
   }
   
   public function addFrom(array $emails)
   {
     foreach($emails as $from)
-      $this->mailService->getMessage()->addFrom($from['email'], $from['name']);
+      $this->message->setFrom($from['email']);
+      $this->message->setFromName($from['name']);
   }
   
   public function setSubject($subject)
   {
-    $this->mailService->setSubject($subject);
+    $this->message->setSubject($subject);
   }
   
   public function setCharset($charset)
@@ -59,12 +63,14 @@ class Mail
         }
       };
       $applyData($this->template, $this->data, $applyData);
-      $this->mailService->setTemplate($this->template);
+      $this->message->setTemplate($this->template);
     }else
-      $this->mailService->setBody($this->template);
-    $result = $this->mailService->send();
-    if(!empty($result->getException()))
-      throw $result->getException();
+      $this->message->setBody($this->template);
+
+    $result = $this->mailService->send($this->message);
+
+    if($result->hasThrowable())
+      throw $result->getThrowable();
   }
   
 }
