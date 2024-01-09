@@ -73,6 +73,15 @@ class ImageFile extends File
       $this->height = new Number($arg2);
       $this->generateData();
       
+    }elseif(is_resource($arg1) || $arg1 instanceof \GdImage){
+      
+      parent::__construct();
+      
+      $this->image  = $arg1;
+      $this->generateData();
+      $this->width  = new Number(imagesx($this->image));
+      $this->height = new Number(imagesy($this->image));
+      
     }elseif(is_object($arg1)){
       
       if($arg1 instanceof URLRequest){
@@ -85,15 +94,6 @@ class ImageFile extends File
       $this->image	= null;
       $this->width 	= new Number(0);
       $this->height = new Number(0);
-      
-    }elseif(is_resource($arg1)){
-      
-      parent::__construct();
-      
-      $this->image  = $arg1;
-      $this->generateData();
-      $this->width  = new Number(imagesx($this->image));
-      $this->height = new Number(imagesy($this->image));
       
     }else{
       
@@ -136,7 +136,7 @@ class ImageFile extends File
    */ 
   public function alpha()
   {
-    if(is_resource($this->image))
+    if(is_resource($this->image) || $this->image instanceof \GdImage)
       self::SetAlpha($this->image);
     else
       throw InvalidArgumentException::FromCode(15);
@@ -181,7 +181,7 @@ class ImageFile extends File
   public function resize($width, $height = null, $perspective = true)
   {
     
-    if(is_resource($this->image)){
+    if(is_resource($this->image) || $this->image instanceof \GdImage){
     
       if(Number::VerifyNumber($width))
         $width = Number::VerifyNumber($width);
@@ -243,7 +243,7 @@ class ImageFile extends File
   public function merge(ImageFile $image, $x = 0, $y = 0, $posX = 0, $posY = 0, $alpha = 100)
   {
     
-    if(is_resource($this->image)){
+    if(is_resource($this->image) || $this->image instanceof \GdImage){
     
       if(Number::VerifyNumber($x))
         $x = Number::VerifyNumber($x);
@@ -300,7 +300,7 @@ class ImageFile extends File
   public function cut($width, $height, $x = 0, $y = 0)
   {
     
-    if(is_resource($this->image)){
+    if(is_resource($this->image) || $this->image instanceof \GdImage){
     
       if(Number::VerifyNumber($width))
                 $width = Number::VerifyNumber($width);
@@ -341,7 +341,7 @@ class ImageFile extends File
    */ 
   public function flipHorizontal()
   {
-    if(is_resource($this->image)){
+    if(is_resource($this->image) || $this->image instanceof \GdImage){
     
       $img = new ImageFile($this->width, $this->height);
       for($x = 0; $x < $this->width->getValue(); $x++){
@@ -363,7 +363,7 @@ class ImageFile extends File
   public function flipVertical()
   {
     
-    if(is_resource($this->image)){
+    if(is_resource($this->image) || $this->image instanceof \GdImage){
       $img = new ImageFile($this->width, $this->height);
       for($y = 0; $y < $this->height->getValue(); $y++){
         imagecopy($img->image, $this->image, 0, $y, 0, $this->height->getValue() - $y - 1, $this->width->getValue(), 1);
@@ -384,7 +384,7 @@ class ImageFile extends File
    */ 
   public function rotate($angle, $bgColor = '0xFFFFFF')
   {
-    if(is_resource($this->image)){
+    if(is_resource($this->image) || $this->image instanceof \GdImage){
       return new ImageFile(imagerotate($this->image, $angle, $bgColor));
     }else
       throw InvalidArgumentException::FromCode(15);
@@ -427,7 +427,7 @@ class ImageFile extends File
     if($this->extension == '' && !empty($type))
       $this->extension = new StringManipulator($type);
     
-    if($this->extension != '' && is_resource($this->image)){
+    if($this->extension != '' && (is_resource($this->image) || $this->image instanceof \GdImage)){
       
       ob_start();
       

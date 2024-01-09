@@ -21,5 +21,5 @@ interface EntityRepositoryInterface
 
   public function getCollection(EntityInterface $entity, array $filters = [], array $params = [], array $fields = [], $type = self::RESULT_ARRAY) : array;
 
-  public function createQueryBuilder($alias, $indexBy = null): QueryBuilder;
+  public function createQueryBuilder($alias, $indexBy = null);
 }

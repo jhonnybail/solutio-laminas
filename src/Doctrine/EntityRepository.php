@@ -19,7 +19,7 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
     $metaData = $this->getEntityManager()->getClassMetadata(get_class($entity));
     $maps     = $metaData->getAssociationMappings();
     foreach($maps as $fieldName => $field){
-      if($field->isCascadePersist || $field->isCascadeRefresh || $field->isCascadeDetach || $field->isCascadeMerge || $field->isCascadeRemove){
+      if($field['isCascadePersist'] || $field['isCascadeRefresh'] || $field['isCascadeDetach'] || $field['isCascadeMerge'] || $field['isCascadeRemove']){
         $method = 'get' . ucfirst($fieldName);
         if($entity->{$method}() instanceof \Traversable && count($entity->{$method}()) > 0)
           foreach($entity->{$method}() as $child)
@@ -182,9 +182,9 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
         
         foreach($maps as $fieldName => $field){
           $am         = $metaData->getAssociationMapping($fieldName);
-          $className  = $am->targetEntity;
+          $className  = $am['targetEntity'];
           $nick       = "{$fieldName}";
-          if($am->type == 1 || $am->type == 2){
+          if($am['type'] == 1 || $am['type'] == 2){
             $query->leftJoin("{$alias}.{$fieldName}", $nick);
             if(count($fields) <= 0){
               $query->addSelect($nick);
@@ -201,7 +201,7 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
             }
           }
           if(isset($obj[$fieldName])){
-            if(($am->type == 2 || $am->type == 1) && $obj[$fieldName] != null){
+            if(($am['type'] == 2 || $am['type'] == 1) && $obj[$fieldName] != null){
               $id 	= null;
               if(is_subclass_of($className, AbstractEntity::class)){
                 $obj2	= $obj[$fieldName];
@@ -226,7 +226,7 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
                 }
               }else{
                 $obj2	= $obj[$fieldName];
-                $column = key($am->targetToSourceKeyColumns);
+                $column = key($am['targetToSourceKeyColumns']);
                 $id = $obj2[$column];
                 while(is_array($id)){
                   $id = current($id);
@@ -292,7 +292,7 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
         foreach($maps as $fieldName => $field){ 
           if(isset($obj[$fieldName])){
           $am = $metaData->getAssociationMapping($fieldName);
-            if(($am->type == 2 || $am->type == 1) && $obj[$fieldName] != null){
+            if(($am['type'] == 2 || $am['type'] == 1) && $obj[$fieldName] != null){
               $id 	= null;
               if($obj[$fieldName] instanceof \Solutio\AbstractEntity){
                 $obj2	= $obj[$fieldName]->toArray();
@@ -306,7 +306,7 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
                 }
               }else{
                 $obj2	= $obj[$fieldName];
-                $column = key($am->targetToSourceKeyColumns);
+                $column = key($am['targetToSourceKeyColumns']);
                 $id = $obj2[$column];
                 while(is_array($id)){
                   $id = current($id);
@@ -463,9 +463,9 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
         
         foreach($maps as $fieldName => $field){
           $am         = $metaData->getAssociationMapping($fieldName);
-          $className  = $am->targetEntity;
+          $className  = $am['targetEntity'];
           $nick       = $fieldName;
-          if($am->type == 1 || $am->type == 2){
+          if($am['type'] == 1 || $am['type'] == 2){
             $query->leftJoin("{$alias}.{$fieldName}", $nick);
             if(count($fields) <= 0){
               $query->addSelect($nick);
@@ -604,7 +604,7 @@ class EntityRepository extends ORM\EntityRepository implements \Solutio\EntityRe
           $metaData 	  = $this->getClassMetadata();
           $maps 			  = $metaData->getAssociationMappings();
           foreach($maps as $assoc){
-            $className  = $assoc->targetEntity;
+            $className  = $assoc['targetEntity'];
             $cacheRegion  = $this->getEntityManager()->getCache()->getEntityCacheRegion($className);
             if(method_exists($cacheRegion, 'getCache'))
               $adapter = $cacheRegion->getCache();
