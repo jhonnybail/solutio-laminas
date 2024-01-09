@@ -73,12 +73,12 @@ class MappingsReferenceListener
     $maps 		  = $metaData->getAssociationMappings();
     if(count($maps) > 0){
       foreach($maps as $fieldName => $field){
-        if(($field->type == 1 || $field->type == 2)){
+        if(($field['type'] == 1 || $field['type'] == 2)){
           if(!empty($entity->{"get".ucfirst($fieldName)}())){
             $keys = $entity->{"get".ucfirst($fieldName)}()->getKeys();
             try{
               if(\Doctrine\ORM\UnitOfWork::STATE_NEW !== $em->getUnitOfWork()->getEntityState($entity->{"get".ucfirst($fieldName)}())){
-                $obj  = $event->getEntityManager()->getReference($field->targetEntity, $keys);
+                $obj  = $event->getEntityManager()->getReference($field['targetEntity'], $keys);
                 if($obj instanceof AbstractEntity){
                   $obj->getKeys();
                   $entity->{"set".ucfirst($fieldName)}($obj);
@@ -98,12 +98,12 @@ class MappingsReferenceListener
           }elseif($entity->{"get".ucfirst($fieldName)}() === ""){
             $entity->{"set".ucfirst($fieldName)}(null);
           }
-        }elseif(($field->type === 8 || $field->type === 4) && $list = $entity->{"get".ucfirst($fieldName)}()){
+        }elseif(($field['type'] === 8 || $field['type'] === 4) && $list = $entity->{"get".ucfirst($fieldName)}()){
           foreach($list as $k => $obj){
             $keys = $obj->getKeys();
             try{
               if(! in_array($em->getUnitOfWork()->getEntityState($obj), [\Doctrine\ORM\UnitOfWork::STATE_NEW, \Doctrine\ORM\UnitOfWork::STATE_MANAGED])){
-                $objFinded  = $event->getEntityManager()->getReference($field->targetEntity, $keys);
+                $objFinded  = $event->getEntityManager()->getReference($field['targetEntity'], $keys);
                 if($objFinded instanceof AbstractEntity){
                   $objFinded->getKeys();
                   $list[$k] = $objFinded;

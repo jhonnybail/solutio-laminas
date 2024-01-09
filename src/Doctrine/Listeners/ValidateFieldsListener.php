@@ -57,7 +57,7 @@ class ValidateFieldsListener
     if(count($maps) > 0){
       $assocs   = [];
       foreach($maps as $fieldName => $field){
-        if(($field->type == 1 || $field->type == 2) && isset($field->joinColumns[0]) && isset($field->joinColumns[0]['nullable']) && !$field->joinColumns[0]['nullable'] && $field->joinColumns[0]['nullable'] !== null) $validators[$fieldName] = 'required';
+        if(($field['type'] == 1 || $field['type'] == 2) && isset($field['joinColumns'][0]) && isset($field['joinColumns'][0]['nullable']) && !$field['joinColumns'][0]['nullable'] && $field['joinColumns'][0]['nullable'] !== null) $validators[$fieldName] = 'required';
       }
     }
     if(count($validators) > 0){
